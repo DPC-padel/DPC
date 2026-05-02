@@ -5,221 +5,513 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Delhi//PadelCollective</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
-
-  /* ── VIDEO BACKGROUND ── */
-  .video-wrap { position: fixed; inset: 0; z-index: 0; }
-  .video-wrap video { width: 100%; height: 100%; object-fit: cover; object-position: center; }
-
-  /* Cinematic overlay — dark top + bottom, clear middle */
-  .overlay {
-    position: fixed; inset: 0; z-index: 1;
-    background: linear-gradient(to bottom,
-      rgba(0,0,0,.75) 0%,
-      rgba(0,0,0,.20) 35%,
-      rgba(0,0,0,.20) 60%,
-      rgba(0,0,0,.82) 100%
-    );
+  html { scroll-behavior: smooth; }
+  :root {
+    --font-heading: 'EB Garamond', Georgia, serif;
+    --font-body: -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    --accent: #CB5957;
+    --accent-hover: #d96866;
+    --accent-glow: rgba(203,89,87,.35);
+    --accent-light: rgba(203,89,87,.12);
   }
+  body { background: #0c0c0c; color: #f0ede8; font-family: var(--font-body); overflow-x: hidden; }
 
-  /* ── PAGE ── */
-  .page {
-    position: relative; z-index: 10;
-    width: 100%; height: 100vh;
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    padding: 0 40px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: background .3s;
+  }
+  nav.scrolled {
+    background: rgba(12,12,12,.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .nav-logo { display: flex; align-items: center; text-decoration: none; z-index: 1; }
+  .nav-logo svg { height: 17px; width: auto; color: #fff; }
+
+  .hamburger {
+    width: 40px; height: 40px;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: space-between;
-    padding: 36px 40px 52px;
+    align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; background: none; border: none; z-index: 300; padding: 4px;
   }
+  .hamburger span {
+    display: block; width: 24px; height: 1.5px;
+    background: #fff; transition: all .35s cubic-bezier(.77,0,.175,1); transform-origin: center;
+  }
+  .hamburger.open span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
 
-  /* ── LOGO ── */
-  nav { width: 100%; display: flex; align-items: center; justify-content: center; }
-  .logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 14px; font-weight: 700;
-    color: rgba(255,255,255,.85);
-    letter-spacing: 3px; text-transform: uppercase;
+  /* ── DRAWER ── */
+  .drawer {
+    position: fixed; top: 0; right: 0;
+    width: min(360px, 85vw); height: 100vh;
+    background: #0f0f0f; border-left: 1px solid rgba(255,255,255,.07);
+    z-index: 250; display: flex; flex-direction: column;
+    padding: 90px 44px 48px;
+    transform: translateX(110%);
+    transition: transform .5s cubic-bezier(.77,0,.175,1);
   }
-  .logo .sl { color: rgba(255,255,255,.3); font-weight: 300; }
+  .drawer.open { transform: translateX(0); }
+  .drawer-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    z-index: 240; opacity: 0; pointer-events: none;
+    transition: opacity .4s; backdrop-filter: blur(4px);
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: all; }
+  .drawer-nav { display: flex; flex-direction: column; gap: 2px; }
+
+  /* ← SMALLER font than before (was 38px, now 26px) */
+  .drawer-link {
+    font-family: var(--font-heading);
+    font-size: 26px; font-weight: 400; font-style: italic;
+    color: rgba(255,255,255,.35);
+    text-decoration: none; line-height: 1.15;
+    transition: color .2s, transform .2s;
+    display: block; padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .drawer-link:last-of-type { border-bottom: none; }
+  .drawer-link:hover { color: #fff; transform: translateX(5px); }
+  .drawer-link.cta-link {
+    font-family: var(--font-body);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase; font-style: normal;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid rgba(203,89,87,.25);
+    border-radius: 100px;
+    padding: 12px 24px; text-align: center;
+    margin-top: 20px;
+  }
+  .drawer-link.cta-link:hover { background: rgba(203,89,87,.22); transform: none; }
 
   /* ── HERO ── */
-  .hero {
+  #home {
+    height: 100vh; position: relative;
     display: flex; flex-direction: column;
-    align-items: center; text-align: center;
-    animation: fadeUp .9s ease both;
-    animation-delay: .2s;
+    align-items: center; justify-content: center; overflow: hidden;
   }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(32px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .video-wrap { position: absolute; inset: 0; z-index: 0; }
+  .video-wrap video { width: 100%; height: 100%; object-fit: cover; }
+  .overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,.65) 0%, rgba(0,0,0,.2) 40%,
+      rgba(0,0,0,.2) 60%, rgba(0,0,0,.85) 100%);
   }
-
+  .hero-content {
+    position: relative; z-index: 2; text-align: center;
+    animation: fadeUp .9s ease both .2s;
+    display: flex; flex-direction: column; align-items: center;
+  }
   .hero-eyebrow {
-    font-family: 'Inter', sans-serif;
-    font-size: 10px; font-weight: 500;
-    letter-spacing: 4px; text-transform: uppercase;
-    color: rgba(255,255,255,.35);
-    margin-bottom: 22px;
+    font-family: var(--font-body);
+    font-size: 10px; font-weight: 500; letter-spacing: 4px;
+    text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 32px;
   }
+  .hero-logo { margin-bottom: 44px; }
+  .hero-logo svg { height: 40px; width: auto; color: #fff; }
 
-  .hero-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(76px, 13vw, 148px);
-    font-weight: 300; font-style: italic;
-    line-height: .9; color: #fff;
-    letter-spacing: -3px;
-    text-shadow: 0 4px 60px rgba(0,0,0,.6);
-  }
-  .hero-sub {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(13px, 1.5vw, 17px);
-    font-weight: 400; font-style: normal;
-    letter-spacing: 7px; text-transform: uppercase;
-    color: rgba(255,255,255,.55);
-    margin-top: 14px;
-  }
-
-  /* ── CTAs ── */
-  .ctas {
-    display: flex; gap: 10px;
-    flex-wrap: wrap; justify-content: center;
-    animation: fadeUp .9s ease both;
-    animation-delay: .45s;
-  }
-
+  .hero-ctas { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .cta {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 14px 30px; border-radius: 100px;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px; font-weight: 500; letter-spacing: .3px;
-    text-decoration: none; cursor: pointer;
-    transition: all .22s ease; white-space: nowrap; border: none;
+    display: inline-flex; align-items: center;
+    padding: 14px 28px; border-radius: 100px;
+    font-family: var(--font-body); font-size: 12px;
+    font-weight: 600; letter-spacing: .5px;
+    text-decoration: none; cursor: pointer; transition: all .22s; white-space: nowrap; border: none;
   }
+  .cta-primary { background: rgba(255,255,255,.1); color: #fff; border: 1.5px solid rgba(255,255,255,.35); backdrop-filter: blur(14px); }
+  .cta-primary:hover { background: rgba(255,255,255,.2); border-color: rgba(255,255,255,.6); transform: scale(1.03); }
+  .cta-accent { background: var(--accent); color: #fff; font-weight: 700; }
+  .cta-accent:hover { background: var(--accent-hover); transform: scale(1.03); box-shadow: 0 6px 28px var(--accent-glow); }
+  .cta-ghost { background: transparent; color: rgba(255,255,255,.65); border: 1.5px solid rgba(255,255,255,.2); }
+  .cta-ghost:hover { background: rgba(255,255,255,.08); color: #fff; border-color: rgba(255,255,255,.45); transform: scale(1.03); }
 
-  /* Apply to Join — frosted glass */
-  .cta-primary {
-    background: rgba(255,255,255,.1);
-    color: #fff;
-    border: 1.5px solid rgba(255,255,255,.38);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+  .scroll-hint {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    z-index: 2; display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: rgba(255,255,255,.25); animation: fadeUp .9s ease both .8s;
   }
-  .cta-primary:hover {
-    background: rgba(255,255,255,.2);
-    border-color: rgba(255,255,255,.65);
-    transform: scale(1.04);
-  }
+  .scroll-arrow { width: 1px; height: 40px; background: linear-gradient(to bottom, rgba(255,255,255,.3), transparent); animation: scrollPulse 2s infinite; }
+  @keyframes scrollPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
 
-  /* Monthly Calendar — sage green accent */
-  .cta-green {
-    background: #b8dbb0;
-    color: #162912;
-    border: 1.5px solid #b8dbb0;
-    font-weight: 600;
-  }
-  .cta-green:hover {
-    background: #cae8c1;
-    transform: scale(1.04);
-    box-shadow: 0 6px 28px rgba(140,200,120,.4);
-  }
+  /* ── SHARED ── */
+  section { padding: 100px 40px; }
+  .section-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,.28); margin-bottom: 16px; }
+  .section-title { font-family: var(--font-heading); font-size: clamp(40px,5vw,68px); font-weight: 400; font-style: italic; line-height: 1; letter-spacing: -1px; color: #f0ede8; margin-bottom: 20px; }
+  .section-body { font-size: 15px; color: rgba(255,255,255,.45); line-height: 1.85; font-weight: 300; max-width: 520px; }
+  .divider { height: 1px; background: rgba(255,255,255,.07); margin: 0 40px; }
 
-  /* Leaderboard — ghost */
-  .cta-ghost {
-    background: transparent;
-    color: rgba(255,255,255,.65);
-    border: 1.5px solid rgba(255,255,255,.22);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+  /* ── ABOUT ── */
+  #about { background: #0c0c0c; }
+  .about-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .about-img-wrap { position: relative; }
+  .about-img {
+    width: 100%; aspect-ratio: 3/4;
+    background: #181818; border: 1px solid rgba(255,255,255,.07);
+    border-radius: 4px; overflow: hidden; position: relative;
   }
-  .cta-ghost:hover {
-    background: rgba(255,255,255,.07);
-    color: #fff;
-    border-color: rgba(255,255,255,.45);
-    transform: scale(1.04);
+  /* ← PHOTO SLOT: replace src in <img> below with your photo */
+  .about-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .about-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .about-img-placeholder svg { height: 32px; width: auto; color: var(--accent); opacity: .2; }
+  .about-tag {
+    position: absolute; bottom: -16px; right: -16px;
+    background: var(--accent); color: #fff;
+    padding: 14px 20px; font-size: 10px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; border-radius: 2px;
   }
+  .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+  .stat { border-top: 1px solid rgba(255,255,255,.1); padding-top: 16px; }
+  .stat-num { font-family: var(--font-heading); font-size: 42px; font-weight: 400; font-style: italic; color: #f0ede8; line-height: 1; }
+  .stat-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.3); margin-top: 4px; }
 
-  /* ── BOTTOM ── */
-  .tagline {
-    font-family: 'Inter', sans-serif;
-    font-size: 10px; font-weight: 400;
-    letter-spacing: 3px; text-transform: uppercase;
-    color: rgba(255,255,255,.2);
-    animation: fadeUp .9s ease both;
-    animation-delay: .65s;
+  /* ── JOURNAL ── */
+  #lifestyle { background: #0e0e0e; }
+  .lifestyle-inner { max-width: 1100px; margin: 0 auto; }
+  .lifestyle-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 48px; flex-wrap: wrap; gap: 20px; }
+  .see-all { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.3); text-decoration: none; transition: color .2s; }
+  .see-all:hover { color: var(--accent); }
+  .articles-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 20px; }
+  .article-card { text-decoration: none; color: inherit; display: block; }
+  .article-img {
+    width: 100%; background: #181818;
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 4px; overflow: hidden; margin-bottom: 16px;
+    position: relative;
   }
+  .article-card:nth-child(1) .article-img { aspect-ratio: 3/4; }
+  .article-card:nth-child(2) .article-img,
+  .article-card:nth-child(3) .article-img { aspect-ratio: 4/5; }
 
-  /* Fallback bg if no video */
-  .video-fallback {
-    position: fixed; inset: 0;
-    background: linear-gradient(140deg, #0c0c0c 0%, #1c1c1c 60%, #0a0a0a 100%);
-    z-index: -1;
+  /* ← PHOTO SLOT: add <img src="yourphoto.jpg"> inside .article-img divs below */
+  .article-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+  .article-card:hover .article-img img { transform: scale(1.04); }
+  .article-img-placeholder { width: 100%; height: 100%; min-height: 220px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: rgba(255,255,255,.06); }
+
+  .article-cat { font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .article-title { font-family: var(--font-heading); font-size: 20px; font-weight: 400; font-style: italic; line-height: 1.25; color: #f0ede8; margin-bottom: 8px; transition: color .2s; }
+  .article-card:hover .article-title { color: var(--accent); }
+  .article-desc { font-size: 12px; color: rgba(255,255,255,.35); line-height: 1.7; font-weight: 300; }
+  .article-meta { font-size: 10px; color: rgba(255,255,255,.2); margin-top: 10px; letter-spacing: 1px; }
+
+  /* ── PADEL 101 ── */
+  #padel101 { background: #0c0c0c; }
+  .padel101-inner { max-width: 1100px; margin: 0 auto; }
+  .pills-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 48px; }
+  .pill-card { border: 1px solid rgba(255,255,255,.08); border-radius: 100px; padding: 14px 24px; display: flex; align-items: center; gap: 10px; transition: border-color .2s, background .2s; }
+  .pill-card:hover { border-color: rgba(203,89,87,.3); background: rgba(203,89,87,.05); }
+  .pill-icon { font-size: 16px; }
+  .pill-text { font-size: 13px; color: rgba(255,255,255,.55); }
+  .facts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: rgba(255,255,255,.06); margin-top: 60px; border: 1px solid rgba(255,255,255,.06); border-radius: 4px; overflow: hidden; }
+  .fact { background: #0c0c0c; padding: 32px 28px; }
+  .fact-num { font-family: var(--font-heading); font-size: 48px; font-weight: 400; font-style: italic; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+  .fact-title { font-size: 13px; font-weight: 600; color: #f0ede8; margin-bottom: 6px; }
+  .fact-desc { font-size: 12px; color: rgba(255,255,255,.35); line-height: 1.6; }
+
+  /* ── JOIN ── */
+  #join { background: #0e0e0e; text-align: center; padding: 120px 40px; }
+  .join-inner { max-width: 600px; margin: 0 auto; }
+  .join-inner .section-body { margin: 0 auto 40px; text-align: center; }
+  .join-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 18px 40px; border-radius: 100px;
+    background: var(--accent); color: #fff;
+    font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    text-decoration: none; transition: all .22s; border: none; cursor: pointer;
   }
+  .join-btn:hover { background: var(--accent-hover); box-shadow: 0 8px 32px var(--accent-glow); transform: translateY(-2px); }
 
-  @media (max-width: 600px) {
-    .page { padding: 28px 20px 40px; }
-    .hero-title { font-size: 72px; letter-spacing: -2px; }
-    .ctas { gap: 8px; }
-    .cta { padding: 12px 22px; font-size: 12px; }
+  /* ── FOOTER ── */
+  footer { border-top: 1px solid rgba(255,255,255,.06); padding: 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .footer-logo { display: flex; align-items: center; text-decoration: none; }
+  .footer-logo svg { height: 15px; width: auto; color: rgba(255,255,255,.3); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.2); text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-copy { font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,.15); }
+
+  @media (max-width: 768px) {
+    nav { padding: 0 24px; }
+    section { padding: 72px 24px; }
+    .divider { margin: 0 24px; }
+    .about-grid { grid-template-columns: 1fr; gap: 48px; }
+    .about-tag { bottom: -12px; right: -12px; }
+    .articles-grid { grid-template-columns: 1fr; }
+    .article-card:nth-child(1) .article-img,
+    .article-card:nth-child(2) .article-img,
+    .article-card:nth-child(3) .article-img { aspect-ratio: 16/9; }
+    .facts-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; align-items: flex-start; padding: 32px 24px; }
+    .hero-logo svg { height: 28px; }
+    .drawer-link { font-size: 22px; }
   }
 </style>
 </head>
 <body>
 
-<!--
-  ╔══════════════════════════════════════════════════╗
-  ║  HOW TO ADD YOUR VIDEO                           ║
-  ║  1. Put your video file in this same folder      ║
-  ║  2. Rename it to  padel.mp4  (or update src=)   ║
-  ║  3. Best: 3–8 sec loop, close-up, landscape      ║
-  ╚══════════════════════════════════════════════════╝
--->
-<div class="video-wrap">
-  <video autoplay muted loop playsinline id="bgVideo">
-    <source src="padel.mp4" type="video/mp4"/>
-  </video>
-</div>
-<div class="overlay"></div>
-<div class="video-fallback"></div>
+<!-- SVG LOGO SYMBOL -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="dpc-logo" viewBox="0 0 215 27">
+    <path d="M5.58544 6.06742V18.6633C5.58544 19.8428 6.09728 20.1321 7.76635 20.1321C11.3048 20.1321 14.3536 18.5965 14.3536 13.6561C14.3536 10.5628 13.3522 8.44862 11.9501 7.2469C10.8819 6.33447 9.72472 6.06742 7.14323 6.06742H5.58544ZM0.934308 21.0668V20.3991C2.38083 20.3769 2.78141 19.8428 2.78141 18.5965V7.69198C2.78141 6.44574 2.38083 5.91164 0.934308 5.88939V5.22176C1.62419 5.26627 2.46985 5.28853 3.53805 5.28853C5.49642 5.28853 7.45479 5.22176 9.32415 5.22176C14.9767 5.22176 17.6472 8.67117 17.6472 13.3668C17.6472 15.748 16.3565 21.0668 8.54525 21.0668C6.85393 21.0668 5.09585 21 3.31551 21C2.38083 21 1.55743 21.0223 0.934308 21.0668ZM27.4264 18.463L27.5599 20.1988C26.4249 20.9555 25.1565 21.2225 23.6209 21.2225C19.9935 21.2225 18.3467 18.8636 18.3467 16.2821C18.3467 12.5211 20.9949 10.8966 23.6209 10.8966C25.3345 10.8966 27.6267 11.987 27.6267 15.7258H21.0617C21.0839 18.9971 23.0868 20.3769 24.5333 20.3769C25.5348 20.3769 26.514 19.9095 27.4264 18.463ZM21.0617 15.0581H24.9117C24.9117 12.944 24.6669 11.5642 23.0868 11.5642C21.351 11.5642 21.0839 13.2555 21.0617 15.0581ZM27.9036 21.0668V20.3991H28.0817C28.7715 20.3991 29.1721 20.0653 29.1721 19.3532V6.51251C29.1721 5.86714 29.0163 5.60008 28.4377 5.60008C28.1929 5.60008 27.9926 5.64459 27.8146 5.6891V5.02147C29.1499 4.8657 30.3961 4.53188 31.7091 4.04229V19.3532C31.7091 20.0653 32.1097 20.3991 32.7996 20.3991H32.9776V21.0668C32.2655 21.0445 31.1305 21 30.4406 21C29.7507 21 28.6158 21.0445 27.9036 21.0668ZM33.096 21.0668V20.3991H33.274C33.9639 20.3991 34.3645 20.0653 34.3645 19.3532V6.51251C34.3645 5.86714 34.2087 5.60008 33.6301 5.60008C33.3853 5.60008 33.185 5.64459 33.007 5.6891V5.02147C34.3422 4.8657 35.5885 4.53188 36.9015 4.04229V12.7659C38.8153 11.2972 39.8613 10.8966 40.8182 10.8966C42.2647 10.8966 43.4887 11.7422 43.4887 13.8341V19.3977C43.4887 20.1988 44.0006 20.3991 44.8462 20.3991V21.0668C44.2008 21.0445 42.9324 21 42.1535 21C41.3746 21 40.1061 21.0445 39.4607 21.0668V20.3991C40.6179 20.3991 40.9517 20.2211 40.9517 18.9526V14.1234C40.9517 12.5657 40.0171 12.3654 39.3272 12.3654C38.9488 12.3654 38.0809 12.5434 36.9015 13.5226V19.3532C36.9015 20.0653 37.302 20.3991 37.9919 20.3991H38.17V21.0668C37.4578 21.0445 36.3229 21 35.633 21C34.9431 21 33.8081 21.0445 33.096 21.0668ZM44.8733 21.0668V20.3991H45.0514C45.7412 20.3991 46.1418 20.0653 46.1418 19.3532V13.6561C46.1418 13.0552 45.986 12.7882 45.4074 12.7882C45.2739 12.7882 45.0291 12.8327 44.7843 12.9217V12.2096C45.3407 12.1206 47.4993 11.4975 48.6788 10.8966V19.3532C48.6788 20.0653 49.0794 20.3991 49.7693 20.3991H49.9473V21.0668C49.2352 21.0445 48.1002 21 47.4103 21C46.7204 21 45.5855 21.0445 44.8733 21.0668ZM45.7635 7.42493C45.7635 6.55702 46.4534 5.86714 47.3213 5.86714C48.1892 5.86714 48.8791 6.55702 48.8791 7.42493C48.8791 8.29284 48.1892 8.98273 47.3213 8.98273C46.4534 8.98273 45.7635 8.29284 45.7635 7.42493Z" fill="currentColor"/>
+    <path d="M51.6564 21.3597L58.333 4.76935H60.2214L53.5448 21.3597H51.6564ZM59.9442 21.3597L66.6208 4.76935H68.5091L61.8326 21.3597H59.9442Z" fill="currentColor"/>
+    <path d="M70.0154 21.1957V20.528C71.4619 20.5058 71.8625 19.9717 71.8625 18.7255V7.82089C71.8625 6.57465 71.4619 6.04055 70.0154 6.0183V5.35067C70.772 5.39518 71.8625 5.41743 72.7972 5.41743C73.9766 5.41743 75.1561 5.35067 76.3356 5.35067C80.6974 5.35067 82.2329 7.28679 82.2329 9.84602C82.2329 12.4275 80.5416 13.9853 76.4468 13.9853C75.8015 13.9853 75.0226 13.963 74.6665 13.9185V18.7255C74.6665 19.9717 75.0671 20.5058 76.5136 20.528V21.1957C74.7333 21.1512 73.9766 21.1289 73.2645 21.1289C72.5524 21.1289 71.7957 21.1512 70.0154 21.1957ZM74.6665 6.10731V12.9839C75.0893 13.0729 75.6902 13.1396 76.1353 13.1396C78.1382 13.1396 79.3399 12.2272 79.3399 10.0686C79.3399 8.42175 78.5165 6.0183 75.6234 6.0183C75.2229 6.0183 74.9781 6.04055 74.6665 6.10731ZM91.9469 19.4598V20.1275C91.6798 20.1275 89.4989 20.9509 88.6533 21.3514C88.4307 20.9954 88.3195 20.4613 88.2972 20.1275C87.0065 21.0176 85.649 21.3514 84.8256 21.3514C83.5126 21.3514 82.3553 20.172 82.3553 19.0815C82.3553 17.1454 84.1579 16.2552 88.1637 15.7656V13.696C88.1637 12.4275 87.2513 11.9602 86.4279 11.9602C85.7825 11.9602 85.1149 12.1827 85.1149 13.0729C85.1149 13.2954 85.2261 13.696 85.4264 14.1188L82.9339 15.1203C82.6669 14.7197 82.5779 14.3636 82.5779 13.963C82.5779 12.2495 85.4709 11.0255 87.7186 11.0255C88.9871 11.0255 90.7007 11.9379 90.7007 14.0521V19.1038C90.7007 19.5934 90.8342 19.6824 91.168 19.6824C91.2793 19.6824 91.4351 19.6601 91.9469 19.4598ZM88.1637 18.7477V16.3443C86.2276 16.5445 85.0703 17.457 85.0703 18.4361C85.0703 19.4376 85.649 20.0607 86.6059 20.0607C87.1845 20.0607 87.8076 19.9049 88.2082 19.5934C88.1859 19.3931 88.1637 19.0593 88.1637 18.7477ZM98.8779 5.84026V5.17264C99.8348 5.17264 101.927 4.63853 102.995 4.1712V19.3041C102.995 19.7491 103.173 19.9494 103.574 19.9494C103.818 19.9494 103.996 19.8604 104.241 19.7269V20.3945C103.596 20.3945 101.66 21.1289 100.858 21.485C100.703 21.2179 100.525 20.7061 100.458 20.3278C99.5455 20.9731 98.4105 21.3514 97.2756 21.3514C94.7831 21.3514 92.6244 19.3041 92.6244 16.6113C92.6244 13.518 94.8276 11.0255 97.7652 11.0255C99.0114 11.0255 99.5455 11.1368 100.458 11.4928V6.44113C100.458 6.04055 100.302 5.75125 99.5677 5.75125C99.2562 5.75125 99.1004 5.7735 98.8779 5.84026ZM100.458 19.6601V12.6055C99.6345 11.9602 98.9224 11.6931 97.9877 11.6931C96.2741 11.6931 95.2504 13.2509 95.2504 15.4096C95.2504 17.5905 96.697 20.0607 98.8779 20.0607C99.6123 20.0607 100.102 19.8159 100.458 19.6601ZM114.451 18.5919L114.584 20.3278C113.449 21.0844 112.181 21.3514 110.645 21.3514C107.018 21.3514 105.371 18.9925 105.371 16.411C105.371 12.6501 108.019 11.0255 110.645 11.0255C112.359 11.0255 114.651 12.1159 114.651 15.8547H108.086C108.108 19.126 110.111 20.5058 111.558 20.5058C112.559 20.5058 113.538 20.0384 114.451 18.5919ZM108.086 15.187H111.936C111.936 13.0729 111.691 11.6931 110.111 11.6931C108.375 11.6931 108.108 13.3844 108.086 15.187ZM115.484 21.1957V20.528H115.662C116.352 20.528 116.753 20.1942 116.753 19.4821V6.64141C116.753 5.99604 116.597 5.72899 116.018 5.72899C115.774 5.72899 115.573 5.7735 115.395 5.81801V5.15038C116.731 4.9946 117.977 4.66079 119.29 4.1712V19.4821C119.29 20.1942 119.69 20.528 120.38 20.528H120.558V21.1957C119.846 21.1734 118.711 21.1289 118.021 21.1289C117.331 21.1289 116.197 21.1734 115.484 21.1957ZM137.234 6.3076V10.2911H136.655C136.166 7.0865 133.451 5.90703 130.78 5.90703C127.82 5.90703 124.95 8.24372 124.95 12.561C124.95 16.7448 127.353 20.5503 131.203 20.5503C132.872 20.5503 135.476 19.5711 137.39 16.5445L137.59 19.1705C135.253 20.8619 132.872 21.485 130.491 21.485C122.791 21.485 121.656 15.5208 121.656 13.0951C121.656 9.48995 124.215 5.06136 131.136 5.06136C132.538 5.06136 135.12 5.46194 137.234 6.3076ZM141.282 14.8087C141.282 16.5445 141.794 20.5948 144.308 20.5948C146.111 20.5948 146.489 19.1928 146.489 17.8575C146.489 15.9214 146 11.7821 143.574 11.7821C141.482 11.7821 141.282 13.3844 141.282 14.8087ZM138.656 16.411C138.656 12.6501 141.304 11.0255 143.93 11.0255C146.556 11.0255 149.204 12.6501 149.204 16.411C149.204 18.9925 147.291 21.3514 143.93 21.3514C140.303 21.3514 138.656 18.7255 138.656 16.411ZM150.03 21.1957V20.528H150.208C150.898 20.528 151.298 20.1942 151.298 19.4821V6.64141C151.298 5.99604 151.142 5.72899 150.564 5.72899C150.319 5.72899 150.119 5.7735 149.941 5.81801V5.15038C151.276 4.9946 152.522 4.66079 153.835 4.1712V19.4821C153.835 20.1942 154.236 20.528 154.926 20.528H155.104V21.1957C154.392 21.1734 153.257 21.1289 152.567 21.1289C151.877 21.1289 150.742 21.1734 150.03 21.1957ZM155.778 21.1957V20.528H155.956C156.646 20.528 157.047 20.1942 157.047 19.4821V6.64141C157.047 5.99604 156.891 5.72899 156.313 5.72899C156.068 5.72899 155.867 5.7735 155.689 5.81801V5.15038C157.025 4.9946 158.271 4.66079 159.584 4.1712V19.4821C159.584 20.1942 159.984 20.528 160.674 20.528H160.852V21.1957C160.14 21.1734 159.005 21.1289 158.315 21.1289C157.626 21.1289 156.491 21.1734 155.778 21.1957ZM170.763 18.5919L170.896 20.3278C169.761 21.0844 168.493 21.3514 166.957 21.3514C163.33 21.3514 161.683 18.9925 161.683 16.411C161.683 12.6501 164.331 11.0255 166.957 11.0255C168.671 11.0255 170.963 12.1159 170.963 15.8547H164.398C164.42 19.126 166.423 20.5058 167.87 20.5058C168.871 20.5058 169.85 20.0384 170.763 18.5919ZM164.398 15.187H168.248C168.248 13.0729 168.003 11.6931 166.423 11.6931C164.687 11.6931 164.42 13.3844 164.398 15.187ZM180.587 11.5151L180.72 14.1411H180.208C180.053 13.2954 179.14 11.6931 177.315 11.6931C175.713 11.6931 174.578 12.9394 174.578 15.2315C174.578 17.4125 176.002 20.5058 178.161 20.5058C179.229 20.5058 180.275 19.7269 180.831 18.9035V20.4168C179.897 20.8841 178.628 21.3514 177.271 21.3514C173.599 21.3514 171.952 18.9925 171.952 16.411C171.952 12.6501 174.6 11.0255 177.271 11.0255C178.272 11.0255 179.563 11.1813 180.587 11.5151ZM182.921 18.4139V12.2717H181.118V11.6041C182.253 10.9365 184.479 9.20065 185.458 7.97667V11.248H188.484L188.128 12.2717H185.458V18.6587C185.458 19.3263 185.769 19.8827 186.548 19.8827C187.038 19.8827 187.55 19.5711 188.017 19.126L188.395 19.7491L185.97 21.2847C185.792 21.3292 185.614 21.3514 185.458 21.3514C184.301 21.3514 182.921 20.6616 182.921 18.4139ZM188.618 21.1957V20.528H188.796C189.486 20.528 189.887 20.1942 189.887 19.4821V13.785C189.887 13.1842 189.731 12.9171 189.152 12.9171C189.019 12.9171 188.774 12.9616 188.529 13.0506V12.3385C189.085 12.2495 191.244 11.6264 192.424 11.0255V19.4821C192.424 20.1942 192.824 20.528 193.514 20.528H193.692V21.1957C192.98 21.1734 191.845 21.1289 191.155 21.1289C190.465 21.1289 189.33 21.1734 188.618 21.1957ZM189.508 7.55384C189.508 6.68592 190.198 5.99604 191.066 5.99604C191.934 5.99604 192.624 6.68592 192.624 7.55384C192.624 8.42175 191.934 9.11163 191.066 9.11163C190.198 9.11163 189.508 8.42175 189.508 7.55384ZM193.677 11.8489V11.1813C194.589 11.2035 195.858 11.248 196.303 11.248C196.748 11.248 198.017 11.2035 198.929 11.1813V11.8489H198.595C198.083 11.8489 197.861 12.0714 197.861 12.4498C197.861 12.6501 197.861 12.7391 198.172 13.4735L200.042 17.9466L201.488 13.7405C201.688 13.1619 201.778 12.8058 201.778 12.5388C201.778 11.9379 201.533 11.8489 200.442 11.8489V11.1813C200.999 11.2035 201.8 11.248 202.445 11.248C203.024 11.248 203.691 11.2035 204.248 11.1813V11.8489C203.402 11.8712 203.068 12.4053 202.645 13.4067L199.33 21.3514H198.929L195.235 13.0506C194.767 12.0047 194.567 11.9379 193.677 11.8489ZM213.459 18.5919L213.592 20.3278C212.457 21.0844 211.189 21.3514 209.653 21.3514C206.026 21.3514 204.379 18.9925 204.379 16.411C204.379 12.6501 207.027 11.0255 209.653 11.0255C211.367 11.0255 213.659 12.1159 213.659 15.8547H207.094C207.116 19.126 209.119 20.5058 210.565 20.5058C211.567 20.5058 212.546 20.0384 213.459 18.5919ZM207.094 15.187H210.944C210.944 13.0729 210.699 11.6931 209.119 11.6931C207.383 11.6931 207.116 13.3844 207.094 15.187Z" fill="currentColor"/>
+  </symbol>
+</svg>
 
-<div class="page">
+<!-- NAV -->
+<nav id="navbar">
+  <a class="nav-logo" href="#home">
+    <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
+  </a>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-  <!-- LOGO TOP -->
-  <nav>
-    <div class="logo">Delhi<span class="sl">&nbsp;//&nbsp;</span>PadelCollective</div>
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+<!-- DRAWER -->
+<div class="drawer" id="drawer">
+  <nav class="drawer-nav">
+    <a class="drawer-link" href="#home"      onclick="closeDrawer()">Home</a>
+    <a class="drawer-link" href="#about"     onclick="closeDrawer()">Our Story</a>
+    <a class="drawer-link" href="#lifestyle" onclick="closeDrawer()">Journal</a>
+    <a class="drawer-link" href="https://dpc-padel.github.io/Calender/">Calendar</a>
+    <a class="drawer-link" href="https://dpc-padel.github.io/Ranking/">Leaderboard</a>
+    <a class="drawer-link cta-link" href="#join" onclick="closeDrawer()">Apply to Join →</a>
   </nav>
-
-  <!-- CENTRE TITLE -->
-  <div class="hero">
-    <div class="hero-eyebrow">New Delhi &nbsp;·&nbsp; India</div>
-    <div class="hero-title">Padel</div>
-    <div class="hero-sub">Collective</div>
-  </div>
-
-  <!-- 3 CTAs -->
-  <div class="ctas">
-    <a class="cta cta-primary" href="#" id="applyBtn">Apply to Join</a>
-    <a class="cta cta-green"   href="https://dpc-padel.github.io/Calender/">Monthly Calendar</a>
-    <a class="cta cta-ghost"   href="https://dpc-padel.github.io/Ranking/">Leaderboard</a>
-  </div>
-
-  <!-- BOTTOM -->
-  <div class="tagline">Wanna play padel? &nbsp;Start here.</div>
-
 </div>
+
+<!-- HERO -->
+<section id="home" style="padding:0">
+  <div class="video-wrap">
+    <video autoplay muted loop playsinline id="bgVideo">
+      <source src="padel.mp4" type="video/mp4"/>
+    </video>
+  </div>
+  <div class="overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">New Delhi &nbsp;·&nbsp; India</div>
+    <div class="hero-logo">
+      <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
+    </div>
+    <div class="hero-ctas">
+      <a class="cta cta-primary" href="#join" id="applyBtn">Apply to Join</a>
+      <a class="cta cta-accent"  href="https://dpc-padel.github.io/Calender/">Monthly Calendar</a>
+      <a class="cta cta-ghost"   href="https://dpc-padel.github.io/Ranking/">Leaderboard</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-arrow"></div>
+    Scroll
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-img-wrap">
+      <div class="about-img">
+        <!--
+          ADD YOUR PHOTO HERE:
+          Replace the placeholder div below with:
+          <img src="your-photo.jpg" alt="Delhi Padel Collective"/>
+        -->
+        <div class="about-img-placeholder">
+          <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
+        </div>
+        <div class="about-tag">Est. 2024 · Delhi</div>
+      </div>
+    </div>
+    <div>
+      <div class="section-eyebrow">Our Story</div>
+      <div class="section-title">Where Delhi<br/>plays padel.</div>
+      <p class="section-body">
+        Delhi//PadelCollective was born from a simple idea — bring together the city's most curious, competitive, and community-driven players under one collective.
+        <br/><br/>
+        We're not a club. We're a movement. From first-timers picking up a racket to seasoned players chasing rankings, everyone has a court here.
+        <br/><br/>
+        We run regular sessions, track player rankings, and connect the padel community across Delhi — one match at a time.
+      </p>
+      <div class="about-stats">
+        <div class="stat"><div class="stat-num">200+</div><div class="stat-lbl">Members</div></div>
+        <div class="stat"><div class="stat-num">50+</div><div class="stat-lbl">Sessions Played</div></div>
+        <div class="stat"><div class="stat-num">8</div><div class="stat-lbl">Courts Across Delhi</div></div>
+        <div class="stat"><div class="stat-num">2024</div><div class="stat-lbl">Founded</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- JOURNAL -->
+<section id="lifestyle">
+  <div class="lifestyle-inner">
+    <div class="lifestyle-header">
+      <div>
+        <div class="section-eyebrow">Journal</div>
+        <div class="section-title">Padel &amp;<br/>the good life.</div>
+      </div>
+      <a class="see-all" href="#">All Articles →</a>
+    </div>
+    <div class="articles-grid">
+
+      <a class="article-card" href="#">
+        <div class="article-img">
+          <!--
+            ADD PHOTO 1 HERE:
+            <img src="article1.jpg" alt=""/>
+          -->
+          <div class="article-img-placeholder">🎾</div>
+        </div>
+        <div class="article-cat">Lifestyle</div>
+        <div class="article-title">Why Padel is the Sport Delhi Didn't Know It Needed</div>
+        <div class="article-desc">From South America to South Delhi — how the world's fastest-growing sport found its footing in the capital.</div>
+        <div class="article-meta">5 min read &nbsp;·&nbsp; April 2025</div>
+      </a>
+
+      <a class="article-card" href="#">
+        <div class="article-img">
+          <!--
+            ADD PHOTO 2 HERE:
+            <img src="article2.jpg" alt=""/>
+          -->
+          <div class="article-img-placeholder">🏆</div>
+        </div>
+        <div class="article-cat">Training</div>
+        <div class="article-title">The Morning Routine of a Serious Padel Player</div>
+        <div class="article-desc">What the top players in our collective do before they even touch a racket.</div>
+        <div class="article-meta">4 min read &nbsp;·&nbsp; March 2025</div>
+      </a>
+
+      <a class="article-card" href="#">
+        <div class="article-img">
+          <!--
+            ADD PHOTO 3 HERE:
+            <img src="article3.jpg" alt=""/>
+          -->
+          <div class="article-img-placeholder">🌅</div>
+        </div>
+        <div class="article-cat">Community</div>
+        <div class="article-title">Early Courts &amp; Good Company — The DPC Weekend Sessions</div>
+        <div class="article-desc">A look inside what makes our Sunday morning sessions the highlight of the week.</div>
+        <div class="article-meta">3 min read &nbsp;·&nbsp; March 2025</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PADEL 101 -->
+<section id="padel101">
+  <div class="padel101-inner">
+    <div class="section-eyebrow">Padel 101</div>
+    <div class="section-title">New to the<br/>game?</div>
+    <p class="section-body">Padel is doubles, played in a glass-walled enclosed court. Smaller than tennis, more social, faster to learn — and impossibly addictive.</p>
+    <div class="pills-row">
+      <div class="pill-card"><span class="pill-icon">🎾</span><span class="pill-text">Played on a 10m × 20m enclosed court</span></div>
+      <div class="pill-card"><span class="pill-icon">👥</span><span class="pill-text">Always doubles — 4 players per match</span></div>
+      <div class="pill-card"><span class="pill-icon">🧱</span><span class="pill-text">Glass walls are in play — use them</span></div>
+      <div class="pill-card"><span class="pill-icon">🏸</span><span class="pill-text">Solid rackets, no strings</span></div>
+      <div class="pill-card"><span class="pill-icon">⚡</span><span class="pill-text">Easiest racket sport to pick up</span></div>
+      <div class="pill-card"><span class="pill-icon">🌍</span><span class="pill-text">25M+ players worldwide</span></div>
+    </div>
+    <div class="facts-grid">
+      <div class="fact">
+        <div class="fact-num">25M</div>
+        <div class="fact-title">Players Worldwide</div>
+        <div class="fact-desc">Padel is now the world's fastest-growing sport, played in 90+ countries.</div>
+      </div>
+      <div class="fact">
+        <div class="fact-num">60min</div>
+        <div class="fact-title">Average Session</div>
+        <div class="fact-desc">A typical match lasts 60–90 minutes. High intensity, maximum fun.</div>
+      </div>
+      <div class="fact">
+        <div class="fact-num">3 sets</div>
+        <div class="fact-title">Match Format</div>
+        <div class="fact-desc">Best of 3 sets, same scoring as tennis. First to 6 games wins a set.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- JOIN -->
+<section id="join">
+  <div class="join-inner">
+    <div class="section-eyebrow">Membership</div>
+    <div class="section-title">Ready to play?</div>
+    <p class="section-body">We're a curated collective — spots are limited. Apply to join and we'll reach out via WhatsApp with everything you need to get on court.</p>
+    <button class="join-btn" onclick="applyAlert()">Apply to Join →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#home" class="footer-logo">
+    <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
+  </a>
+  <div class="footer-links">
+    <a href="#about">About</a>
+    <a href="https://dpc-padel.github.io/Calender/">Calendar</a>
+    <a href="https://dpc-padel.github.io/Ranking/">Rankings</a>
+    <a href="https://instagram.com/delhipadelcollective" target="_blank">Instagram</a>
+  </div>
+  <div class="footer-copy">© 2025 Delhi//PadelCollective</div>
+</footer>
 
 <script>
-  // Hide video wrap if no video file found
-  const vid = document.getElementById("bgVideo");
-  vid.addEventListener("error", () => {
+  const hamburger = document.getElementById("hamburger");
+  const drawer    = document.getElementById("drawer");
+  const overlay   = document.getElementById("drawerOverlay");
+
+  hamburger.addEventListener("click", () => {
+    const isOpen = drawer.classList.toggle("open");
+    overlay.classList.toggle("open", isOpen);
+    hamburger.classList.toggle("open", isOpen);
+    document.body.style.overflow = isOpen ? "hidden" : "";
+  });
+  overlay.addEventListener("click", closeDrawer);
+  function closeDrawer() {
+    drawer.classList.remove("open");
+    overlay.classList.remove("open");
+    hamburger.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeDrawer(); });
+
+  window.addEventListener("scroll", () => {
+    document.getElementById("navbar").classList.toggle("scrolled", window.scrollY > 60);
+  });
+
+  document.getElementById("bgVideo").addEventListener("error", () => {
     document.querySelector(".video-wrap").style.display = "none";
   });
 
-  // Apply to Join — backend coming soon
-  document.getElementById("applyBtn").addEventListener("click", e => {
-    e.preventDefault();
+  function applyAlert() {
     alert("Applications opening soon!\nFollow @delhipadelcollective on Instagram for updates.");
+  }
+  document.getElementById("applyBtn").addEventListener("click", e => {
+    e.preventDefault(); applyAlert();
   });
 </script>
 </body>
