@@ -3,119 +3,224 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Delhi//PadelCollective — Hub</title>
+<title>Delhi//PadelCollective</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #f5f3ef; color: #111; font-family: 'Inter', sans-serif; min-height: 100vh; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
 
-  header {
-    background: #000; color: #fff;
-    padding: 0 40px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100;
-  }
-  .logo { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; color: #fff; }
-  .logo .sl { color: #444; font-weight: 400; }
-  .pip-wrap { display: flex; align-items: center; gap: 7px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #555; }
-  .pip { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; animation: pip 2s infinite; }
-  @keyframes pip { 0%,100%{opacity:1} 50%{opacity:.3} }
+  /* ── VIDEO BACKGROUND ── */
+  .video-wrap { position: fixed; inset: 0; z-index: 0; }
+  .video-wrap video { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 
-  /* HERO */
-  .hero { background: #000; color: #fff; padding: 56px 40px 48px; }
-  .eyebrow { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #444; margin-bottom: 14px; }
-  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(38px, 6vw, 58px); font-weight: 900; line-height: 1.0; letter-spacing: -2px; margin-bottom: 12px; }
-  .hero h1 em { font-style: italic; color: #666; }
-  .hero p { color: #555; font-size: 15px; line-height: 1.7; font-weight: 300; max-width: 420px; }
-
-  /* CARDS */
-  .cards-wrap {
-    max-width: 860px; margin: 0 auto;
-    padding: 48px 40px 80px;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  /* Cinematic overlay — dark top + bottom, clear middle */
+  .overlay {
+    position: fixed; inset: 0; z-index: 1;
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,.75) 0%,
+      rgba(0,0,0,.20) 35%,
+      rgba(0,0,0,.20) 60%,
+      rgba(0,0,0,.82) 100%
+    );
   }
 
-  .card {
-    background: #fff; border: 1px solid #e0ddd7;
+  /* ── PAGE ── */
+  .page {
+    position: relative; z-index: 10;
+    width: 100%; height: 100vh;
     display: flex; flex-direction: column;
-    overflow: hidden; text-decoration: none; color: #111;
-    transition: box-shadow .2s, transform .2s;
+    align-items: center; justify-content: space-between;
+    padding: 36px 40px 52px;
   }
-  .card:hover { box-shadow: 0 8px 40px rgba(0,0,0,.14); transform: translateY(-4px); }
 
-  .card-top { background: #000; color: #fff; padding: 32px 30px 28px; flex: 1; }
-  .card-icon { font-size: 30px; margin-bottom: 18px; }
-  .card-label { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #555; margin-bottom: 8px; }
-  .card-title { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 900; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 12px; }
-  .card-desc { font-size: 13px; color: #666; line-height: 1.65; font-weight: 300; }
-
-  .card-footer {
-    background: #000; border-top: 1px solid #1c1c1c;
-    padding: 18px 30px;
-    display: flex; align-items: center; justify-content: space-between;
+  /* ── LOGO ── */
+  nav { width: 100%; display: flex; align-items: center; justify-content: center; }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 700;
+    color: rgba(255,255,255,.85);
+    letter-spacing: 3px; text-transform: uppercase;
   }
-  .card-footer span { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #fff; }
-  .arrow { font-size: 18px; color: #fff; transition: transform .2s; }
-  .card:hover .arrow { transform: translateX(5px); }
+  .logo .sl { color: rgba(255,255,255,.3); font-weight: 300; }
 
-  /* Ranking card slightly different shade */
-  .card.ranking .card-top { background: #0f0f0f; }
-  .card.ranking .card-footer { background: #0f0f0f; border-top-color: #222; }
+  /* ── HERO ── */
+  .hero {
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    animation: fadeUp .9s ease both;
+    animation-delay: .2s;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(32px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
-  footer { background: #000; color: #333; text-align: center; padding: 22px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+  .hero-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; font-weight: 500;
+    letter-spacing: 4px; text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+    margin-bottom: 22px;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(76px, 13vw, 148px);
+    font-weight: 300; font-style: italic;
+    line-height: .9; color: #fff;
+    letter-spacing: -3px;
+    text-shadow: 0 4px 60px rgba(0,0,0,.6);
+  }
+  .hero-sub {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(13px, 1.5vw, 17px);
+    font-weight: 400; font-style: normal;
+    letter-spacing: 7px; text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    margin-top: 14px;
+  }
+
+  /* ── CTAs ── */
+  .ctas {
+    display: flex; gap: 10px;
+    flex-wrap: wrap; justify-content: center;
+    animation: fadeUp .9s ease both;
+    animation-delay: .45s;
+  }
+
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 30px; border-radius: 100px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; font-weight: 500; letter-spacing: .3px;
+    text-decoration: none; cursor: pointer;
+    transition: all .22s ease; white-space: nowrap; border: none;
+  }
+
+  /* Apply to Join — frosted glass */
+  .cta-primary {
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,.38);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .cta-primary:hover {
+    background: rgba(255,255,255,.2);
+    border-color: rgba(255,255,255,.65);
+    transform: scale(1.04);
+  }
+
+  /* Monthly Calendar — sage green accent */
+  .cta-green {
+    background: #b8dbb0;
+    color: #162912;
+    border: 1.5px solid #b8dbb0;
+    font-weight: 600;
+  }
+  .cta-green:hover {
+    background: #cae8c1;
+    transform: scale(1.04);
+    box-shadow: 0 6px 28px rgba(140,200,120,.4);
+  }
+
+  /* Leaderboard — ghost */
+  .cta-ghost {
+    background: transparent;
+    color: rgba(255,255,255,.65);
+    border: 1.5px solid rgba(255,255,255,.22);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .cta-ghost:hover {
+    background: rgba(255,255,255,.07);
+    color: #fff;
+    border-color: rgba(255,255,255,.45);
+    transform: scale(1.04);
+  }
+
+  /* ── BOTTOM ── */
+  .tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px; font-weight: 400;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: rgba(255,255,255,.2);
+    animation: fadeUp .9s ease both;
+    animation-delay: .65s;
+  }
+
+  /* Fallback bg if no video */
+  .video-fallback {
+    position: fixed; inset: 0;
+    background: linear-gradient(140deg, #0c0c0c 0%, #1c1c1c 60%, #0a0a0a 100%);
+    z-index: -1;
+  }
 
   @media (max-width: 600px) {
-    header, .hero { padding-left: 20px; padding-right: 20px; }
-    .hero h1 { font-size: 38px; }
-    .cards-wrap { grid-template-columns: 1fr; padding: 28px 20px 60px; }
+    .page { padding: 28px 20px 40px; }
+    .hero-title { font-size: 72px; letter-spacing: -2px; }
+    .ctas { gap: 8px; }
+    .cta { padding: 12px 22px; font-size: 12px; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">Delhi<span class="sl">//</span>PadelCollective</div>
-  <div class="pip-wrap"><span class="pip"></span>Members Hub</div>
-</header>
+<!--
+  ╔══════════════════════════════════════════════════╗
+  ║  HOW TO ADD YOUR VIDEO                           ║
+  ║  1. Put your video file in this same folder      ║
+  ║  2. Rename it to  padel.mp4  (or update src=)   ║
+  ║  3. Best: 3–8 sec loop, close-up, landscape      ║
+  ╚══════════════════════════════════════════════════╝
+-->
+<div class="video-wrap">
+  <video autoplay muted loop playsinline id="bgVideo">
+    <source src="padel.mp4" type="video/mp4"/>
+  </video>
+</div>
+<div class="overlay"></div>
+<div class="video-fallback"></div>
 
-<section class="hero">
-  <div class="eyebrow">Welcome</div>
-  <h1>Your padel<br/><em>hub.</em></h1>
-  <p>Everything Delhi//PadelCollective in one place. Book a session or check where you stand.</p>
-</section>
+<div class="page">
 
-<div class="cards-wrap">
+  <!-- LOGO TOP -->
+  <nav>
+    <div class="logo">Delhi<span class="sl">&nbsp;//&nbsp;</span>PadelCollective</div>
+  </nav>
 
-  <a class="card" href="https://dpc-padel.github.io/Calender/">
-    <div class="card-top">
-      <div class="card-icon">📅</div>
-      <div class="card-label">Sessions</div>
-      <div class="card-title">Event Calendar</div>
-      <div class="card-desc">Browse upcoming sessions, check open slots, join the waitlist, and mark your interest — all in one place.</div>
-    </div>
-    <div class="card-footer">
-      <span>Open Calendar</span>
-      <span class="arrow">→</span>
-    </div>
-  </a>
+  <!-- CENTRE TITLE -->
+  <div class="hero">
+    <div class="hero-eyebrow">New Delhi &nbsp;·&nbsp; India</div>
+    <div class="hero-title">Padel</div>
+    <div class="hero-sub">Collective</div>
+  </div>
 
-  <a class="card ranking" href="https://dpc-padel.github.io/Ranking/">
-    <div class="card-top">
-      <div class="card-icon">🏆</div>
-      <div class="card-label">Standings</div>
-      <div class="card-title">Player Rankings</div>
-      <div class="card-desc">See where you stand in the collective. Live rankings updated after every session played.</div>
-    </div>
-    <div class="card-footer">
-      <span>View Rankings</span>
-      <span class="arrow">→</span>
-    </div>
-  </a>
+  <!-- 3 CTAs -->
+  <div class="ctas">
+    <a class="cta cta-primary" href="#" id="applyBtn">Apply to Join</a>
+    <a class="cta cta-green"   href="https://dpc-padel.github.io/Calender/">Monthly Calendar</a>
+    <a class="cta cta-ghost"   href="https://dpc-padel.github.io/Ranking/">Leaderboard</a>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="tagline">Wanna play padel? &nbsp;Start here.</div>
 
 </div>
 
-<footer>Delhi<span style="color:#1a1a1a">//</span>PadelCollective &mdash; Wanna play padel? Start here.</footer>
+<script>
+  // Hide video wrap if no video file found
+  const vid = document.getElementById("bgVideo");
+  vid.addEventListener("error", () => {
+    document.querySelector(".video-wrap").style.display = "none";
+  });
 
+  // Apply to Join — backend coming soon
+  document.getElementById("applyBtn").addEventListener("click", e => {
+    e.preventDefault();
+    alert("Applications opening soon!\nFollow @delhipadelcollective on Instagram for updates.");
+  });
+</script>
 </body>
 </html>
