@@ -172,10 +172,7 @@
     padding: 14px 20px; font-size: 10px; font-weight: 700;
     letter-spacing: 2px; text-transform: uppercase; border-radius: 2px;
   }
-  .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
-  .stat { border-top: 1px solid rgba(255,255,255,.1); padding-top: 16px; }
-  .stat-num { font-family: var(--font-heading); font-size: 42px; font-weight: 400; font-style: italic; color: #f0ede8; line-height: 1; }
-  .stat-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.3); margin-top: 4px; }
+
 
   /* ── JOURNAL ── */
   #lifestyle { background: #0e0e0e; }
@@ -200,11 +197,21 @@
   .article-card:hover .article-img img { transform: scale(1.04); }
   .article-img-placeholder { width: 100%; height: 100%; min-height: 220px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: rgba(255,255,255,.06); }
 
-  .article-cat { font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
-  .article-title { font-family: var(--font-heading); font-size: 20px; font-weight: 400; font-style: italic; line-height: 1.25; color: #f0ede8; margin-bottom: 8px; transition: color .2s; }
-  .article-card:hover .article-title { color: var(--accent); }
-  .article-desc { font-size: 12px; color: rgba(255,255,255,.35); line-height: 1.7; font-weight: 300; }
-  .article-meta { font-size: 10px; color: rgba(255,255,255,.2); margin-top: 10px; letter-spacing: 1px; }
+  /* ── PHOTO GRID ── */
+  .photo-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 16px; align-items: start; }
+  .photo-item { display: flex; flex-direction: column; gap: 12px; }
+  .photo-item:first-child .photo-frame { aspect-ratio: 3/4; }
+  .photo-item:not(:first-child) .photo-frame { aspect-ratio: 4/5; }
+  .photo-frame {
+    width: 100%; background: #181818;
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 4px; overflow: hidden;
+  }
+  .photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+  .photo-item:hover .photo-frame img { transform: scale(1.03); }
+  .photo-frame-placeholder { width: 100%; height: 100%; min-height: 200px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: rgba(255,255,255,.05); }
+  .photo-caption { font-size: 12px; color: rgba(255,255,255,.35); line-height: 1.65; font-weight: 300; }
+  .photo-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
 
   /* ── PADEL 101 ── */
   #padel101 { background: #0c0c0c; }
@@ -244,14 +251,14 @@
 
   @media (max-width: 768px) {
     nav { padding: 0 24px; }
+    .scroll-hint { left: 50% !important; transform: translateX(-50%) !important; width: max-content; }
     section { padding: 72px 24px; }
     .divider { margin: 0 24px; }
     .about-grid { grid-template-columns: 1fr; gap: 48px; }
     .about-tag { bottom: -12px; right: -12px; }
-    .articles-grid { grid-template-columns: 1fr; }
-    .article-card:nth-child(1) .article-img,
-    .article-card:nth-child(2) .article-img,
-    .article-card:nth-child(3) .article-img { aspect-ratio: 16/9; }
+    .photo-grid { grid-template-columns: 1fr; }
+    .photo-item:first-child .photo-frame,
+    .photo-item:not(:first-child) .photo-frame { aspect-ratio: 16/9; }
     .facts-grid { grid-template-columns: 1fr; }
     footer { flex-direction: column; align-items: flex-start; padding: 32px 24px; }
     .hero-logo svg { height: 28px; }
@@ -347,71 +354,65 @@
         <br/><br/>
         We run regular sessions, track player rankings, and connect the padel community across Delhi — one match at a time.
       </p>
-      <div class="about-stats">
-        <div class="stat"><div class="stat-num">200+</div><div class="stat-lbl">Members</div></div>
-        <div class="stat"><div class="stat-num">50+</div><div class="stat-lbl">Sessions Played</div></div>
-        <div class="stat"><div class="stat-num">8</div><div class="stat-lbl">Courts Across Delhi</div></div>
-        <div class="stat"><div class="stat-num">2024</div><div class="stat-lbl">Founded</div></div>
-      </div>
+
     </div>
   </div>
 </section>
 
 <div class="divider"></div>
 
-<!-- JOURNAL -->
+<!-- PHOTOS -->
 <section id="lifestyle">
   <div class="lifestyle-inner">
     <div class="lifestyle-header">
       <div>
-        <div class="section-eyebrow">Journal</div>
-        <div class="section-title">Padel &amp;<br/>the good life.</div>
+        <div class="section-eyebrow">On Court</div>
+        <div class="section-title">Life at<br/>DPC.</div>
       </div>
-      <a class="see-all" href="#">All Articles →</a>
     </div>
-    <div class="articles-grid">
+    <div class="photo-grid">
 
-      <a class="article-card" href="#">
-        <div class="article-img">
+      <div class="photo-item">
+        <div class="photo-frame">
           <!--
-            ADD PHOTO 1 HERE:
-            <img src="article1.jpg" alt=""/>
+            ADD PHOTO 1 HERE — replace placeholder div with:
+            <img src="photo1.jpg" alt="DPC Session"/>
           -->
-          <div class="article-img-placeholder">🎾</div>
+          <div class="photo-frame-placeholder">📸</div>
         </div>
-        <div class="article-cat">Lifestyle</div>
-        <div class="article-title">Why Padel is the Sport Delhi Didn't Know It Needed</div>
-        <div class="article-desc">From South America to South Delhi — how the world's fastest-growing sport found its footing in the capital.</div>
-        <div class="article-meta">5 min read &nbsp;·&nbsp; April 2025</div>
-      </a>
+        <div>
+          <div class="photo-label">Sessions</div>
+          <div class="photo-caption">Early morning courts, good company, and the kind of rallies you talk about all week.</div>
+        </div>
+      </div>
 
-      <a class="article-card" href="#">
-        <div class="article-img">
+      <div class="photo-item">
+        <div class="photo-frame">
           <!--
-            ADD PHOTO 2 HERE:
-            <img src="article2.jpg" alt=""/>
+            ADD PHOTO 2 HERE — replace placeholder div with:
+            <img src="photo2.jpg" alt="DPC Community"/>
           -->
-          <div class="article-img-placeholder">🏆</div>
+          <div class="photo-frame-placeholder">📸</div>
         </div>
-        <div class="article-cat">Training</div>
-        <div class="article-title">The Morning Routine of a Serious Padel Player</div>
-        <div class="article-desc">What the top players in our collective do before they even touch a racket.</div>
-        <div class="article-meta">4 min read &nbsp;·&nbsp; March 2025</div>
-      </a>
+        <div>
+          <div class="photo-label">Community</div>
+          <div class="photo-caption">From first-timers to ranked players — everyone belongs on our court.</div>
+        </div>
+      </div>
 
-      <a class="article-card" href="#">
-        <div class="article-img">
+      <div class="photo-item">
+        <div class="photo-frame">
           <!--
-            ADD PHOTO 3 HERE:
-            <img src="article3.jpg" alt=""/>
+            ADD PHOTO 3 HERE — replace placeholder div with:
+            <img src="photo3.jpg" alt="DPC Lifestyle"/>
           -->
-          <div class="article-img-placeholder">🌅</div>
+          <div class="photo-frame-placeholder">📸</div>
         </div>
-        <div class="article-cat">Community</div>
-        <div class="article-title">Early Courts &amp; Good Company — The DPC Weekend Sessions</div>
-        <div class="article-desc">A look inside what makes our Sunday morning sessions the highlight of the week.</div>
-        <div class="article-meta">3 min read &nbsp;·&nbsp; March 2025</div>
-      </a>
+        <div>
+          <div class="photo-label">The Collective</div>
+          <div class="photo-caption">Delhi's padel scene, one session at a time.</div>
+        </div>
+      </div>
 
     </div>
   </div>
