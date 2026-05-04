@@ -498,6 +498,7 @@
     hamburger.classList.toggle("open", isOpen);
     document.body.style.overflow = isOpen ? "hidden" : "";
   });
+
   overlay.addEventListener("click", closeDrawer);
   function closeDrawer() {
     drawer.classList.remove("open");
@@ -505,21 +506,40 @@
     hamburger.classList.remove("open");
     document.body.style.overflow = "";
   }
-  document.addEventListener("keydown", e => { if(e.key === "Escape") closeDrawer(); });
+
+  document.addEventListener("keydown", e => { 
+    if(e.key === "Escape") closeDrawer(); 
+  });
 
   window.addEventListener("scroll", () => {
     document.getElementById("navbar").classList.toggle("scrolled", window.scrollY > 60);
   });
 
-  document.getElementById("bgVideo").addEventListener("error", () => {
+  const bgVideo = document.getElementById("bgVideo");
+
+  // Hide video if error
+  bgVideo.addEventListener("error", () => {
     document.querySelector(".video-wrap").style.display = "none";
   });
 
- function applyAlert() {
-  window.location.href = "https://dpc-padel.github.io/Response/";
-}
+  // ✅ ADD THIS PART (autoplay fix)
+  function tryPlay() {
+    bgVideo.muted = true;
+    bgVideo.setAttribute("muted", "");
+    bgVideo.play().catch(() => {
+      document.addEventListener("touchstart", () => bgVideo.play(), { once: true });
+    });
+  }
+
+  window.addEventListener("load", tryPlay);
+
+  function applyAlert() {
+    window.location.href = "https://dpc-padel.github.io/Response/";
+  }
+
   document.getElementById("applyBtn").addEventListener("click", e => {
-    e.preventDefault(); applyAlert();
+    e.preventDefault(); 
+    applyAlert();
   });
 </script>
 </body>
