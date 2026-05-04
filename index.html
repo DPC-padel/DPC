@@ -122,14 +122,26 @@
   z-index: 0;
   border-radius: 16px;
   overflow: hidden;
-  pointer-events: none; /* 🔥 THIS FIXES CLICK ISSUE */
 }
 
-.video-wrap video {
+/* video + fallback share same space */
+.video-wrap video,
+.video-wrap .fallback-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  pointer-events: none; /* extra safety */
+  position: absolute;
+  inset: 0;
+}
+
+/* fallback image behind */
+.fallback-img {
+  z-index: 0;
+}
+
+/* video on top */
+.video-wrap video {
+  z-index: 1;
 }
 .overlay {
   position: absolute; inset: 0; z-index: 1;
@@ -422,14 +434,12 @@ video::--webkit-media-controls-overlay-play-button {
 <!-- HERO -->
 <section id="home" style="padding:0">
   <div class="video-wrap">
-   <video autoplay muted loop playsinline webkit-playsinline 
-       preload="auto"
-       poster="fallback.jpeg"
-       disablepictureinpicture disableremoteplayback 
-       id="bgVideo">
-  <source src="padel.mp4" type="video/mp4"/>
-</video>
-  </div>
+  <img src="fallback.jpeg" class="fallback-img" />
+
+  <video autoplay muted loop playsinline webkit-playsinline id="bgVideo">
+    <source src="padel.mp4" type="video/mp4"/>
+  </video>
+</div>
   <div class="overlay"></div>
   <div class="hero-content">
     <div class="hero-eyebrow">New Delhi &nbsp;·&nbsp; India</div>
@@ -633,8 +643,9 @@ video::--webkit-media-controls-overlay-play-button {
   const bgVideo = document.getElementById("bgVideo");
 
   // Hide video if error
-  bgVideo.addEventListener("error", () => {
-    document.querySelector(".video-wrap").style.display = "none";
+// Hide ONLY video if error (keep fallback visible)
+bgVideo.addEventListener("error", () => {
+  bgVideo.style.display = "none";
   });
 
   // ✅ ADD THIS PART (autoplay fix)
