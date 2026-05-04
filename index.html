@@ -509,9 +509,9 @@
     document.querySelector(".video-wrap").style.display = "none";
   });
 
-  function applyAlert() {
-    alert("Applications opening soon!\nFollow @delhipadelcollective on Instagram for updates.");
-  }
+ function applyAlert() {
+  window.location.href = "https://dpc-padel.github.io/Apply/";
+}
   document.getElementById("applyBtn").addEventListener("click", e => {
     e.preventDefault(); applyAlert();
   });
