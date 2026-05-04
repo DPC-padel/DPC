@@ -675,6 +675,15 @@ nav { position: fixed; z-index: 200; }
   } else {
     window.addEventListener("load", tryPlay);
   }
+
+  // If autoplay was blocked, tap anywhere on the hero silently starts video
+  document.getElementById("home").addEventListener("touchstart", () => {
+    if (videoWrap.classList.contains("fallback")) {
+      bgVideo.play().then(() => {
+        videoWrap.classList.remove("fallback");
+      }).catch(() => {});
+    }
+  }, { passive: true });
   function applyAlert() {
     window.location.href = "https://dpc-padel.github.io/Response/";
   }
