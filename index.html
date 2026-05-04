@@ -145,6 +145,7 @@
 }
 .overlay {
   position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
   background: linear-gradient(to bottom,
     rgba(247,245,242,.5) 0%, rgba(247,245,242,.1) 30%,
     rgba(247,245,242,.1) 70%, rgba(247,245,242,.5) 100%);
@@ -662,11 +663,27 @@ nav { position: fixed; z-index: 200; }
     const playPromise = bgVideo.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // Autoplay blocked (Low Power Mode, etc.) — show fallback image
+        // Autoplay blocked (Low Power Mode) — show fallback, wait for tap
         videoWrap.classList.add("fallback");
-        // Don't retry on touch — avoids surprise video starting mid-scroll
+        enableTapToPlay();
       });
     }
+  }
+
+  // Tap anywhere on screen (not just hero) to start video
+  // Must be attached directly to document to work on iOS Low Power Mode
+  function enableTapToPlay() {
+    function onTap() {
+      bgVideo.muted = true;
+      bgVideo.play().then(() => {
+        videoWrap.classList.remove("fallback");
+        document.removeEventListener("touchend", onTap);
+      }).catch(() => {
+        // Still blocked — leave fallback showing
+      });
+    }
+    // touchend is more reliable than touchstart for play() on iOS
+    document.addEventListener("touchend", onTap, { passive: true });
   }
 
   // Run after full page load
@@ -675,15 +692,6 @@ nav { position: fixed; z-index: 200; }
   } else {
     window.addEventListener("load", tryPlay);
   }
-
-  // If autoplay was blocked, tap anywhere on the hero silently starts video
-  document.getElementById("home").addEventListener("touchstart", () => {
-    if (videoWrap.classList.contains("fallback")) {
-      bgVideo.play().then(() => {
-        videoWrap.classList.remove("fallback");
-      }).catch(() => {});
-    }
-  }, { passive: true });
   function applyAlert() {
     window.location.href = "https://dpc-padel.github.io/Response/";
   }
