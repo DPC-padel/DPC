@@ -9,8 +9,14 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  :root {
-    --font-heading: 'EB Garamond', Georgia, serif;
+ @font-face {
+  font-family: 'Berling';
+  src: url('Berling Bold.otf') format('opentype'); /* adjust path if needed */
+  font-weight: 700;
+  font-style: normal;
+} 
+ :root {
+   --font-heading: 'Berling', Georgia, serif;
     --font-body: -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
     --accent: #CB5957;
     --accent-hover: #d96866;
