@@ -274,22 +274,51 @@
     color: var(--text);
   }
 
-  @media (max-width: 768px) {
-    nav { padding: 0 24px; }
-    .scroll-hint { left: 50% !important; transform: translateX(-50%) !important; width: max-content; }
-    section { padding: 72px 24px; }
-    .divider { margin: 0 24px; }
-    .about-grid { grid-template-columns: 1fr; gap: 48px; }
-    .about-tag { bottom: -12px; right: -12px; }
-    .photo-grid { grid-template-columns: 1fr; }
-    .photo-item:first-child .photo-frame,
-    .photo-item:not(:first-child) .photo-frame { aspect-ratio: 16/9; }
-    .facts-grid { grid-template-columns: 1fr; }
-    footer { flex-direction: column; align-items: flex-start; padding: 32px 24px; }
-    .hero-logo svg { height: 28px; }
-    .drawer-link { font-size: 22px; }
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  nav { padding: 0 24px; }
+
+  .scroll-hint {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: max-content;
   }
- video::-webkit-media-controls {
+
+  section { padding: 72px 24px; }
+  .divider { margin: 0 24px; }
+
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .about-tag { bottom: -12px; right: -12px; }
+
+  .photo-grid { grid-template-columns: 1fr; }
+
+  .photo-item:first-child .photo-frame,
+  .photo-item:not(:first-child) .photo-frame {
+    aspect-ratio: 16/9;
+  }
+
+  .facts-grid { grid-template-columns: 1fr; }
+
+  footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 32px 24px;
+  }
+
+  .hero-logo svg { height: 28px; }
+  .drawer-link { font-size: 22px; }
+}
+
+/* ── VIDEO FIXES ── */
+video {
+  pointer-events: none;
+}
+
+video::-webkit-media-controls {
   display: none !important;
 }
 
@@ -297,8 +326,26 @@ video::-webkit-media-controls-start-playback-button {
   display: none !important;
 }
 
-.video-wrap video {
+/* ensure video stays behind UI */
+.video-wrap {
+  position: absolute;
+  inset: 16px;
+  z-index: 0;
   pointer-events: none;
+}
+
+/* ensure nav & drawer are clickable */
+nav {
+  position: fixed;
+  z-index: 200;
+}
+
+.drawer {
+  z-index: 300;
+}
+
+.drawer-overlay {
+  z-index: 250;
 }
 </style>
 </head>
@@ -333,7 +380,7 @@ video::-webkit-media-controls-start-playback-button {
     <a class="drawer-link" href="#lifestyle" onclick="closeDrawer()">Journal</a>
     <a class="drawer-link" href="https://dpc-padel.github.io/Calender/">Calendar</a>
     <a class="drawer-link" href="https://dpc-padel.github.io/Ranking/">Leaderboard</a>
-    <a class="drawer-link cta-link" href="#join" onclick="closeDrawer()">Apply to Join →</a>
+    <a class="drawer-link cta-link" href="https://dpc-padel.github.io/Response/" onclick="closeDrawer()">Apply to Join →</a>
   </nav>
 </div>
 
@@ -351,7 +398,7 @@ video::-webkit-media-controls-start-playback-button {
       <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
     </div>
     <div class="hero-ctas">
-      <a class="cta cta-primary" href="#join" id="applyBtn">Apply to Join</a>
+      <a class="cta cta-primary" href="https://dpc-padel.github.io/Response/" id="applyBtn">Apply to Join</a>
       <a class="cta cta-primary"  href="https://dpc-padel.github.io/Calender/">Monthly Calendar</a>
       <a class="cta cta-primary"   href="https://dpc-padel.github.io/Ranking/">Leaderboard</a>
     </div>
