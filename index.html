@@ -378,6 +378,10 @@ video::--webkit-media-controls-overlay-play-button {
   -webkit-appearance: none;
   opacity: 0 !important;
 }
+ /* Hide video when autoplay fails */
+.video-wrap.fallback video {
+  display: none;
+}
 </style>
 </head>
 <body>
@@ -635,15 +639,21 @@ video::--webkit-media-controls-overlay-play-button {
 
   // ✅ ADD THIS PART (autoplay fix)
   function tryPlay() {
-    bgVideo.muted = true;
-    bgVideo.setAttribute("muted", "");
-    bgVideo.play().catch(() => {
-      document.addEventListener("touchstart", () => bgVideo.play(), { once: true });
-    });
-  }
+  bgVideo.muted = true;
+  bgVideo.setAttribute("muted", "");
 
-  window.addEventListener("load", tryPlay);
+  bgVideo.play().catch(() => {
+    // 👇 KEY FIX: detect autoplay failure
+    document.querySelector(".video-wrap").classList.add("fallback");
 
+    // allow user interaction to retry
+    document.addEventListener("touchstart", () => {
+      bgVideo.play();
+    }, { once: true });
+  });
+}
+
+window.addEventListener("load", tryPlay);
   function applyAlert() {
     window.location.href = "https://dpc-padel.github.io/Response/";
   }
