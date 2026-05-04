@@ -572,7 +572,7 @@ nav {
     const isOpen = drawer.classList.toggle("open");
     overlay.classList.toggle("open", isOpen);
     hamburger.classList.toggle("open", isOpen);
-    document.body..overflow = isOpen ? "hidden" : "";
+    document.body.style.overflow = isOpen ? "hidden" : "auto";
   });
 
   overlay.addEventListener("click", closeDrawer);
