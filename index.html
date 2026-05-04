@@ -289,6 +289,17 @@
     .hero-logo svg { height: 28px; }
     .drawer-link { font-size: 22px; }
   }
+ video::-webkit-media-controls {
+  display: none !important;
+}
+
+video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+}
+
+.video-wrap video {
+  pointer-events: none;
+}
 </style>
 </head>
 <body>
@@ -329,7 +340,7 @@
 <!-- HERO -->
 <section id="home" style="padding:0">
   <div class="video-wrap">
-    <video autoplay muted loop playsinline id="bgVideo">
+   <video autoplay muted loop playsinline webkit-playsinline id="bgVideo">
       <source src="padel.mp4" type="video/mp4"/>
     </video>
   </div>
@@ -387,9 +398,9 @@
 <div class="divider"></div>
 
 <!-- PHOTOS -->
-<section id="lifestyle">
-  <div class="lifestyle-inner">
-    <div class="lifestyle-header">
+<section id="life">
+  <div class="life-inner">
+    <div class="life-header">
       <div>
         <div class="section-eyebrow">On Court</div>
         <div class="section-title">Life at<br/>DPC.</div>
@@ -429,7 +440,7 @@
         <div class="photo-frame">
           <!--
             ADD PHOTO 3 HERE — replace placeholder div with:
-            <img src="photo3.jpg" alt="DPC Lifestyle"/>
+            <img src="photo3.jpg" alt="DPC Life"/>
           -->
           <div class="photo-frame-placeholder">📸</div>
         </div>
@@ -514,7 +525,7 @@
     const isOpen = drawer.classList.toggle("open");
     overlay.classList.toggle("open", isOpen);
     hamburger.classList.toggle("open", isOpen);
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    document.body..overflow = isOpen ? "hidden" : "";
   });
 
   overlay.addEventListener("click", closeDrawer);
