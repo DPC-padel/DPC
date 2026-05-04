@@ -345,41 +345,48 @@
 
 /* ── VIDEO FIXES ── */
 
-/* Kill ALL native video controls — Low Power Mode proof */
-video,
+/* Nuke ALL native iOS video controls including Low Power Mode overlay */
 video::-webkit-media-controls,
 video::-webkit-media-controls-enclosure,
 video::-webkit-media-controls-panel,
 video::-webkit-media-controls-play-button,
 video::-webkit-media-controls-start-playback-button,
 video::-webkit-media-controls-overlay-play-button,
+video::-webkit-media-controls-overlay-enclosure,
 video::-webkit-media-controls-timeline,
 video::-webkit-media-controls-volume-slider,
 video::-webkit-media-controls-mute-button,
-video::-webkit-media-controls-fullscreen-button,
-video::-webkit-media-controls-timeline-container,
-video::-webkit-media-controls-current-time-display,
-video::-webkit-media-controls-time-remaining-display {
+video::-webkit-media-controls-fullscreen-button {
   display: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
   -webkit-appearance: none !important;
 }
 
-/* Ensure video stays non-interactive and below everything */
+/* video-wrap: full bleed, no interaction */
 .video-wrap {
   position: absolute;
   inset: 16px;
   z-index: 0;
-  pointer-events: none;
   border-radius: 16px;
   overflow: hidden;
+  pointer-events: none;
 }
 
-/* Fallback image is always visible (video sits on top when playing) */
-.fallback-img {
-  display: block !important;
+/* Both fallback img and video fill the container */
+.video-wrap .fallback-img,
+.video-wrap video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback always underneath */
+.video-wrap .fallback-img {
   z-index: 0;
+  display: block;
 }
 
 /* Video on top when autoplay works */
@@ -388,16 +395,16 @@ video::-webkit-media-controls-time-remaining-display {
   pointer-events: none;
 }
 
-/* When autoplay fails: hide video, show fallback underneath */
+/* When autoplay fails: fade video out, fallback shows through */
 .video-wrap.fallback video {
   opacity: 0;
+}
+
+/* Overlay gradient: never blocks touches */
+.overlay {
   pointer-events: none;
 }
 
-/* ensure nav & drawer are clickable */
-nav { position: fixed; z-index: 200; }
-.drawer { z-index: 300; }
-.drawer-overlay { z-index: 250; }
 </style>
 </head>
 <body>
@@ -437,10 +444,9 @@ nav { position: fixed; z-index: 200; }
 
 <!-- HERO -->
 <section id="home" style="padding:0">
-  <div class="video-wrap">
-  <img src="fallback.jpeg" class="fallback-img" />
-
-  <video autoplay muted loop playsinline webkit-playsinline id="bgVideo">
+  <div class="video-wrap" id="videoWrap">
+  <img src="fallback.jpeg" class="fallback-img" alt=""/>
+  <video id="bgVideo" autoplay muted loop playsinline webkit-playsinline x5-playsinline>
     <source src="padel.mp4" type="video/mp4"/>
   </video>
 </div>
@@ -645,53 +651,45 @@ nav { position: fixed; z-index: 200; }
   });
 
   const bgVideo = document.getElementById("bgVideo");
-  const videoWrap = document.querySelector(".video-wrap");
+  const videoWrap = document.getElementById("videoWrap");
 
-  // Always show fallback image — video will layer on top if it plays
-  // On error: hide video, fallback image stays visible
+  // Ensure muted (required for autoplay on all browsers)
+  bgVideo.muted = true;
+  bgVideo.volume = 0;
+
+  function tryPlay() {
+    bgVideo.muted = true;
+    const p = bgVideo.play();
+    if (p !== undefined) {
+      p.then(() => {
+        // Playing fine — hide fallback
+        videoWrap.classList.remove("fallback");
+      }).catch(() => {
+        // Blocked (Low Power Mode, etc.) — show fallback image
+        videoWrap.classList.add("fallback");
+        // Listen for ANY touch on document to retry
+        document.addEventListener("touchend", retryOnTouch, { once: true, passive: true });
+      });
+    }
+  }
+
+  function retryOnTouch() {
+    bgVideo.muted = true;
+    bgVideo.play().then(() => {
+      videoWrap.classList.remove("fallback");
+    }).catch(() => {
+      // Still blocked — keep fallback, try again next touch
+      document.addEventListener("touchend", retryOnTouch, { once: true, passive: true });
+    });
+  }
+
   bgVideo.addEventListener("error", () => {
     videoWrap.classList.add("fallback");
   });
 
-  // Attempt silent autoplay
-  function tryPlay() {
-    bgVideo.muted = true;
-    bgVideo.setAttribute("muted", "");
-    bgVideo.setAttribute("playsinline", "");
-    bgVideo.setAttribute("webkit-playsinline", "");
-
-    const playPromise = bgVideo.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        // Autoplay blocked (Low Power Mode) — show fallback, wait for tap
-        videoWrap.classList.add("fallback");
-        enableTapToPlay();
-      });
-    }
-  }
-
-  // Tap anywhere on screen (not just hero) to start video
-  // Must be attached directly to document to work on iOS Low Power Mode
-  function enableTapToPlay() {
-    function onTap() {
-      bgVideo.muted = true;
-      bgVideo.play().then(() => {
-        videoWrap.classList.remove("fallback");
-        document.removeEventListener("touchend", onTap);
-      }).catch(() => {
-        // Still blocked — leave fallback showing
-      });
-    }
-    // touchend is more reliable than touchstart for play() on iOS
-    document.addEventListener("touchend", onTap, { passive: true });
-  }
-
-  // Run after full page load
-  if (document.readyState === "complete") {
-    tryPlay();
-  } else {
-    window.addEventListener("load", tryPlay);
-  }
+  // Try immediately, and again on load
+  tryPlay();
+  window.addEventListener("load", tryPlay);
   function applyAlert() {
     window.location.href = "https://dpc-padel.github.io/Response/";
   }
