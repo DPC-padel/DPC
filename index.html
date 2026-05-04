@@ -117,13 +117,9 @@
   }
  .video-wrap { position: absolute; inset: 16px; z-index: 0; border-radius: 16px; overflow: hidden; }
 .video-wrap video { width: 100%; height: 100%; object-fit: cover; }
-  .overlay {
-    position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(to bottom,
-      rgba(247,245,242,.95) 0%, rgba(247,245,242,.64) 18%,
-      rgba(247,245,242,.18) 40%, rgba(247,245,242,.18) 60%,
-      rgba(247,245,242,.88) 100%);
-  }
+ .overlay {
+  display: none;
+}
   .hero-content {
     position: relative; z-index: 2; text-align: center;
     animation: fadeUp .9s ease both .2s;
