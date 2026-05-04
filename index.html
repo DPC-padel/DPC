@@ -131,8 +131,11 @@
   object-fit: cover;
   pointer-events: none; /* extra safety */
 }
- .overlay {
-  display: none;
+.overlay {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(to bottom,
+    rgba(247,245,242,.5) 0%, rgba(247,245,242,.1) 30%,
+    rgba(247,245,242,.1) 70%, rgba(247,245,242,.5) 100%);
 }
   .hero-content {
     position: relative; z-index: 2; text-align: center;
@@ -361,6 +364,20 @@ nav {
 .drawer-overlay {
   z-index: 250;
 }
+
+ video {
+  pointer-events: none;
+}
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-start-playback-button,
+video::--webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+  opacity: 0 !important;
+}
 </style>
 </head>
 <body>
@@ -401,9 +418,11 @@ nav {
 <!-- HERO -->
 <section id="home" style="padding:0">
   <div class="video-wrap">
-   <video autoplay muted loop playsinline webkit-playsinline id="bgVideo">
-      <source src="padel.mp4" type="video/mp4"/>
-    </video>
+   <video autoplay muted loop playsinline webkit-playsinline 
+       disablepictureinpicture disableremoteplayback 
+       id="bgVideo">
+  <source src="padel.mp4" type="video/mp4"/>
+</video>
   </div>
   <div class="overlay"></div>
   <div class="hero-content">
