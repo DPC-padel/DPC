@@ -177,7 +177,18 @@
   .cta-accent:hover { background: var(--accent-hover); transform: scale(1.03); box-shadow: 0 6px 28px var(--accent-glow); }
   .cta-ghost { background: transparent; color: rgba(0,0,0,.52); border: 1.5px solid var(--border-soft); }
   .cta-ghost:hover { background: rgba(0,0,0,.03); color: var(--text); border-color: var(--border-strong); transform: scale(1.03); }
+.drawer-link.cta-dark {
+  background: #1a1714;
+  color: #fff;
+  border-radius: 100px;
+  padding: 12px 24px;
+  text-align: center;
+  border: none;
+}
 
+.drawer-link.cta-dark:hover {
+  background: #000;
+}
   .scroll-hint {
     position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
     z-index: 2; display: flex; flex-direction: column;
@@ -438,7 +449,7 @@ video::-webkit-media-controls-fullscreen-button {
     <a class="drawer-link" href="#lifestyle" onclick="closeDrawer()">Journal</a>
     <a class="drawer-link" href="https://dpc-padel.github.io/Calender/">Calendar</a>
     <a class="drawer-link" href="https://dpc-padel.github.io/Ranking/">Leaderboard</a>
-    <a class="drawer-link cta-primary" href="https://dpc-padel.github.io/Response/" onclick="closeDrawer()">Apply to Join →</a>
+    <a class="drawer-link cta-dark" href="https://dpc-padel.github.io/Response/" onclick="closeDrawer()">Apply to Join →</a>
   </nav>
 </div>
 
