@@ -1,1 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>First Serve | Leaderboard</title>
+  <meta name="description" content="Live First Serve leaderboard for Delhi Padel Collective.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="first-serve">
+  <main class="page-wrap">
+    <section class="leaderboard-card">
+      <header class="topbar">
+        <div class="brand-lockup">
+         <a class="brand-link" href="https://dpc-padel.github.io/Ranking/">
+            <img class="brand-logo" src="dpc-logo.svg" alt="Delhi Padel Collective logo">
+          </a>
+        </div>
 
+        <div class="topbar-tools">
+          <label class="page-switcher">
+            <span class="sr-only">Select leaderboard</span>
+            <select id="pageSelector" aria-label="Select leaderboard page">
+              <option value="index.html">First Serve</option>
+              <option value="break-point.html">Break Point</option>
+              <option value="noida.html">Noida</option>
+            </select>
+          </label>
+          <div class="topbar-meta">
+            <p>Leaderboard</p>
+          </div>
+        </div>
+      </header>
+
+      <section class="hero-banner">
+        <p class="slash">//</p>
+        <div class="hero-copy">
+          <h1>First Serve</h1>
+          <p>Leaderboard</p>
+        </div>
+      </section>
+
+      <section class="standings-section stacked-sections">
+        <div class="standings-head">
+          <div>
+            <p class="section-kicker">Ranking & Standings</p>
+          </div>
+          <button id="refreshButton" class="refresh-button" type="button" hidden>Refresh</button>
+        </div>
+
+        <div class="tab-switcher" role="tablist" aria-label="First Serve ranking types">
+          <button id="firstServeRankingTab" class="tab-button is-active" type="button" data-tab="ranking" role="tab" aria-selected="true" onclick="setFirstServeTab('ranking')">
+            Ranking
+          </button>
+          <button id="firstServeOverallTab" class="tab-button" type="button" data-tab="overall" role="tab" aria-selected="false" onclick="setFirstServeTab('overall')">
+            Americano
+          </button>
+          <button id="firstServePersonalTab" class="tab-button" type="button" data-tab="personal" role="tab" aria-selected="false" onclick="setFirstServeTab('personal')">
+            Games
+          </button>
+        </div>
+
+        <div id="statusMessage" class="status-message" aria-live="polite"></div>
+
+        <section id="firstServeRankingPanel" class="subsection" role="tabpanel" aria-labelledby="firstServeRankingTab">
+          <div class="subsection-head">
+            <h2>Ranking</h2>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="rank-col">#</th>
+                  <th>Player</th>
+                  <th>Score</th>
+                  <th>Rating</th>
+                </tr>
+              </thead>
+              <tbody id="firstServeRankingBody">
+                <tr>
+                  <td colspan="4">Loading ranking...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="firstServeOverallPanel" class="subsection panel-hidden" role="tabpanel" aria-labelledby="firstServeOverallTab" hidden>
+          <div class="subsection-head">
+            <h2>Americano</h2>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="rank-col">#</th>
+                  <th>Player</th>
+                  <th>MP</th>
+                  <th>PTS</th>
+                </tr>
+              </thead>
+              <tbody id="rankingBody">
+                <tr>
+                  <td colspan="4">Loading leaderboard...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="firstServePersonalPanel" class="subsection panel-hidden" role="tabpanel" aria-labelledby="firstServePersonalTab" hidden>
+          <div class="subsection-head">
+            <h2>Games</h2>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="rank-col">#</th>
+                  <th>Player</th>
+                  <th>MP</th>
+                  <th>PTS</th>
+                </tr>
+              </thead>
+              <tbody id="personalRankingBody">
+                <tr>
+                  <td colspan="4">Loading personal games leaderboard...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <footer class="card-footer">
+        <div class="footer-rule"></div>
+        <p class="footer-note">1.0 – 2.9 · Lower Intermediate — You've got the basics down and you're finding your rhythm. Every session is making you sharper.</p>
+        <div class="footer-meta">
+          <span>Delhi//PadelCollective</span>
+          <span>@DELHIPADELCOLLECTIVE</span>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
