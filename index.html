@@ -164,13 +164,66 @@
   .hero-ctas { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .cta {
     display: inline-flex; align-items: center;
+    position: relative;
+    isolation: isolate;
     padding: 14px 28px; border-radius: 100px;
     font-family: var(--font-body); font-size: 12px;
     font-weight: 600; letter-spacing: .5px;
     text-decoration: none; cursor: pointer; transition: all .22s; white-space: nowrap; border: none;
+    overflow: hidden;
   }
-  .cta-primary { background: rgba(255,255,255,.72); color: var(--text); border: 1.5px solid var(--border-strong); backdrop-filter: blur(14px); }
-  .cta-primary:hover { background: #fff; border-color: rgba(0,0,0,.2); transform: scale(1.03); }
+  .cta-primary {
+    background: linear-gradient(170deg,
+      rgba(255,255,255,.55) 0%,
+      rgba(255,255,255,.25) 50%,
+      rgba(255,255,255,.35) 100%);
+    color: rgba(0,0,0,.75);
+    border: 1px solid rgba(255,255,255,.7);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    box-shadow:
+      inset 0 2px 4px rgba(255,255,255,.8),
+      inset 0 -3px 8px rgba(0,0,0,.08),
+      inset 0 0 0 1px rgba(255,255,255,.4),
+      0 4px 16px rgba(0,0,0,.12),
+      0 1px 3px rgba(0,0,0,.08);
+    text-shadow: 0 1px 2px rgba(255,255,255,.4);
+    font-weight: 600;
+  }
+  .cta-primary::before {
+    content: "";
+    position: absolute;
+    top: 1px; left: 6%; right: 6%;
+    height: 42%;
+    border-radius: 100px 100px 60% 60%;
+    background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,.0) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .cta-primary::after {
+    content: "";
+    position: absolute;
+    bottom: 2px; left: 10%; right: 10%;
+    height: 28%;
+    border-radius: 50%;
+    background: rgba(255,255,255,.2);
+    filter: blur(4px);
+    pointer-events: none;
+  }
+  .cta-primary:hover {
+    background: linear-gradient(170deg,
+      rgba(255,255,255,.65) 0%,
+      rgba(255,255,255,.32) 50%,
+      rgba(255,255,255,.42) 100%);
+    border-color: rgba(255,255,255,.85);
+    box-shadow:
+      inset 0 2px 6px rgba(255,255,255,.9),
+      inset 0 -3px 8px rgba(0,0,0,.06),
+      inset 0 0 0 1px rgba(255,255,255,.5),
+      0 6px 20px rgba(0,0,0,.14),
+      0 1px 4px rgba(0,0,0,.1);
+    transform: translateY(-1px) scale(1.02);
+  }
   .cta-accent { background: var(--accent); color: #fff; font-weight: 700; }
   .cta-accent:hover { background: var(--accent-hover); transform: scale(1.03); box-shadow: 0 6px 28px var(--accent-glow); }
   .cta-ghost { background: transparent; color: rgba(0,0,0,.52); border: 1.5px solid var(--border-soft); }
@@ -453,21 +506,9 @@ video::-webkit-media-controls-fullscreen-button {
     <a class="drawer-link" href="#home"      onclick="closeDrawer()">Home</a>
     <!-- <a class="drawer-link" href="#about"     onclick="closeDrawer()">Our Story</a> -->
     <!-- <a class="drawer-link" href="#lifestyle" onclick="closeDrawer()">Journal</a> -->
-   <a class="drawer-link"
-href="/calender/">
-Calendar
-</a>
-
-<a class="drawer-link"
-href="/leaderboard/">
-Leaderboard
-</a>
-
-<a class="drawer-link cta-link"
-href="/Application/"
-onclick="closeDrawer()">
-Apply to Join →
-</a>
+    <a class="drawer-link" href="https://dpc-padel.github.io/Calender/">Calendar</a>
+    <a class="drawer-link" href="https://dpc-padel.github.io/Ranking/">Leaderboard</a>
+    <a class="drawer-link cta-link" href="https://dpc-padel.github.io/Response/" onclick="closeDrawer()">Apply to Join →</a>
   </nav>
 </div>
 
@@ -648,8 +689,8 @@ Apply to Join →
   </a>
   <div class="footer-links">
     <!-- <a href="#about">About</a> -->
-    <a href="/calendar/">Calendar</a>
-<a href="/leaderboard/">Rankings</a>
+    <a href="https://dpc-padel.github.io/Calender/">Calendar</a>
+    <a href="https://dpc-padel.github.io/Ranking/">Rankings</a>
     <a href="https://instagram.com/delhipadelcollective" target="_blank">Instagram</a>
   </div>
   <div class="footer-copy">© 2025 Delhi//PadelCollective</div>
@@ -723,9 +764,9 @@ Apply to Join →
   // Try immediately, and again on load
   tryPlay();
   window.addEventListener("load", tryPlay);
- function applyAlert() {
-  window.location.href = "/apply/";
-}
+  function applyAlert() {
+    window.location.href = "https://dpc-padel.github.io/Response/";
+  }
 
   document.getElementById("applyBtn").addEventListener("click", e => {
     e.preventDefault(); 
