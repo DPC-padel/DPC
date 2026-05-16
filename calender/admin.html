@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Delhi//PadelCollective — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="config.js"></script>
+<style>
+  :root {
+    --bg: #f5f3ef; --card: #fff; --border: #e0ddd7; --border-dk: #ccc9c2;
+    --text: #111; --muted: #888880; --light: #edeae4; --red: #b91c1c; --green: #166534;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; font-size: 14px; }
+
+  /* LOGIN */
+  #loginGate { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; padding: 20px; }
+  .login-box { background: #111; border: 1px solid #222; padding: 48px 40px; width: 100%; max-width: 360px; text-align: center; }
+  .login-box h1 { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .login-box h1 .sl { color: #444; font-weight: 400; }
+  .login-box .sub { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: #555; margin-bottom: 36px; display: block; }
+  .login-box input { width: 100%; background: #000; border: 1px solid #333; padding: 13px 16px; color: #fff; font-family: 'Inter', sans-serif; font-size: 16px; letter-spacing: 4px; text-align: center; outline: none; margin-bottom: 12px; transition: border-color .15s; }
+  .login-box input:focus { border-color: #666; }
+  .login-box button { width: 100%; background: #fff; color: #000; border: none; padding: 13px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+  .login-box button:hover { background: #e5e5e5; }
+  .login-err { color: #f87171; font-size: 12px; margin-top: 10px; display: none; }
+
+  #mainApp { display: none; }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { width: 210px; background: #000; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; flex-shrink: 0; }
+  .sb-logo { padding: 22px 22px 20px; border-bottom: 1px solid #1a1a1a; }
+  .sb-logo .name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: #fff; }
+  .sb-logo .sl { color: #444; font-weight: 400; }
+  .sb-logo .tag { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: #444; display: block; margin-top: 3px; }
+  .nav { padding: 12px 0; flex: 1; }
+  .ni { display: flex; align-items: center; gap: 10px; padding: 10px 22px; font-size: 12px; font-weight: 500; color: #555; cursor: pointer; border: none; background: transparent; font-family: 'Inter', sans-serif; width: 100%; text-align: left; transition: all .15s; }
+  .ni:hover { color: #aaa; }
+  .ni.active { color: #fff; background: #1a1a1a; }
+  .ni svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .sb-bottom { padding: 16px; border-top: 1px solid #1a1a1a; }
+  .logout { width: 100%; background: transparent; border: 1px solid #222; color: #444; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; padding: 9px; cursor: pointer; transition: all .15s; }
+  .logout:hover { border-color: #f87171; color: #f87171; }
+
+  .content { flex: 1; overflow-y: auto; }
+  .sec { display: none; padding: 36px 40px 64px; }
+  .sec.active { display: block; }
+  .sec-hd { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 30px; flex-wrap: wrap; gap: 12px; }
+  .sec-hd h2 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .sec-hd p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 32px; }
+  .stat { background: #fff; border: 1px solid var(--border); padding: 20px; }
+  .stat-lbl { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .stat-val { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; }
+  .stat-val.purple { color: #7c3aed; }
+
+  /* EVENT ROWS */
+  .ev-row { background: #fff; border: 1px solid var(--border); display: grid; grid-template-columns: 60px 1fr auto; margin-bottom: 1px; overflow: hidden; transition: box-shadow .15s; }
+  .ev-row:hover { box-shadow: 0 2px 16px rgba(0,0,0,.08); z-index: 1; }
+  .er-date { background: #000; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 12px 6px; }
+  .er-day { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; }
+  .er-mon { font-size: 7px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: .5; margin-top: 1px; }
+  .er-body { padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .er-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; }
+  .er-meta { font-size: 11px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+  .er-right { padding: 14px 18px; border-left: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 120px; }
+  .er-nums { text-align: center; }
+  .er-confirmed { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; line-height: 1; }
+  .er-waitlist { font-size: 11px; color: #7c3aed; font-weight: 600; margin-top: 2px; }
+  .er-sub { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .edit-btn { background: transparent; border: 1px solid var(--border-dk); color: var(--muted); font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 10px; cursor: pointer; transition: all .15s; }
+  .edit-btn:hover { border-color: #000; color: #000; }
+  .cost-tag { font-size: 10px; color: #166534; font-weight: 600; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 2px 6px; }
+
+  /* FORM */
+  .form-card { background: #fff; border: 1px solid var(--border); padding: 30px; max-width: 620px; }
+  .fg { margin-bottom: 18px; }
+  .fg label { display: block; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .fg input, .fg select { width: 100%; background: var(--bg); border: 1px solid var(--border-dk); padding: 12px 14px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 15px; outline: none; transition: border-color .15s; border-radius: 0; }
+  .fg input:focus, .fg select:focus { border-color: #000; }
+  .fg select { appearance: none; cursor: pointer; }
+  .fg .hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
+  .fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .ff { grid-column: 1/-1; }
+  .form-acts { margin-top: 22px; display: flex; gap: 10px; }
+  .btn-blk { background: #000; color: #fff; border: none; padding: 13px 28px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+  .btn-blk:hover { background: #222; }
+  .btn-blk:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-wht { background: transparent; color: var(--muted); border: 1px solid var(--border-dk); padding: 13px 20px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+  .btn-wht:hover { border-color: #000; color: #000; }
+  .new-ev-btn { background: #000; color: #fff; border: none; padding: 11px 22px; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+  .new-ev-btn:hover { background: #222; }
+
+  /* TABLE */
+  .tbl-wrap { background: #fff; border: 1px solid var(--border); overflow: hidden; overflow-x: auto; }
+  .rsvp-tbl { width: 100%; border-collapse: collapse; min-width: 580px; }
+  .rsvp-tbl th { background: var(--bg); padding: 11px 16px; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); }
+  .rsvp-tbl td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .rsvp-tbl tr:last-child td { border-bottom: none; }
+  .rsvp-tbl tr:hover td { background: var(--bg); }
+  .status-confirmed { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; background: #000; color: #fff; padding: 2px 7px; }
+  .status-waitlist  { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; background: #7c3aed; color: #fff; padding: 2px 7px; }
+  .ev-badge { font-size: 10px; font-weight: 700; background: #f5f3ef; border: 1px solid var(--border); color: var(--text); padding: 2px 7px; white-space: nowrap; }
+
+  .filter-row { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-row select { background: #fff; border: 1px solid var(--border-dk); padding: 9px 14px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; cursor: pointer; flex: 1; max-width: 340px; color: var(--text); }
+  .filter-row .status-filter { max-width: 160px; }
+
+  .fmsg { padding: 10px 14px; font-size: 13px; margin-top: 12px; }
+  .fmsg.ok  { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; }
+  .fmsg.err { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+
+  .spinner { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: #000; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-row { display: flex; align-items: center; gap: 12px; color: var(--muted); padding: 28px; }
+
+  /* EDIT MODAL */
+  .emodal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .emodal-overlay.open { opacity: 1; pointer-events: all; }
+  .emodal { background: #fff; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; transform: translateY(14px); transition: transform .2s; }
+  .emodal-overlay.open .emodal { transform: translateY(0); }
+  .emodal-hd { background: #000; color: #fff; padding: 20px 26px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; }
+  .emodal-hd .ey { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #555; margin-bottom: 3px; }
+  .emodal-hd h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; }
+  .close-x { background: transparent; border: none; color: #666; font-size: 20px; cursor: pointer; }
+  .close-x:hover { color: #fff; }
+  .emodal-body { padding: 26px; }
+  .emodal-acts { display: flex; border-top: 1px solid var(--border); }
+  .emodal-acts button { flex: 1; padding: 14px; border: none; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; }
+  .ecx { background: var(--light); color: var(--muted); border-right: 1px solid var(--border) !important; }
+  .ecx:hover { background: var(--border); }
+  .esave { background: #000; color: #fff; }
+  .esave:hover { background: #222; }
+  .esave:disabled { background: #ccc; cursor: not-allowed; }
+
+  /* Paid CTA */
+  .btn-paid {
+    background: transparent; border: 1px solid #bbf7d0;
+    color: var(--green); font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; padding: 4px 10px; cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-paid:hover { background: #f0fdf4; border-color: #4ade80; }
+  .btn-paid.is-paid {
+    background: #f0fdf4; border-color: #4ade80; color: #15803d;
+    cursor: default;
+  }
+  .status-paid {
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; background: #f0fdf4;
+    color: #15803d; border: 1px solid #bbf7d0; padding: 2px 7px;
+  }
+
+    /* Paid CTA */
+  .btn-paid {
+    background: transparent; border: 1px solid #bbf7d0;
+    color: var(--green); font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; padding: 4px 10px; cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-paid:hover { background: #f0fdf4; border-color: #4ade80; }
+  .btn-paid:disabled { opacity: .5; cursor: not-allowed; }
+  .status-paid {
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; background: #f0fdf4;
+    color: #15803d; border: 1px solid #bbf7d0; padding: 2px 7px;
+    display: inline-block;
+  }
+
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .sec { padding: 24px 18px 48px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .fgrid { grid-template-columns: 1fr; }
+    .ff { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginGate">
+  <div class="login-box">
+    <h1>Delhi<span class="sl">//</span>PadelCollective</h1>
+    <span class="sub">Admin Access</span>
+    <input type="password" id="pwInput" placeholder="••••••••" autocomplete="current-password"/>
+    <button id="pwBtn">Enter Dashboard →</button>
+    <div class="login-err" id="pwErr">Incorrect password.</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainApp">
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sb-logo">
+        <div class="name">Delhi<span class="sl">//</span>Padel</div>
+        <span class="tag">Admin Dashboard</span>
+      </div>
+      <div class="nav">
+        <button class="ni active" data-tab="overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </button>
+        <button class="ni" data-tab="create">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          New Session
+        </button>
+        <button class="ni" data-tab="rsvps">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          All RSVPs
+        </button>
+      </div>
+      <div class="sb-bottom"><button class="logout" id="logoutBtn">Sign Out</button></div>
+    </nav>
+
+    <main class="content">
+
+      <!-- OVERVIEW -->
+      <section class="sec active" id="tab-overview">
+        <div class="sec-hd">
+          <div><h2>Overview</h2><p>All upcoming sessions at a glance.</p></div>
+          <button class="new-ev-btn" onclick="switchTab('create')">+ New Session</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-lbl">Upcoming Sessions</div><div class="stat-val" id="sEv">—</div></div>
+          <div class="stat"><div class="stat-lbl">Confirmed RSVPs</div><div class="stat-val" id="sRSVP">—</div></div>
+          <div class="stat"><div class="stat-lbl">Open Slots</div><div class="stat-val" style="color:#888" id="sSlots">—</div></div>
+          <div class="stat"><div class="stat-lbl">On Waitlist</div><div class="stat-val purple" id="sWait">—</div></div>
+        </div>
+        <div id="overviewList"><div class="loading-row"><div class="spinner"></div> Loading…</div></div>
+      </section>
+
+      <!-- CREATE -->
+      <section class="sec" id="tab-create">
+        <div class="sec-hd"><div><h2>New Session</h2><p>Goes live on the public calendar instantly.</p></div></div>
+        <div class="form-card">
+          <div class="fgrid">
+            <div class="fg ff"><label>Session Title</label><input type="text" id="evTitle" placeholder="e.g. Sunday Padel Mixer"/></div>
+            <div class="fg"><label>Date</label><input type="date" id="evDate"/></div>
+            <div class="fg"><label>Level</label><input type="text" id="evLevel" placeholder="e.g. Beginner, Open, Mixed"/></div>
+            <div class="fg"><label>Start Time</label><input type="time" id="evStartTime"/></div>
+            <div class="fg"><label>End Time</label><input type="time" id="evEndTime"/></div>
+            <div class="fg"><label>Location / Court</label><input type="text" id="evLoc" placeholder="e.g. Court 2, DLF Club"/></div>
+            <div class="fg"><label>Game Type</label>
+              <select id="evGame">
+                <option value="Padel">Padel</option>
+                <option value="Padel – Beginners">Padel – Beginners</option>
+                <option value="Padel – Advanced">Padel – Advanced</option>
+                <option value="Padel Tournament">Padel Tournament</option>
+                <option value="Girls Only Padel">Girls Only Padel</option>
+                <option value="Warm-Up Session">Warm-Up Session</option>
+                <option value="Pickleball">Pickleball</option>
+                <option value="Tennis">Tennis</option>
+                <option value="Mixed Racket">Mixed Racket</option>
+              </select>
+            </div>
+            <div class="fg"><label>Total Slots</label><input type="number" id="evSlots" placeholder="e.g. 8" min="1" max="100"/></div>
+            <div class="fg ff">
+              <label>Cost per Person</label>
+              <input type="text" id="evCost" placeholder="e.g. ₹500 per person, ₹800 per pair, Free"/>
+              <div class="hint">This will be shown on the event card and in the booking modal.</div>
+            </div>
+          </div>
+          <div id="createMsg"></div>
+          <div class="form-acts">
+            <button class="btn-blk" id="createBtn">Create Session →</button>
+            <button class="btn-wht" id="resetBtn">Reset</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RSVPs -->
+      <section class="sec" id="tab-rsvps">
+        <div class="sec-hd"><div><h2>All RSVPs</h2><p>Filter by session or status.</p></div></div>
+        <div class="filter-row">
+          <select id="evFilter"><option value="all">All Sessions</option></select>
+          <select id="statusFilter" class="status-filter">
+            <option value="all">All Statuses</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="waitlist">Waitlist</option>
+          </select>
+        </div>
+        <div id="rsvpContent"><div class="loading-row"><div class="spinner"></div> Loading RSVPs…</div></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="emodal-overlay" id="editOverlay">
+  <div class="emodal">
+    <div class="emodal-hd">
+      <div><div class="ey">Edit Session</div><h3 id="editModalTitle">—</h3></div>
+      <button class="close-x" id="editClose">✕</button>
+    </div>
+    <div class="emodal-body">
+      <input type="hidden" id="editId"/>
+      <div class="fgrid">
+        <div class="fg ff"><label>Session Title</label><input type="text" id="editTitle"/></div>
+        <div class="fg"><label>Date</label><input type="date" id="editDate"/></div>
+        <div class="fg"><label>Level</label><input type="text" id="editLevel"/></div>
+        <div class="fg"><label>Start Time</label><input type="time" id="editStartTime"/></div>
+        <div class="fg"><label>End Time</label><input type="time" id="editEndTime"/></div>
+        <div class="fg"><label>Location / Court</label><input type="text" id="editLoc"/></div>
+        <div class="fg"><label>Game Type</label>
+          <select id="editGame">
+            <option value="Padel">Padel</option>
+            <option value="Padel – Beginners">Padel – Beginners</option>
+            <option value="Padel – Advanced">Padel – Advanced</option>
+            <option value="Padel Tournament">Padel Tournament</option>
+            <option value="Girls Only Padel">Girls Only Padel</option>
+            <option value="Warm-Up Session">Warm-Up Session</option>
+            <option value="Pickleball">Pickleball</option>
+            <option value="Tennis">Tennis</option>
+            <option value="Mixed Racket">Mixed Racket</option>
+          </select>
+        </div>
+        <div class="fg"><label>Total Slots</label><input type="number" id="editSlots" min="1" max="100"/></div>
+        <div class="fg ff"><label>Cost per Person</label><input type="text" id="editCost" placeholder="e.g. ₹500 per person"/></div>
+      </div>
+      <div id="editMsg"></div>
+    </div>
+    <div class="emodal-acts">
+      <button class="ecx" id="editCancel">Cancel</button>
+      <button class="esave" id="editSave">Save Changes →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// LOGIN
+document.getElementById("pwBtn").addEventListener("click", tryLogin);
+document.getElementById("pwInput").addEventListener("keydown", e=>{ if(e.key==="Enter") tryLogin(); });
+function tryLogin(){
+  if(document.getElementById("pwInput").value===CONFIG.ADMIN_PASSWORD){
+    document.getElementById("loginGate").style.display="none";
+    document.getElementById("mainApp").style.display="block";
+    init();
+  } else {
+    document.getElementById("pwErr").style.display="block";
+    document.getElementById("pwInput").value="";
+  }
+}
+document.getElementById("logoutBtn").addEventListener("click",()=>{
+  document.getElementById("mainApp").style.display="none";
+  document.getElementById("loginGate").style.display="flex";
+  document.getElementById("pwInput").value="";
+});
+
+// TABS
+function switchTab(id){
+  document.querySelectorAll(".ni").forEach(b=>b.classList.remove("active"));
+  document.querySelectorAll(".sec").forEach(s=>s.classList.remove("active"));
+  document.querySelector(`[data-tab="${id}"]`).classList.add("active");
+  document.getElementById(`tab-${id}`).classList.add("active");
+}
+document.querySelectorAll(".ni[data-tab]").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
+
+let allEvents=[], allRSVPs=[];
+const confirmedCnt = id => allRSVPs.filter(r=>r.eventId===id && r.status!=="waitlist").length;
+const waitlistCnt  = id => allRSVPs.filter(r=>r.eventId===id && r.status==="waitlist").length;
+
+async function init(){
+  try{
+    [allEvents,allRSVPs]=await Promise.all([Sheets.fetchEvents(),Sheets.fetchRSVPs()]);
+    allEvents.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    renderOverview(); renderRSVPs(); buildFilter();
+  }catch(e){
+    document.getElementById("overviewList").innerHTML=`<div class="loading-row" style="color:var(--red)">Error: ${e.message}</div>`;
+  }
+  document.getElementById("evDate").min=new Date().toISOString().split("T")[0];
+}
+
+function renderOverview(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const up=allEvents.filter(e=>new Date(e.date+"T00:00:00")>=today);
+  const totalS=up.reduce((s,e)=>s+e.totalSlots,0);
+  const takenS=up.reduce((s,e)=>s+confirmedCnt(e.id),0);
+  const totalWait=allRSVPs.filter(r=>r.status==="waitlist").length;
+  document.getElementById("sEv").textContent=up.length;
+  document.getElementById("sRSVP").textContent=allRSVPs.filter(r=>r.status!=="waitlist").length;
+  document.getElementById("sSlots").textContent=totalS-takenS;
+  document.getElementById("sWait").textContent=totalWait;
+
+  if(!up.length){
+    document.getElementById("overviewList").innerHTML=`<div class="loading-row" style="color:var(--muted)">No upcoming sessions. <button style="background:none;border:none;color:#000;cursor:pointer;font-family:inherit;font-size:inherit;font-weight:700;text-decoration:underline;" onclick="switchTab('create')">Create one →</button></div>`;
+    return;
+  }
+  document.getElementById("overviewList").innerHTML=up.map(ev=>{
+    const taken=confirmedCnt(ev.id), wl=waitlistCnt(ev.id);
+    const d=new Date(ev.date+"T00:00:00");
+    const timeStr=formatTimeRange(ev.startTime,ev.endTime);
+    return `<div class="ev-row">
+      <div class="er-date"><div class="er-day">${d.getDate()}</div><div class="er-mon">${d.toLocaleDateString("en-IN",{month:"short"}).toUpperCase()}</div></div>
+      <div class="er-body">
+        <div class="er-title">${ev.title}</div>
+        <div class="er-meta">
+          ${timeStr?`<span>⏱ ${timeStr}</span>`:""}
+          <span>📍 ${ev.location}</span>
+          <span>🎾 ${ev.game}</span>
+          ${ev.level?`<span>⭐ ${ev.level}</span>`:""}
+          ${ev.cost?`<span class="cost-tag">💰 ${ev.cost}</span>`:""}
+        </div>
+      </div>
+      <div class="er-right">
+        <div class="er-nums">
+          <div class="er-confirmed">${taken}<span style="font-size:13px;font-family:Inter,sans-serif;font-weight:400;color:var(--muted)"> / ${ev.totalSlots}</span></div>
+          <div class="er-sub">confirmed</div>
+          ${wl>0?`<div class="er-waitlist">+${wl} waitlist</div>`:""}
+        </div>
+        <button class="edit-btn" data-id="${ev.id}">Edit</button>
+      </div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".edit-btn[data-id]").forEach(b=>b.addEventListener("click",()=>openEditModal(b.dataset.id)));
+}
+
+function buildFilter(){
+  const sel=document.getElementById("evFilter");
+  allEvents.forEach(ev=>{
+    const o=document.createElement("option");
+    o.value=ev.id; o.textContent=`${ev.title} — ${formatDateShort(ev.date)}`;
+    sel.appendChild(o);
+  });
+  sel.addEventListener("change",renderRSVPs);
+  document.getElementById("statusFilter").addEventListener("change",renderRSVPs);
+}
+
+function renderRSVPs(){
+  const ev=document.getElementById("evFilter").value;
+  const st=document.getElementById("statusFilter").value;
+  let list=ev==="all"?allRSVPs:allRSVPs.filter(r=>r.eventId===ev);
+  if(st!=="all") list=list.filter(r=>r.status===st);
+  if(!list.length){
+    document.getElementById("rsvpContent").innerHTML=`<div class="loading-row" style="color:var(--muted)">No RSVPs for this selection.</div>`;
+    return;
+  }
+  document.getElementById("rsvpContent").innerHTML=`<div class="tbl-wrap"><table class="rsvp-tbl">
+    <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Session</th><th>Status</th><th>Payment</th><th>Signed Up</th></tr></thead>
+    <tbody>${list.map((r,i)=>{
+      const ts=r.timestamp?new Date(r.timestamp).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"—";
+      const statusBadge=r.status==="waitlist"
+        ?`<span class="status-waitlist">Waitlist</span>`
+        :`<span class="status-confirmed">Confirmed</span>`;
+      const isPaid = r.paid === true || r.paid === "true" || r.paid === "Yes";
+      const paidCol = r.status === "waitlist"
+        ? `<td style="color:var(--muted);font-size:11px">—</td>`
+        : isPaid
+          ? `<td><span class="status-paid">✓ Paid</span></td>`
+          : `<td><button class="btn-paid" data-rsvp-id="${r.eventId}||${r.phone}" onclick="markPaid(this,'${r.eventId}','${r.phone}')">Mark Paid</button></td>`;
+      return `<tr>
+        <td style="color:var(--muted);font-size:12px">${i+1}</td>
+        <td><strong>${r.name}</strong></td>
+        <td>${r.phone}</td>
+        <td><span class="ev-badge">${r.eventName||r.eventId}</span></td>
+        <td>${statusBadge}</td>
+        ${paidCol}
+        <td style="color:var(--muted);font-size:12px">${ts}</td>
+      </tr>`;
+    }).join("")}</tbody>
+  </table></div>`;
+}
+
+// CREATE
+document.getElementById("createBtn").addEventListener("click",async()=>{
+  const title=document.getElementById("evTitle").value.trim();
+  const date=document.getElementById("evDate").value;
+  const startTime=document.getElementById("evStartTime").value;
+  const endTime=document.getElementById("evEndTime").value;
+  const loc=document.getElementById("evLoc").value.trim();
+  const game=document.getElementById("evGame").value;
+  const level=document.getElementById("evLevel").value.trim();
+  const slots=parseInt(document.getElementById("evSlots").value);
+  const cost=document.getElementById("evCost").value.trim();
+  const msgEl=document.getElementById("createMsg"),btn=document.getElementById("createBtn");
+
+  if(!title||!date||!startTime||!loc||!slots){
+    msgEl.innerHTML=`<div class="fmsg err">Please fill in Title, Date, Start Time, Location and Slots.</div>`;return;
+  }
+  if(isNaN(slots)||slots<1){msgEl.innerHTML=`<div class="fmsg err">Slots must be at least 1.</div>`;return;}
+
+  btn.disabled=true;btn.textContent="Creating…";msgEl.innerHTML="";
+  try{
+    const ev={id:genId(),title,date,startTime,endTime,location:loc,game,level,totalSlots:slots,cost};
+    await Sheets.addEvent(ev);
+    allEvents.push(ev);allEvents.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    renderOverview();
+    const sel=document.getElementById("evFilter"),o=document.createElement("option");
+    o.value=ev.id;o.textContent=`${ev.title} — ${formatDateShort(ev.date)}`;sel.appendChild(o);
+    msgEl.innerHTML=`<div class="fmsg ok">✓ "${title}" is now live on the public calendar!</div>`;
+    btn.disabled=false;btn.textContent="Create Session →";
+    ["evTitle","evDate","evStartTime","evEndTime","evLoc","evSlots","evLevel","evCost"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("evGame").selectedIndex=0;
+  }catch(err){
+    btn.disabled=false;btn.textContent="Create Session →";
+    msgEl.innerHTML=`<div class="fmsg err">Error: ${err.message}</div>`;
+  }
+});
+
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  ["evTitle","evDate","evStartTime","evEndTime","evLoc","evSlots","evLevel","evCost"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("evGame").selectedIndex=0;
+  document.getElementById("createMsg").innerHTML="";
+});
+
+// EDIT MODAL
+function openEditModal(id){
+  const ev=allEvents.find(e=>e.id===id); if(!ev)return;
+  document.getElementById("editId").value=ev.id;
+  document.getElementById("editModalTitle").textContent=ev.title;
+  document.getElementById("editTitle").value=ev.title;
+  document.getElementById("editDate").value=ev.date;
+  document.getElementById("editStartTime").value=ev.startTime||"";
+  document.getElementById("editEndTime").value=ev.endTime||"";
+  document.getElementById("editLoc").value=ev.location;
+  document.getElementById("editLevel").value=ev.level||"";
+  document.getElementById("editSlots").value=ev.totalSlots;
+  document.getElementById("editCost").value=ev.cost||"";
+  const sel=document.getElementById("editGame");
+  for(let o of sel.options){ if(o.value===ev.game){o.selected=true;break;} }
+  document.getElementById("editMsg").innerHTML="";
+  document.getElementById("editSave").disabled=false;
+  document.getElementById("editSave").textContent="Save Changes →";
+  document.getElementById("editOverlay").classList.add("open");
+}
+function closeEditModal(){ document.getElementById("editOverlay").classList.remove("open"); }
+document.getElementById("editClose").addEventListener("click",closeEditModal);
+document.getElementById("editCancel").addEventListener("click",closeEditModal);
+document.getElementById("editOverlay").addEventListener("click",e=>{if(e.target===e.currentTarget)closeEditModal();});
+
+document.getElementById("editSave").addEventListener("click",async()=>{
+  const id=document.getElementById("editId").value;
+  const title=document.getElementById("editTitle").value.trim();
+  const date=document.getElementById("editDate").value;
+  const startTime=document.getElementById("editStartTime").value;
+  const endTime=document.getElementById("editEndTime").value;
+  const loc=document.getElementById("editLoc").value.trim();
+  const game=document.getElementById("editGame").value;
+  const level=document.getElementById("editLevel").value.trim();
+  const slots=parseInt(document.getElementById("editSlots").value);
+  const cost=document.getElementById("editCost").value.trim();
+  const msgEl=document.getElementById("editMsg"),btn=document.getElementById("editSave");
+
+  if(!title||!date||!startTime||!loc||!slots){
+    msgEl.innerHTML=`<div class="fmsg err">Please fill in all required fields.</div>`;return;
+  }
+  btn.disabled=true;btn.textContent="Saving…";msgEl.innerHTML="";
+  try{
+    const updated={id,title,date,startTime,endTime,location:loc,game,level,totalSlots:slots,cost};
+    await Sheets.editEvent(updated);
+    const idx=allEvents.findIndex(e=>e.id===id);
+    if(idx>-1) allEvents[idx]=updated;
+    renderOverview();
+    msgEl.innerHTML=`<div class="fmsg ok">✓ Session updated!</div>`;
+    btn.textContent="Save Changes →"; btn.disabled=false;
+    setTimeout(()=>closeEditModal(),1200);
+  }catch(err){
+    btn.disabled=false;btn.textContent="Save Changes →";
+    msgEl.innerHTML=`<div class="fmsg err">Error: ${err.message}</div>`;
+  }
+});
+
+// MARK PAID
+async function markPaid(btn, eventId, phone) {
+  if (btn.classList.contains("is-paid")) return;
+  btn.textContent = "Saving…";
+  btn.disabled = true;
+  try {
+    const res  = await fetch(CONFIG.SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "markPaid", data: { eventId, phone } }),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "Failed");
+    // Update local data so re-render reflects it
+    const rsvp = allRSVPs.find(r => r.eventId === eventId && r.phone === phone);
+    if (rsvp) rsvp.paid = "true";
+    // Replace button cell with paid badge
+    const td = btn.closest("td");
+    td.innerHTML = `<span class="status-paid">✓ Paid</span>`;
+  } catch(err) {
+    btn.textContent = "Mark Paid";
+    btn.disabled = false;
+    alert("Error: " + err.message);
+  }
+}
+</script>
+</body>
+</html>
