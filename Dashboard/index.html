@@ -1,1 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Profile · //PadelCollectiveIndia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@font-face{font-family:'Berling';src:url('Berling Bold.otf') format('opentype');font-weight:700}
+:root{
+  --bg:#f4f1eb;
+  --surface:#ffffff;
+  --text:#171513;
+  --muted:rgba(23,21,19,.38);
+  --muted2:rgba(23,21,19,.55);
+  --border:rgba(23,21,19,.08);
+  --border2:rgba(23,21,19,.14);
+  --accent:#CB5957;
+  --accent-light:rgba(203,89,87,.1);
+  --heading:'Berling',Georgia,serif;
+  --body:'DM Sans',-apple-system,sans-serif;
+  --green:#3a7d44;
+  --green-light:rgba(58,125,68,.1);
+  --red:#b84d4c;
+  --red-light:rgba(184,77,76,.08);
+  --amber:#b07d2a;
+  --amber-light:rgba(176,125,42,.1);
+  --sidebar-w:282px;
+  --sidebar-bg:#050505;
+  --sidebar-surface:#1a1a1a;
+  --sidebar-border:rgba(255,255,255,.08);
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;overflow-x:hidden}
 
+nav{
+  position:fixed;top:0;left:var(--sidebar-w);right:0;z-index:100;
+  height:84px;padding:0 56px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:transparent;
+}
+.nav-logo{font-family:var(--heading);font-size:15px;font-weight:700;letter-spacing:-.3px;text-decoration:none;color:var(--text)}
+.nav-logout{font-size:11px;font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;transition:color .2s;font-family:var(--body)}
+.nav-logout:hover{color:var(--text)}
+
+.left-sidebar{
+  position:fixed;top:0;left:0;bottom:0;
+  width:var(--sidebar-w);
+  background:var(--sidebar-bg);
+  display:flex;flex-direction:column;
+  z-index:200;
+  border-right:1px solid var(--sidebar-border);
+}
+.sidebar-brand{padding:34px 28px 28px;border-bottom:1px solid var(--sidebar-border);}
+.sidebar-brand-logo{font-family:var(--heading);font-size:20px;font-weight:700;line-height:1;color:#fff;text-decoration:none;display:block;}
+.sidebar-brand-sub{margin-top:10px;font-size:10px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.35);}
+.sidebar-nav{padding:16px 0;overflow:hidden;}
+.sidebar-link{display:flex;align-items:center;gap:12px;padding:14px 28px;color:rgba(255,255,255,.6) !important;text-decoration:none !important;font-size:14px;font-weight:500;transition:background .2s,color .2s;border:none;background:none;width:100%;cursor:pointer;}
+.sidebar-link:hover{color:#fff !important;background:rgba(255,255,255,.06);}
+.sidebar-link.active{color:#fff !important;background:var(--sidebar-surface);}
+.sidebar-link svg{width:18px;height:18px;flex-shrink:0;stroke:currentColor;}
+.sidebar-footer{margin-top:auto;padding:20px;border-top:1px solid var(--sidebar-border);}
+.sidebar-signout{width:100%;height:44px;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(255,255,255,.55);font-family:var(--body);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s,background .2s;}
+.sidebar-signout:hover{color:#fff;border-color:rgba(255,255,255,.26);background:rgba(255,255,255,.04);}
+
+.page{max-width:none;margin-left:var(--sidebar-w);padding:112px 56px 60px;}
+.dashboard-main{min-width:0}
+
+.hero{padding:0;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;}
+.hero-heading{font-family:var(--heading);font-size:50px;font-weight:400;line-height:1;letter-spacing:-.8px;margin-bottom:8px}
+.hero-subcopy{font-size:15px;color:#8a857f}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-bottom:40px}
+.stat-card{background:var(--surface);border:1px solid rgba(23,21,19,.12);border-radius:0;padding:24px 28px 22px;transition:border-color .2s;}
+.stat-card:hover{border-color:var(--border2)}
+.stat-num{font-family:var(--heading);font-size:44px;font-weight:400;letter-spacing:-.8px;line-height:1;margin-bottom:14px}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#8c8781}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+.chart-section{background:var(--surface);border:1px solid rgba(23,21,19,.12);border-radius:0;padding:28px 30px;margin-bottom:36px;}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.chart-title{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#8c8781}
+.chart-toggle{display:flex;gap:6px}
+.chart-toggle-btn{font-size:11px;font-weight:500;padding:5px 14px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;font-family:var(--body);}
+.chart-toggle-btn:hover{border-color:var(--text);color:var(--text)}
+.chart-toggle-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.chart-wrap{position:relative;height:200px}
+.chart-empty{display:flex;align-items:center;justify-content:center;height:200px;font-size:13px;color:var(--muted);}
+
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.section-title{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#8c8781}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{font-size:11px;font-weight:500;padding:6px 13px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;font-family:var(--body);}
+.filter-btn:hover{border-color:var(--text);color:var(--text)}
+.filter-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+
+.match-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.match-card{background:var(--surface);border:1px solid rgba(23,21,19,.12);border-radius:0;padding:20px 22px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;transition:border-color .2s,transform .15s;cursor:pointer;}
+.match-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.match-type-badge{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:1px;flex-shrink:0;}
+.badge-am{background:var(--amber-light);color:var(--amber)}
+.badge-tm{background:var(--accent-light);color:var(--accent)}
+.badge-ps{background:var(--green-light);color:var(--green)}
+.match-id-date{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.match-id{font-size:11px;font-weight:600;letter-spacing:1px;color:var(--muted)}
+.match-dot{width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.4}
+.match-date-txt{font-size:11px;color:var(--muted)}
+.match-title{font-size:14px;font-weight:500;margin-bottom:3px}
+.match-detail{font-size:12px;color:var(--muted2)}
+.match-right{text-align:right;flex-shrink:0}
+.match-score-big{font-family:var(--heading);font-size:20px;font-weight:400;letter-spacing:-.3px}
+.match-rank-txt{font-size:11px;color:var(--muted);margin-top:2px}
+.result-pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.5px;padding:3px 9px;border-radius:99px;margin-top:4px}
+.pill-w{background:var(--green-light);color:var(--green)}
+.pill-l{background:var(--red-light);color:var(--red)}
+.rounds-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.round-chip{font-size:11px;font-weight:500;padding:2px 7px;border-radius:4px;background:rgba(23,21,19,.05);color:var(--muted2)}
+.match-expand{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);grid-column:1/-1}
+.match-expand.open{display:block}
+.expand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.expand-player{background:var(--bg);border-radius:8px;padding:12px 14px}
+.expand-player-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.expand-player-rating{font-size:11px;color:var(--muted)}
+.expand-player-score{font-family:var(--heading);font-size:18px;margin-top:6px}
+.you-label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.empty-state{text-align:center;padding:60px 20px;border:1px dashed var(--border2);border-radius:10px}
+.empty-title{font-family:var(--heading);font-size:22px;font-weight:400;margin-bottom:8px}
+.empty-sub{font-size:13px;color:var(--muted)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease forwards}
+
+@media(max-width:768px){
+  :root{--sidebar-w:0px}
+  .left-sidebar{display:none}
+  nav{left:0;padding:0 20px;height:72px}
+  .page{margin-left:0;padding:92px 20px 48px}
+  .hero{flex-direction:column;align-items:flex-start}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .expand-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="dpc-logo" viewBox="0 0 164 27">
+    <path d="M51.6564 21.3597L58.333 4.76935H60.2214L53.5448 21.3597H51.6564ZM59.9442 21.3597L66.6208 4.76935H68.5091L61.8326 21.3597H59.9442Z" fill="currentColor" transform="translate(-51 0)"/>
+    <path d="M70.0154 21.1957V20.528C71.4619 20.5058 71.8625 19.9717 71.8625 18.7255V7.82089C71.8625 6.57465 71.4619 6.04055 70.0154 6.0183V5.35067C70.772 5.39518 71.8625 5.41743 72.7972 5.41743C73.9766 5.41743 75.1561 5.35067 76.3356 5.35067C80.6974 5.35067 82.2329 7.28679 82.2329 9.84602C82.2329 12.4275 80.5416 13.9853 76.4468 13.9853C75.8015 13.9853 75.0226 13.963 74.6665 13.9185V18.7255C74.6665 19.9717 75.0671 20.5058 76.5136 20.528V21.1957C74.7333 21.1512 73.9766 21.1289 73.2645 21.1289C72.5524 21.1289 71.7957 21.1512 70.0154 21.1957ZM74.6665 6.10731V12.9839C75.0893 13.0729 75.6902 13.1396 76.1353 13.1396C78.1382 13.1396 79.3399 12.2272 79.3399 10.0686C79.3399 8.42175 78.5165 6.0183 75.6234 6.0183C75.2229 6.0183 74.9781 6.04055 74.6665 6.10731ZM91.9469 19.4598V20.1275C91.6798 20.1275 89.4989 20.9509 88.6533 21.3514C88.4307 20.9954 88.3195 20.4613 88.2972 20.1275C87.0065 21.0176 85.649 21.3514 84.8256 21.3514C83.5126 21.3514 82.3553 20.172 82.3553 19.0815C82.3553 17.1454 84.1579 16.2552 88.1637 15.7656V13.696C88.1637 12.4275 87.2513 11.9602 86.4279 11.9602C85.7825 11.9602 85.1149 12.1827 85.1149 13.0729C85.1149 13.2954 85.2261 13.696 85.4264 14.1188L82.9339 15.1203C82.6669 14.7197 82.5779 14.3636 82.5779 13.963C82.5779 12.2495 85.4709 11.0255 87.7186 11.0255C88.9871 11.0255 90.7007 11.9379 90.7007 14.0521V19.1038C90.7007 19.5934 90.8342 19.6824 91.168 19.6824C91.2793 19.6824 91.4351 19.6601 91.9469 19.4598ZM88.1637 18.7477V16.3443C86.2276 16.5445 85.0703 17.457 85.0703 18.4361C85.0703 19.4376 85.649 20.0607 86.6059 20.0607C87.1845 20.0607 87.8076 19.9049 88.2082 19.5934C88.1859 19.3931 88.1637 19.0593 88.1637 18.7477ZM98.8779 5.84026V5.17264C99.8348 5.17264 101.927 4.63853 102.995 4.1712V19.3041C102.995 19.7491 103.173 19.9494 103.574 19.9494C103.818 19.9494 103.996 19.8604 104.241 19.7269V20.3945C103.596 20.3945 101.66 21.1289 100.858 21.485C100.703 21.2179 100.525 20.7061 100.458 20.3278C99.5455 20.9731 98.4105 21.3514 97.2756 21.3514C94.7831 21.3514 92.6244 19.3041 92.6244 16.6113C92.6244 13.518 94.8276 11.0255 97.7652 11.0255C99.0114 11.0255 99.5455 11.1368 100.458 11.4928V6.44113C100.458 6.04055 100.302 5.75125 99.5677 5.75125C99.2562 5.75125 99.1004 5.7735 98.8779 5.84026ZM100.458 19.6601V12.6055C99.6345 11.9602 98.9224 11.6931 97.9877 11.6931C96.2741 11.6931 95.2504 13.2509 95.2504 15.4096C95.2504 17.5905 96.697 20.0607 98.8779 20.0607C99.6123 20.0607 100.102 19.8159 100.458 19.6601ZM114.451 18.5919L114.584 20.3278C113.449 21.0844 112.181 21.3514 110.645 21.3514C107.018 21.3514 105.371 18.9925 105.371 16.411C105.371 12.6501 108.019 11.0255 110.645 11.0255C112.359 11.0255 114.651 12.1159 114.651 15.8547H108.086C108.108 19.126 110.111 20.5058 111.558 20.5058C112.559 20.5058 113.538 20.0384 114.451 18.5919ZM108.086 15.187H111.936C111.936 13.0729 111.691 11.6931 110.111 11.6931C108.375 11.6931 108.108 13.3844 108.086 15.187ZM115.484 21.1957V20.528H115.662C116.352 20.528 116.753 20.1942 116.753 19.4821V6.64141C116.753 5.99604 116.597 5.72899 116.018 5.72899C115.774 5.72899 115.573 5.7735 115.395 5.81801V5.15038C116.731 4.9946 117.977 4.66079 119.29 4.1712V19.4821C119.29 20.1942 119.69 20.528 120.38 20.528H120.558V21.1957C119.846 21.1734 118.711 21.1289 118.021 21.1289C117.331 21.1289 116.197 21.1734 115.484 21.1957ZM137.234 6.3076V10.2911H136.655C136.166 7.0865 133.451 5.90703 130.78 5.90703C127.82 5.90703 124.95 8.24372 124.95 12.561C124.95 16.7448 127.353 20.5503 131.203 20.5503C132.872 20.5503 135.476 19.5711 137.39 16.5445L137.59 19.1705C135.253 20.8619 132.872 21.485 130.491 21.485C122.791 21.485 121.656 15.5208 121.656 13.0951C121.656 9.48995 124.215 5.06136 131.136 5.06136C132.538 5.06136 135.12 5.46194 137.234 6.3076ZM141.282 14.8087C141.282 16.5445 141.794 20.5948 144.308 20.5948C146.111 20.5948 146.489 19.1928 146.489 17.8575C146.489 15.9214 146 11.7821 143.574 11.7821C141.482 11.7821 141.282 13.3844 141.282 14.8087ZM138.656 16.411C138.656 12.6501 141.304 11.0255 143.93 11.0255C146.556 11.0255 149.204 12.6501 149.204 16.411C149.204 18.9925 147.291 21.3514 143.93 21.3514C140.303 21.3514 138.656 18.7255 138.656 16.411ZM150.03 21.1957V20.528H150.208C150.898 20.528 151.298 20.1942 151.298 19.4821V6.64141C151.298 5.99604 151.142 5.72899 150.564 5.72899C150.319 5.72899 150.119 5.7735 149.941 5.81801V5.15038C151.276 4.9946 152.522 4.66079 153.835 4.1712V19.4821C153.835 20.1942 154.236 20.528 154.926 20.528H155.104V21.1957C154.392 21.1734 153.257 21.1289 152.567 21.1289C151.877 21.1289 150.742 21.1734 150.03 21.1957ZM155.778 21.1957V20.528H155.956C156.646 20.528 157.047 20.1942 157.047 19.4821V6.64141C157.047 5.99604 156.891 5.72899 156.313 5.72899C156.068 5.72899 155.867 5.7735 155.689 5.81801V5.15038C157.025 4.9946 158.271 4.66079 159.584 4.1712V19.4821C159.584 20.1942 159.984 20.528 160.674 20.528H160.852V21.1957C160.14 21.1734 159.005 21.1289 158.315 21.1289C157.626 21.1289 156.491 21.1734 155.778 21.1957ZM170.763 18.5919L170.896 20.3278C169.761 21.0844 168.493 21.3514 166.957 21.3514C163.33 21.3514 161.683 18.9925 161.683 16.411C161.683 12.6501 164.331 11.0255 166.957 11.0255C168.671 11.0255 170.963 12.1159 170.963 15.8547H164.398C164.42 19.126 166.423 20.5058 167.87 20.5058C168.871 20.5058 169.85 20.0384 170.763 18.5919ZM164.398 15.187H168.248C168.248 13.0729 168.003 11.6931 166.423 11.6931C164.687 11.6931 164.42 13.3844 164.398 15.187ZM180.587 11.5151L180.72 14.1411H180.208C180.053 13.2954 179.14 11.6931 177.315 11.6931C175.713 11.6931 174.578 12.9394 174.578 15.2315C174.578 17.4125 176.002 20.5058 178.161 20.5058C179.229 20.5058 180.275 19.7269 180.831 18.9035V20.4168C179.897 20.8841 178.628 21.3514 177.271 21.3514C173.599 21.3514 171.952 18.9925 171.952 16.411C171.952 12.6501 174.6 11.0255 177.271 11.0255C178.272 11.0255 179.563 11.1813 180.587 11.5151ZM182.921 18.4139V12.2717H181.118V11.6041C182.253 10.9365 184.479 9.20065 185.458 7.97667V11.248H188.484L188.128 12.2717H185.458V18.6587C185.458 19.3263 185.769 19.8827 186.548 19.8827C187.038 19.8827 187.55 19.5711 188.017 19.126L188.395 19.7491L185.97 21.2847C185.792 21.3292 185.614 21.3514 185.458 21.3514C184.301 21.3514 182.921 20.6616 182.921 18.4139ZM188.618 21.1957V20.528H188.796C189.486 20.528 189.887 20.1942 189.887 19.4821V13.785C189.887 13.1842 189.731 12.9171 189.152 12.9171C189.019 12.9171 188.774 12.9616 188.529 13.0506V12.3385C189.085 12.2495 191.244 11.6264 192.424 11.0255V19.4821C192.424 20.1942 192.824 20.528 193.514 20.528H193.692V21.1957C192.98 21.1734 191.845 21.1289 191.155 21.1289C190.465 21.1289 189.33 21.1734 188.618 21.1957ZM189.508 7.55384C189.508 6.68592 190.198 5.99604 191.066 5.99604C191.934 5.99604 192.624 6.68592 192.624 7.55384C192.624 8.42175 191.934 9.11163 191.066 9.11163C190.198 9.11163 189.508 8.42175 189.508 7.55384ZM193.677 11.8489V11.1813C194.589 11.2035 195.858 11.248 196.303 11.248C196.748 11.248 198.017 11.2035 198.929 11.1813V11.8489H198.595C198.083 11.8489 197.861 12.0714 197.861 12.4498C197.861 12.6501 197.861 12.7391 198.172 13.4735L200.042 17.9466L201.488 13.7405C201.688 13.1619 201.778 12.8058 201.778 12.5388C201.778 11.9379 201.533 11.8489 200.442 11.8489V11.1813C200.999 11.2035 201.8 11.248 202.445 11.248C203.024 11.248 203.691 11.2035 204.248 11.1813V11.8489C203.402 11.8712 203.068 12.4053 202.645 13.4067L199.33 21.3514H198.929L195.235 13.0506C194.767 12.0047 194.567 11.9379 193.677 11.8489ZM213.459 18.5919L213.592 20.3278C212.457 21.0844 211.189 21.3514 209.653 21.3514C206.026 21.3514 204.379 18.9925 204.379 16.411C204.379 12.6501 207.027 11.0255 209.653 11.0255C211.367 11.0255 213.659 12.1159 213.659 15.8547H207.094C207.116 19.126 209.119 20.5058 210.565 20.5058C211.567 20.5058 212.546 20.0384 213.459 18.5919ZM207.094 15.187H210.944C210.944 13.0729 210.699 11.6931 209.119 11.6931C207.383 11.6931 207.116 13.3844 207.094 15.187Z" fill="currentColor" transform="translate(-51 0)"/>
+  </symbol>
+</svg>
+
+<aside class="left-sidebar">
+  <div class="sidebar-brand">
+    <a class="sidebar-brand-logo" href="/" style="display:block">
+  <svg xmlns="http://www.w3.org/2000/svg" style="height:17px;width:145px;color:white">
+    <use href="#dpc-logo"/>
+  </svg>
+</a>
+    <div class="sidebar-brand-sub">Member Dashboard</div>
+  </div>
+  <div class="sidebar-nav">
+    <a class="sidebar-link" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/>
+      </svg>
+      <span>Home</span>
+    </a>
+    <a class="sidebar-link active" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      <span>Overview</span>
+    </a>
+    <a class="sidebar-link" href="./leaderboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="18" y="3" width="3" height="18"/><rect x="11" y="8" width="3" height="13"/><rect x="4" y="13" width="3" height="8"/>
+      </svg>
+      <span>Leaderboard</span>
+    </a>
+    <a class="sidebar-link" href="./calendar.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+      </svg>
+      <span>Monthly Calendar</span>
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <button class="sidebar-signout" onclick="handleLogout()">Sign Out</button>
+  </div>
+</aside>
+
+<nav id="mainNav" style="display:none">
+  <span class="nav-logo">My Profile</span>
+</nav>
+
+<div class="page" id="dashboard">
+  <div class="page-shell">
+    <main class="dashboard-main">
+
+      <div class="hero fade-in">
+        <div>
+          <div class="hero-heading" id="heroName">—</div>
+          <div class="hero-subcopy" id="heroSub">—</div>
+        </div>
+      </div>
+
+      <div class="stats-row fade-in">
+        <div class="stat-card">
+          <div class="stat-num" id="statRank">—</div>
+          <div class="stat-label">Ranking</div>
+          <div class="stat-sub">within your level</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statMatches">0</div>
+          <div class="stat-label">Matches Played</div>
+          <div class="stat-sub" id="statMatchesSub">all time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statPoints">—</div>
+          <div class="stat-label">Total Points</div>
+          <div class="stat-sub">accumulated</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="heroRating">—</div>
+          <div class="stat-label">Rating</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Match History</div>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="date" data-val="30" onclick="setFilter('date',this)">Last 30 days</button>
+          <button class="filter-btn" data-filter="date" data-val="all" onclick="setFilter('date',this)">All time</button>
+          <div style="width:1px;background:var(--border2);margin:0 2px"></div>
+          <button class="filter-btn active" data-filter="type" data-val="all" onclick="setFilter('type',this)">All</button>
+          <button class="filter-btn" data-filter="type" data-val="AM" onclick="setFilter('type',this)">Americano</button>
+          <button class="filter-btn" data-filter="type" data-val="TM" onclick="setFilter('type',this)">Tournament</button>
+          <button class="filter-btn" data-filter="type" data-val="PS" onclick="setFilter('type',this)">Personal</button>
+        </div>
+      </div>
+
+      <div class="match-list" id="matchList"></div>
+
+      <div class="chart-section fade-in" style="margin-top:36px">
+        <div class="chart-header">
+          <div class="chart-title">Performance Over Time</div>
+          <div class="chart-toggle">
+            <button class="chart-toggle-btn active" id="chartBtnPoints" onclick="switchChart('points')">Points Scored</button>
+            <button class="chart-toggle-btn" id="chartBtnRanking" onclick="switchChart('rating')">Rating</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="perfChart"></canvas>
+          <div class="chart-empty" id="chartEmpty" style="display:none">Not enough match data yet.</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const PLAYERS_API = 'https://script.google.com/macros/s/AKfycbyRmqF7c8OU7YxeSYG_EgwH4xR4ir_m6fL6M9Ds8XG7GpPZfB19op-qIDv_1YwLFkmw/exec';
+const MATCHES_API = 'https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec';
+
+let allMatches    = [];
+let currentPlayer = null;
+let activeFilters = { date: '30', type: 'all' };
+let perfChart     = null;
+let chartMode     = 'points';
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return String(dateStr); // already plain text, return as-is
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+async function bootstrapDashboard() {
+  const savedSession = localStorage.getItem('dpcPlayerSession');
+  const savedPhone   = localStorage.getItem('dpcPlayerPhone');
+  if (!savedSession || !savedPhone) { currentPlayer = { name: 'Guest', venue: '—', joiningDate: '—' }; allMatches = []; showDashboard(); return; }
+  try { currentPlayer = JSON.parse(savedSession); } catch(e) {
+    localStorage.clear(); window.location.href = './login.html'; return;
+  }
+  // Fetch latest stats from Master tab (rating, totalPoints, ranking, venue)
+  try {
+    const pRes  = await fetch(`${MATCHES_API}?action=getPlayer&phone=${encodeURIComponent(savedPhone)}`);
+    const pData = await pRes.json();
+    if (pData.success && pData.player) {
+      currentPlayer = { ...currentPlayer, ...pData.player };
+      localStorage.setItem('dpcPlayerSession', JSON.stringify(currentPlayer));
+    }
+  } catch(e) { /* keep session data as fallback */ }
+  // Fetch match history
+  try {
+    const mRes  = await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(savedPhone)}`);
+    const mData = await mRes.json();
+    allMatches  = mData.success ? mData.matches : [];
+  } catch(e) { allMatches = []; }
+  showDashboard();
+}
+
+function showDashboard() {
+  const p = currentPlayer;
+  document.getElementById('heroName').textContent     = p.name  || '—';
+  document.getElementById('heroRating').textContent   = p.rating ?? '—';
+  // Member since = date of first match
+  const firstMatchDate = allMatches.length
+    ? allMatches.slice().sort((a,b) => new Date(a.date)-new Date(b.date))[0].date
+    : null;
+  const memberSince = firstMatchDate ? formatDate(firstMatchDate) : (p.joiningDate || '—');
+  document.getElementById('heroSub').textContent = `${p.venue || 'Delhi'} · Member since ${memberSince}`;
+  document.getElementById('statRank').textContent     = p.ranking ? '#' + p.ranking : '—';
+  // Total points calculated from all Americano match totals
+  const totalPts = allMatches
+    .filter(m => String(m.matchId).toUpperCase().includes('AM'))
+    .reduce((sum, m) => sum + (Number(m.total) || 0), 0);
+  document.getElementById('statPoints').textContent = totalPts || (p.totalPoints ?? '—');
+  renderStats();
+  renderMatches();
+  renderChart('points');
+}
+
+function renderStats() {
+  const all   = getFiltered('all', 'all');
+  const total = all.length;
+  document.getElementById('statMatches').textContent    = total;
+  document.getElementById('statMatchesSub').textContent =
+    `${all.filter(m=>String(m.matchId).toUpperCase().includes('AM')).length} americano · ` +
+    `${all.filter(m=>String(m.matchId).toUpperCase().includes('TM')).length} tournament · ` +
+    `${all.filter(m=>String(m.matchId).toUpperCase().includes('PS')).length} personal`;
+}
+
+function switchChart(mode) {
+  chartMode = mode;
+  document.getElementById('chartBtnPoints').classList.toggle('active', mode === 'points');
+  document.getElementById('chartBtnRanking').classList.toggle('active', mode === 'rating');
+  renderChart(mode);
+}
+
+function parseHistory(historyStr) {
+  // Parses "22.05.2026, 3; 29.05.2026, 3.5" into [{date, value}]
+  if (!historyStr) return [];
+  return historyStr.split(';').map(entry => {
+    entry = entry.trim();
+    if (!entry) return null;
+    // Find last comma to split date from value
+    const lastComma = entry.lastIndexOf(',');
+    if (lastComma === -1) return null;
+    const dateStr = entry.substring(0, lastComma).trim(); // dd.MM.yyyy
+    const value   = parseFloat(entry.substring(lastComma + 1).trim());
+    // Format date nicely for chart label
+    const parts = dateStr.split('.');
+    if (parts.length === 3) {
+      const [dd, mm, yyyy] = parts;
+      const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return { date: `${dd} ${months[parseInt(mm)] || mm}`, value: isNaN(value) ? null : value };
+    }
+    return { date: dateStr, value: isNaN(value) ? null : value };
+  }).filter(Boolean);
+}
+
+function renderChart(mode) {
+  const canvas = document.getElementById('perfChart');
+  const empty  = document.getElementById('chartEmpty');
+  let labels, data, label, color, yReverse;
+
+  if (mode === 'rating') {
+    // Parse ratingHistory string: "22.05.2026, 3; 29.05.2026, 3.5"
+    const history = parseHistory(currentPlayer?.ratingHistory || '');
+    if (history.length < 1) {
+      canvas.style.display = 'none'; empty.style.display = 'flex'; return;
+    }
+    labels   = history.map(h => h.date);
+    data     = history.map(h => h.value);
+    label    = 'Rating';
+    color    = '#CB5957';
+    yReverse = false;
+
+  } else {
+    // Points per match — non-cumulative, Americano only
+    const sorted = [...allMatches]
+      .filter(m => m.date && String(m.matchId).toUpperCase().includes('AM'))
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    if (sorted.length < 1) {
+      canvas.style.display = 'none'; empty.style.display = 'flex'; return;
+    }
+    labels   = sorted.map(m => formatDate(m.date));
+    data     = sorted.map(m => Number(m.total) || 0);
+    label    = 'Points Scored';
+    color    = '#CB5957';
+    yReverse = false;
+  }
+
+  canvas.style.display = 'block'; empty.style.display = 'none';
+
+  if (perfChart) { perfChart.destroy(); perfChart = null; }
+  perfChart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets: [{ label, data, borderColor: color, backgroundColor: color + '18', borderWidth: 2, pointBackgroundColor: color, pointRadius: 4, pointHoverRadius: 6, fill: true, tension: 0.35, spanGaps: true }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#171513', titleColor: 'rgba(255,255,255,.5)', bodyColor: '#fff', padding: 10, cornerRadius: 8, titleFont: { size: 10, family: 'DM Sans' }, bodyFont: { size: 13, family: 'DM Sans', weight: '600' } } },
+      scales: {
+        x: { grid: { color: 'rgba(23,21,19,.05)' }, ticks: { font: { size: 10, family: 'DM Sans' }, color: 'rgba(23,21,19,.4)', maxTicksLimit: 8 } },
+        y: { reverse: yReverse, grid: { color: 'rgba(23,21,19,.05)' }, ticks: { font: { size: 10, family: 'DM Sans' }, color: 'rgba(23,21,19,.4)', maxTicksLimit: 6 } }
+      }
+    }
+  });
+}
+
+function setFilter(type, btn) {
+  document.querySelectorAll(`[data-filter="${type}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilters[type] = btn.dataset.val;
+  renderMatches();
+}
+
+function getFiltered(dateOverride, typeOverride) {
+  const dateVal = dateOverride !== undefined ? dateOverride : activeFilters.date;
+  const typeVal = typeOverride !== undefined ? typeOverride : activeFilters.type;
+  let list = [...allMatches];
+  if (dateVal === '30') {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+    list = list.filter(m => { if (!m.date) return true; const d = new Date(m.date); return isNaN(d) ? true : d >= cutoff; });
+  }
+  if (typeVal !== 'all') list = list.filter(m => String(m.matchId).toUpperCase().includes(typeVal));
+  return list;
+}
+
+function renderMatches() {
+  const list      = getFiltered();
+  const container = document.getElementById('matchList');
+  if (!list.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-title">No matches found</div><div class="empty-sub">Try changing the filters or get on court!</div></div>`;
+    return;
+  }
+  container.innerHTML = list.map((m, i) => buildMatchCard(m, i)).join('');
+}
+
+function buildMatchCard(m, idx) {
+  const id        = String(m.matchId || '').toUpperCase();
+  const isAm      = id.includes('AM');
+  const isTm      = id.includes('TM');
+  const typeKey   = isAm ? 'am' : isTm ? 'tm' : 'ps';
+  const typeLabel = isAm ? 'AM' : isTm ? 'TM' : 'PS';
+  const typeName  = isAm ? 'Americano' : isTm ? 'Tournament' : 'Personal';
+  const rounds    = isAm && m.roundScores ? m.roundScores.split(',').map(s=>s.trim()) : [];
+  const opponentNames = isAm
+    ? (m.opponents||[]).map(o=>o.playerName).join(', ')
+    : [m.partner&&`w/ ${m.partner}`, m.opp1&&`vs ${m.opp1}`, m.opp2&&`& ${m.opp2}`].filter(Boolean).join(' ');
+  const rightBlock = isAm
+    ? `<div class="match-score-big">${m.total??'—'}</div><div class="match-rank-txt">rank #${m.rank??'—'}</div>`
+    : `<div class="match-score-big">${m.score||'—'}</div><div class="result-pill ${m.result==='W'?'pill-w':'pill-l'}">${m.result||'—'}</div>`;
+  const roundsHtml = isAm && rounds.length ? `<div class="rounds-row">${rounds.map(r=>`<span class="round-chip">${r}</span>`).join('')}</div>` : '';
+  const expandHtml = isAm ? buildAmericanoExpand(m) : buildMatchExpand(m);
+  return `<div class="match-card" onclick="toggleExpand(${idx})">
+    <div class="match-type-badge badge-${typeKey}">${typeLabel}</div>
+    <div class="match-main">
+      <div class="match-id-date"><span class="match-id">${m.matchId}</span><div class="match-dot"></div><span class="match-date-txt">${formatDate(m.date)||'—'}</span></div>
+      <div class="match-title">${typeName}</div>
+      <div class="match-detail">${opponentNames||'—'}</div>
+      ${roundsHtml}
+      <div class="match-expand" id="expand-${idx}">${expandHtml}</div>
+    </div>
+    <div class="match-right">${rightBlock}</div>
+  </div>`;
+}
+
+function buildAmericanoExpand(m) {
+  const players = m.opponents||[];
+  if (!players.length) return '<div style="font-size:12px;color:var(--muted)">No opponent data available</div>';
+  return `<div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">All Players</div>
+    <div class="expand-grid">${players.map(p=>`<div class="expand-player">
+      <div class="expand-player-name">${p.playerName}</div>
+      <div class="expand-player-score">${p.total??'—'} pts</div>
+      <div class="expand-player-rating">Rank #${p.rank??'—'}${p.rating != null ? ' · Rating ' + p.rating : ''}</div>
+    </div>`).join('')}</div>`;
+}
+
+function buildMatchExpand(m) {
+  return `<div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Match Details</div>
+    <div class="expand-grid">
+      <div class="expand-player"><div class="you-label">You</div><div class="expand-player-name">${currentPlayer?.name||'—'}</div><div class="expand-player-rating">Rating ${currentPlayer?.rating??'—'}</div></div>
+      ${m.partner?`<div class="expand-player"><div class="expand-player-name">${m.partner}</div><div class="expand-player-rating">Partner</div></div>`:''}
+      ${m.opp1?`<div class="expand-player"><div class="expand-player-name">${m.opp1}</div><div class="expand-player-rating">Opponent</div></div>`:''}
+      ${m.opp2?`<div class="expand-player"><div class="expand-player-name">${m.opp2}</div><div class="expand-player-rating">Opponent</div></div>`:''}
+    </div>`;
+}
+
+function toggleExpand(idx) {
+  const el = document.getElementById(`expand-${idx}`);
+  if (el) el.classList.toggle('open');
+}
+
+function handleLogout() {
+  localStorage.removeItem('dpcPlayerSession');
+  localStorage.removeItem('dpcPlayerPhone');
+  window.location.href = './login.html';
+}
+
+bootstrapDashboard();
+</script>
+</body>
+</html>
