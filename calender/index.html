@@ -591,6 +591,13 @@ footer {
   .action-btn { font-size: 11px; padding: 10px 20px; }
   .hero h1 { font-size: 52px; }
 }
+
+.mode-toggle{display:flex;gap:8px;margin-bottom:18px;}
+.mode-btn{flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--border-dk);background:transparent;font-family:var(--font-body);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;color:var(--muted);}
+.mode-btn.active{border-color:var(--green);background:rgba(184,219,176,.12);color:var(--green);}
+.partner-fields{display:none;}
+.partner-fields.show{display:block;}
+.partner-divider{height:1px;background:var(--border);margin:4px 0 16px;}
 </style>
 </head>
 <body>
@@ -640,11 +647,24 @@ footer {
     </div>
     <div class="modal-bd">
       <div id="costNotice" style="display:none" class="cost-notice"></div>
+      <div class="mode-toggle" id="modeToggle">
+        <button class="mode-btn active" id="btnSingle" onclick="setMode('single')">👤 Single</button>
+        <button class="mode-btn" id="btnPartner" onclick="setMode('partner')">👥 With Partner</button>
+      </div>
       <div class="fg"><label>Your Name</label><input type="text" id="rName" placeholder="Full name" autocomplete="name"/></div>
       <div class="fg">
-        <label>WhatsApp / Phone</label>
+        <label>Your WhatsApp / Phone</label>
         <input type="tel" id="rPhone" placeholder="9876543210" autocomplete="tel"/>
         <small class="fg-note">Enter digits only. Do not use +, spaces, brackets, or hyphens.</small>
+      </div>
+      <div class="partner-fields" id="partnerFields">
+        <div class="partner-divider"></div>
+        <div class="fg"><label>Partner's Name</label><input type="text" id="rName2" placeholder="Partner's full name"/></div>
+        <div class="fg">
+          <label>Partner's WhatsApp / Phone</label>
+          <input type="tel" id="rPhone2" placeholder="9876543210"/>
+          <small class="fg-note">Enter digits only. Do not use +, spaces, brackets, or hyphens.</small>
+        </div>
       </div>
       <div id="mMsg"></div>
     </div>
@@ -671,6 +691,26 @@ footer {
 <script>
 let allEvents=[], allRSVPs=[], activeId=null, activeMode="join", currentFilter="all";
 let pendingRemoveId=null, pendingRemovePhone=null;
+let bookingMode="single";
+
+function setMode(mode){
+  bookingMode=mode;
+  document.getElementById("btnSingle").classList.toggle("active",mode==="single");
+  document.getElementById("btnPartner").classList.toggle("active",mode==="partner");
+  document.getElementById("partnerFields").classList.toggle("show",mode==="partner");
+  const ev=allEvents.find(e=>e.id===activeId);
+  if(ev) updateCostNotice(ev);
+}
+
+function updateCostNotice(ev){
+  const cn=document.getElementById("costNotice");
+  if(ev.cost&&activeMode==="join"){
+    cn.style.display="block";
+    cn.innerHTML=bookingMode==="partner"
+      ?`<strong>💰 ${ev.cost} × 2 players</strong>We'll WhatsApp both players to confirm and collect payment.`
+      :`<strong>💰 ${ev.cost}</strong>We'll be in touch on WhatsApp to confirm your spot`;
+  } else { cn.style.display="none"; }
+}
 
 const LS_RSVP="dpc_rsvpd_v3";
 function getMyRSVPs(){ try{ return JSON.parse(localStorage.getItem(LS_RSVP)||"{}"); }catch{ return {}; } }
@@ -824,22 +864,47 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
   if(!name||!phone){msgEl.innerHTML=`<div class="mbox err">Please fill in both fields.</div>`;return;}
   if(/[^0-9]/.test(phone)){msgEl.innerHTML=`<div class="mbox err">Invalid number. Use digits only with no special symbols.</div>`;return;}
   if(!/^\d{7,15}$/.test(phone)){msgEl.innerHTML=`<div class="mbox err">Enter a valid phone number.</div>`;return;}
+
+  let name2="",phone2="";
+  if(bookingMode==="partner"){
+    name2=document.getElementById("rName2").value.trim();
+    phone2=document.getElementById("rPhone2").value.trim();
+    if(!name2||!phone2){msgEl.innerHTML=`<div class="mbox err">Please fill in your partner's details too.</div>`;return;}
+    if(/[^0-9]/.test(phone2)){msgEl.innerHTML=`<div class="mbox err">Partner's number: digits only, no special symbols.</div>`;return;}
+    if(!/^\d{7,15}$/.test(phone2)){msgEl.innerHTML=`<div class="mbox err">Enter a valid phone number for your partner.</div>`;return;}
+    if(phone===phone2){msgEl.innerHTML=`<div class="mbox err">Partner's number must be different from yours.</div>`;return;}
+  }
+
   btn.disabled=true;btn.textContent="Saving…";msgEl.innerHTML="";
   const ev=allEvents.find(e=>e.id===activeId);
   const status=activeMode==="waitlist"?"waitlist":"confirmed";
   try{
+    // Submit player 1
     await Sheets.addRSVP({eventId:activeId,eventName:ev?ev.title:"",name,phone,status});
     saveMyRSVP(activeId,{status,phone,name});
     allRSVPs.push({eventId:activeId,eventName:ev?ev.title:"",name,phone,status,timestamp:new Date().toISOString()});
+
+    // Submit player 2 if partner booking
+    if(bookingMode==="partner"){
+      await Sheets.addRSVP({eventId:activeId,eventName:ev?ev.title:"",name:name2,phone:phone2,status});
+      allRSVPs.push({eventId:activeId,eventName:ev?ev.title:"",name:name2,phone:phone2,status,timestamp:new Date().toISOString()});
+    }
+
     if(status==="confirmed"){
-      msgEl.innerHTML=ev&&ev.cost
-        ?`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> with payment details (${ev.cost}) to confirm your slot.</div>`
-        :`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> to confirm your slot.</div>`;
+      if(bookingMode==="partner"){
+        msgEl.innerHTML=ev&&ev.cost
+          ?`<div class="mbox ok">🎾 Both in! Total: <strong>${ev.cost} × 2</strong>. We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> with payment details.</div>`
+          :`<div class="mbox ok">🎾 Both in! We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> to confirm your slots.</div>`;
+      } else {
+        msgEl.innerHTML=ev&&ev.cost
+          ?`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> with payment details (${ev.cost}) to confirm your slot.</div>`
+          :`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> to confirm your slot.</div>`;
+      }
     } else {
       msgEl.innerHTML=`<div class="mbox info">⏳ You're on the waitlist! We'll WhatsApp you on <strong>${phone}</strong> if a slot opens up.</div>`;
     }
     btn.textContent="Done ✓";
-    setTimeout(()=>{closeModal();render();showToast(status==="waitlist"?"Added to waitlist!":"RSVP saved — see you on court!");},5000);
+    setTimeout(()=>{closeModal();render();showToast(bookingMode==="partner"?"Both players registered!":status==="waitlist"?"Added to waitlist!":"RSVP saved — see you on court!");},5000);
   }catch(err){
     btn.disabled=false;btn.textContent=activeMode==="waitlist"?"Join Waitlist →":"I'm In →";
     msgEl.innerHTML=`<div class="mbox err">${err.message}</div>`;
