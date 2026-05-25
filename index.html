@@ -3,22 +3,32 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Login · //PadelCollectiveIndia</title>
-<link rel="icon" type="image/png" href="logo.png">
-<meta name="description" content="Login or create your Delhi Padel Collective account to track rankings, matches, and points."/>
+<title>//PadelCollectiveIndia</title>
+ <link rel="icon" type="image/png" href="logo.png">
+ <meta name="description" content="Delhi Padel Collective offers padel tournaments, rankings, coaching, americano events and community matches in Delhi NCR."/>
+
+<meta name="keywords" content="Delhi padel, padel Delhi NCR, Delhi Padel Collective, padel tournaments Delhi, padel club Delhi, americano padel Delhi, padel coaching Delhi, padel rankings
+ , padel community, community,"/>
+
+<meta name="author" content="Delhi Padel Collective"/>
+
+<meta property="og:title" content="Delhi Padel Collective"/>
+<meta property="og:description" content="Padel tournaments, rankings, coaching and events in Delhi NCR."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.padelcollectiveindia.com/"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
-  @font-face {
-    font-family: 'Berling';
-    src: url('Berling Bold.otf') format('opentype');
-    font-weight: 700;
-    font-style: normal;
-  }
-  :root {
-    --font-heading: 'Berling', Georgia, serif;
+ @font-face {
+  font-family: 'Berling';
+  src: url('Berling Bold.otf') format('opentype'); /* adjust path if needed */
+  font-weight: 700;
+  font-style: normal;
+} 
+ :root {
+   --font-heading: 'Berling', Georgia, serif;
     --font-body: -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
     --bg: #f7f5f2;
     --surface: #ffffff;
@@ -32,350 +42,491 @@
     --accent-glow: rgba(203,89,87,.35);
     --accent-light: rgba(203,89,87,.12);
     --success: #4a8c42;
+    --violet: #74629d;
+    --danger: #b54f4f;
   }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); overflow-x: hidden; }
 
   /* ── NAV ── */
   #navbar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
     padding: 0 40px; height: 64px;
     display: flex; align-items: center; justify-content: space-between;
+    transition: background .3s;
+  }
+  #navbar.scrolled {
     background: rgba(247,245,242,.86);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-soft);
   }
-  .nav-logo { display: flex; align-items: center; text-decoration: none; }
-  .nav-logo svg { height: 17px; width: 145px; color: var(--text); }
-  .nav-back {
-    font-size: 11px; font-weight: 600; letter-spacing: 2px;
-    text-transform: uppercase; color: var(--muted);
-    text-decoration: none; transition: color .2s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .nav-back:hover { color: var(--text); }
-  .nav-back svg { width: 14px; height: 14px; }
-
-  /* ── MAIN LAYOUT ── */
-  .page-wrap {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  /* LEFT PANEL */
-  .left-panel {
-    position: relative;
-    overflow: hidden;
-    background: var(--text);
+  .nav-logo { display: flex; align-items: center; text-decoration: none; z-index: 1; }
+ .nav-logo svg { height: 17px; width: 145px; color: white; }
+  .nav-actions {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 64px 60px;
-    min-height: 100vh;
+    align-items: center;
+    gap: 10px;
   }
-  .left-bg-img {
-    position: absolute; inset: 0;
-    background-image: url('fallback.jpeg');
-    background-size: cover;
-    background-position: center;
-    z-index: 0;
-    filter: brightness(.55) saturate(.8);
-    transition: transform 8s ease;
-  }
-  .left-panel:hover .left-bg-img { transform: scale(1.04); }
-  .left-overlay {
-    position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(
-      170deg,
-      rgba(23,21,19,.1) 0%,
-      rgba(23,21,19,.5) 50%,
-      rgba(23,21,19,.85) 100%
-    );
-  }
-  .left-content {
-    position: relative; z-index: 2;
-  }
-  .left-eyebrow {
-    font-size: 9px; font-weight: 600; letter-spacing: 4px;
-    text-transform: uppercase; color: rgba(255,255,255,.45);
-    margin-bottom: 16px;
-  }
-  .left-title {
-    font-family: var(--font-heading);
-    font-size: clamp(36px, 3.5vw, 52px);
-    font-weight: 400;
-    color: rgba(255,255,255,.92);
-    line-height: 1.08;
-    letter-spacing: -.5px;
-    margin-bottom: 20px;
-  }
-  .left-body {
-    font-size: 14px; color: rgba(255,255,255,.45);
-    line-height: 1.75; font-weight: 300;
-    max-width: 340px;
-  }
-  .left-stats {
-    display: flex; gap: 32px; margin-top: 40px;
-  }
-  .stat-item {}
-  .stat-num {
-    font-family: var(--font-heading);
-    font-size: 28px; font-weight: 400;
-    color: rgba(255,255,255,.85);
-    letter-spacing: -0.5px;
-  }
-  .stat-label {
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 2.5px; text-transform: uppercase;
-    color: rgba(255,255,255,.35);
-    margin-top: 2px;
-  }
-
-  /* RIGHT PANEL */
-  .right-panel {
-    display: flex;
-    flex-direction: column;
+  .nav-login {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 100px 60px 60px;
-    background: var(--bg);
-  }
-  .form-box {
-    width: 100%;
-    max-width: 400px;
-  }
-  .form-eyebrow {
-    font-size: 9px; font-weight: 600; letter-spacing: 4px;
-    text-transform: uppercase; color: var(--muted);
-    margin-bottom: 12px;
-  }
-  .form-title {
-    font-family: var(--font-heading);
-    font-size: 36px; font-weight: 400;
-    line-height: 1.1; letter-spacing: -.5px;
-    color: var(--text);
-    margin-bottom: 36px;
-  }
-  .tab-row {
-    display: flex;
-    border-bottom: 1px solid var(--border-soft);
-    margin-bottom: 32px;
-    gap: 0;
-  }
-  .tab-btn {
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--muted);
-    background: none; border: none; cursor: pointer;
-    padding: 0 0 12px;
-    margin-right: 24px;
-    border-bottom: 1.5px solid transparent;
-    transition: color .2s, border-color .2s;
-  }
-  .tab-btn.active {
-    color: var(--text);
-    border-bottom-color: var(--accent);
-  }
-
-  /* FORMS */
-  .form-panel { display: none; }
-  .form-panel.active { display: block; animation: fadeIn .3s ease; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-
-  .field-group { margin-bottom: 20px; }
-  .field-label {
-    display: block;
-    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
-    text-transform: uppercase; color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .field-input {
-    width: 100%;
-    padding: 13px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border-strong);
-    border-radius: 6px;
-    font-family: var(--font-body);
-    font-size: 14px;
-    color: var(--text);
-    transition: border-color .2s, box-shadow .2s;
-    outline: none;
-  }
-  .field-input::placeholder { color: rgba(0,0,0,.28); }
-  .field-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-light);
-  }
-  .field-hint {
-    font-size: 11px; color: var(--muted);
-    margin-top: 6px; line-height: 1.5;
-  }
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-  .submit-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--text);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    font-family: var(--font-body);
-    font-size: 12px; font-weight: 600;
-    letter-spacing: 1.5px;
+    min-width: 84px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    cursor: pointer;
-    transition: background .2s, transform .15s;
-    margin-top: 8px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
+    color: rgba(255,255,255,.92);
+    background: rgba(255,255,255,.05);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow:
+      0 8px 32px rgba(0,0,0,.10),
+      inset 0 -1px 0 rgba(255,255,255,.06);
+    transition: background .22s ease, transform .22s ease;
   }
-  .submit-btn:hover { background: #2e2b28; transform: translateY(-1px); }
-  .submit-btn:active { transform: translateY(0); }
-  .submit-btn.loading { opacity: .7; cursor: not-allowed; }
-
-  .divider-or {
-    display: flex; align-items: center; gap: 12px;
-    margin: 20px 0; color: var(--muted); font-size: 11px;
-    letter-spacing: 1px;
-  }
-  .divider-or::before, .divider-or::after {
-    content: ""; flex: 1;
-    height: 1px; background: var(--border-soft);
+  .nav-login:hover {
+    background: rgba(255,255,255,.08);
+    transform: translateY(-1px);
   }
 
-  .switch-text {
-    text-align: center;
-    font-size: 12px; color: var(--muted);
+  .hamburger {
+    width: 40px; height: 40px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; background: none; border: none; z-index: 300; padding: 4px;
+  }
+  .hamburger span {
+    display: block; width: 24px; height: 1.5px;
+    background: #fff; transition: all .35s cubic-bezier(.77,0,.175,1); transform-origin: center;
+  }
+  .hamburger.open span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+
+  /* ── DRAWER ── */
+  .drawer {
+    position: fixed; top: 64px; right: 0;
+    width: min(360px, 85vw); height: calc(100vh - 64px);
+    background: var(--surface); border-left: 1px solid var(--border-soft);
+    z-index: 190; display: flex; flex-direction: column;
+    padding: 20px 32px 32px;
+    transform: translateX(110%);
+    transition: transform .5s cubic-bezier(.77,0,.175,1);
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-overlay {
+    position: fixed; top: 64px; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.16);
+    z-index: 180; opacity: 0; pointer-events: none;
+    transition: opacity .4s; backdrop-filter: blur(4px);
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: all; }
+  .drawer-nav { display: flex; flex-direction: column; gap: 2px; }
+
+  /* ← SMALLER font than before (was 38px, now 26px) */
+  .drawer-link {
+    font-family: var(--font-heading);
+    font-size: 26px; font-weight: 400; font-style: normal;
+    color: rgba(0,0,0,.38);
+    text-decoration: none; line-height: 1.15;
+    transition: color .2s, transform .2s;
+    display: block; padding: 7px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .drawer-link:last-of-type { border-bottom: none; }
+  .drawer-link:hover { color: var(--text); transform: translateX(5px); }
+  .drawer-link.cta-link {
+    font-family: var(--font-body);
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase; font-style: normal;
+    color: var(--text);
+    background: rgba(255,255,255,.72);
+    border: 1.5px solid var(--border-strong);
+    backdrop-filter: blur(14px);
+    border-radius: 100px;
+    padding: 12px 24px; text-align: center;
     margin-top: 20px;
   }
-  .switch-text a {
-    color: var(--accent); text-decoration: none; font-weight: 500;
-  }
-  .switch-text a:hover { text-decoration: underline; }
-
-  /* ALERTS */
-  .alert {
-    padding: 12px 16px;
-    border-radius: 6px;
-    font-size: 13px; line-height: 1.5;
-    margin-bottom: 20px;
-    display: none;
-  }
-  .alert.show { display: block; animation: fadeIn .3s ease; }
-  .alert-error { background: rgba(181,79,79,.08); border: 1px solid rgba(181,79,79,.2); color: #8b3a3a; }
-  .alert-success { background: rgba(74,140,66,.08); border: 1px solid rgba(74,140,66,.2); color: #2d6128; }
-
-  /* DASHBOARD (post-login) */
-  .dashboard { display: none; }
-  .dashboard.show { display: block; animation: fadeIn .4s ease; }
-  .dash-header {
-    border-bottom: 1px solid var(--border-soft);
-    padding-bottom: 24px;
-    margin-bottom: 28px;
-  }
-  .dash-eyebrow {
-    font-size: 9px; font-weight: 600; letter-spacing: 4px;
-    text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
-  }
-  .dash-name {
-    font-family: var(--font-heading);
-    font-size: 32px; font-weight: 400;
-    line-height: 1.1;
-  }
-  .dash-stats-row {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 12px; margin-bottom: 28px;
-  }
-  .dash-stat {
-    background: var(--surface);
-    border: 1px solid var(--border-soft);
-    border-radius: 8px;
-    padding: 16px;
-  }
-  .dash-stat-num {
-    font-family: var(--font-heading);
-    font-size: 28px; font-weight: 400;
-    color: var(--text); letter-spacing: -.5px;
-  }
-  .dash-stat-label {
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--muted); margin-top: 4px;
-  }
-  .dash-section-title {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 12px;
-  }
-  .match-list { display: flex; flex-direction: column; gap: 8px; }
-  .match-row {
-    background: var(--surface);
-    border: 1px solid var(--border-soft);
-    border-radius: 8px;
-    padding: 14px 16px;
-    display: flex; align-items: center;
-    justify-content: space-between;
-  }
-  .match-left {}
-  .match-date { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
-  .match-name { font-size: 13px; font-weight: 500; }
-  .match-score {
-    font-family: var(--font-heading);
-    font-size: 15px; font-weight: 400;
-  }
-  .match-badge {
-    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+  .drawer-link.cta-link:hover { background: #fff; border-color: rgba(0,0,0,.2); transform: none; }
+  .drawer-link.utility-link {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    padding: 3px 8px; border-radius: 99px;
+    color: var(--muted);
+    margin-top: 14px;
+    border-bottom: none;
   }
-  .badge-w { background: rgba(74,140,66,.1); color: #2d6128; }
-  .badge-l { background: rgba(181,79,79,.08); color: #8b3a3a; }
-  .logout-btn {
-    margin-top: 24px;
-    font-size: 11px; font-weight: 600; letter-spacing: 2px;
-    text-transform: uppercase; color: var(--muted);
-    background: none; border: 1px solid var(--border-strong);
-    border-radius: 99px; padding: 10px 20px;
-    cursor: pointer; transition: color .2s, border-color .2s;
+  .drawer-link.utility-link:hover {
+    color: var(--text);
+    transform: none;
   }
-  .logout-btn:hover { color: var(--text); border-color: var(--border-strong); }
 
-  /* SPINNER */
-  .spinner {
-    width: 16px; height: 16px;
-    border: 2px solid rgba(255,255,255,.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin .6s linear infinite;
-    display: none;
+  /* ── HERO ── */
+  #home {
+    height: 100vh; position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; overflow: hidden;
   }
-  .spinner.show { display: block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+ /* VIDEO LAYER FIX */
+.video-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
 
-  /* MOBILE */
-  @media (max-width: 768px) {
-    .page-wrap { grid-template-columns: 1fr; }
-    .left-panel { display: none; }
-    .right-panel { padding: 100px 32px 60px; }
-    #navbar { padding: 0 24px; }
-    .field-row { grid-template-columns: 1fr; }
-    .dash-stats-row { grid-template-columns: repeat(2, 1fr); }
+/* video + fallback share same space */
+.video-wrap video,
+.video-wrap .fallback-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  inset: 0;
+}
+
+/* fallback image behind */
+.fallback-img {
+  z-index: 0;
+}
+
+/* video on top */
+.video-wrap video {
+  z-index: 1;
+}
+.overlay {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+  background: rgba(0,0,0,.36);
+}
+  .hero-content {
+    position: relative; z-index: 2; text-align: center;
+    animation: fadeUp .9s ease both .2s;
+    display: flex; flex-direction: column; align-items: center;
   }
-  @media (max-width: 400px) {
-    .right-panel { padding: 88px 20px 48px; }
-    .form-title { font-size: 28px; }
+  .hero-eyebrow {
+    font-family: var(--font-body);
+    font-size: 10px; font-weight: 500; letter-spacing: 4px;
+    text-transform: uppercase; color: rgba(0,0,0,.38); margin-bottom: 32px;
   }
+  .hero-logo { margin-bottom: 44px; }
+  .hero-logo svg { height: 40px; width: auto; color: white; }
+
+  .hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .cta {
+    display: inline-flex; align-items: center;
+    position: relative;
+    isolation: isolate;
+    justify-content: center;
+    min-width: 164px;
+    padding: 14px 28px; border-radius: 999px;
+    font-family: var(--font-body); font-size: 12px;
+    font-weight: 500; letter-spacing: .4px;
+    text-decoration: none; cursor: pointer; transition: all .22s ease; white-space: nowrap; border: none;
+    overflow: hidden;
+  }
+  .cta-primary {
+    background: rgba(255,255,255,.05);
+    color: rgba(255,255,255,.92);
+    border: 1px solid rgba(255,255,255,0);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow:
+      0 8px 32px rgba(0,0,0,.10),
+      inset 0 -1px 0 rgba(255,255,255,.06),
+      inset 0 0 0 0 rgba(255,255,255,0);
+    text-shadow: 0 1px 1px rgba(0,0,0,.08);
+    font-weight: 500;
+  }
+  .cta-primary::before { content: none; }
+  .cta-primary::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      rgba(255,255,255,.8),
+      transparent,
+      rgba(255,255,255,.3)
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+  .cta-primary:hover {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,0);
+    box-shadow:
+      0 10px 36px rgba(0,0,0,.12),
+      inset 0 -1px 0 rgba(255,255,255,.08),
+      inset 0 0 0 0 rgba(255,255,255,0);
+    transform: translateY(-1px);
+  }
+  .cta-accent { background: var(--accent); color: #fff; font-weight: 700; }
+  .cta-accent:hover { background: var(--accent-hover); transform: scale(1.03); box-shadow: 0 6px 28px var(--accent-glow); }
+  .cta-ghost { background: transparent; color: rgba(0,0,0,.52); border: 1.5px solid var(--border-soft); }
+  .cta-ghost:hover { background: rgba(0,0,0,.03); color: var(--text); border-color: var(--border-strong); transform: scale(1.03); }
+  .cta-dark {
+    background: rgba(255,255,255,.72) !important;
+    color: var(--text) !important;
+    border: 1.5px solid var(--border-strong) !important;
+    backdrop-filter: blur(14px);
+    border-radius: 100px;
+    padding: 12px 24px;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .cta-dark:hover {
+    background: #fff !important;
+    color: var(--text) !important;
+    transform: none;
+  }
+
+  .scroll-hint {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    z-index: 2; display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: rgba(0,0,0,.28); animation: fadeUp .9s ease both .8s;
+  }
+  .scroll-arrow { width: 1px; height: 40px; background: linear-gradient(to bottom, rgba(0,0,0,.3), transparent); animation: scrollPulse 2s infinite; }
+  @keyframes scrollPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── SHARED ── */
+  section { padding: 100px 40px; }
+  .section-eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: rgba(0,0,0,.38); margin-bottom: 16px; }
+  .section-title { font-family: var(--font-heading); font-size: clamp(40px,5vw,68px); font-weight: 400; font-style: normal; line-height: 1; letter-spacing: -1px; color: var(--text); margin-bottom: 20px; }
+  .section-body { font-size: 15px; color: rgba(0,0,0,.38); line-height: 1.85; font-weight: 300; max-width: 520px; }
+  .divider { height: 1px; background: var(--border-soft); margin: 0 40px; }
+
+  /* ── ABOUT ── */
+  #about { background: var(--bg); }
+  .about-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .about-img-wrap { position: relative; }
+  .about-img {
+    width: 100%; aspect-ratio: 3/4;
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: 4px; overflow: hidden; position: relative;
+  }
+  /* ← PHOTO SLOT: replace src in <img> below with your photo */
+  .about-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .about-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .about-img-placeholder svg { height: 32px; width: auto; color: var(--accent); opacity: .2; }
+  .about-tag {
+    position: absolute; bottom: -16px; right: -16px;
+    background: var(--accent); color: #fff;
+    padding: 14px 20px; font-size: 10px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; border-radius: 2px;
+  }
+
+
+  /* ── JOURNAL ── */
+  #lifestyle { background: var(--bg); }
+  .lifestyle-inner { max-width: 1100px; margin: 0 auto; }
+  .lifestyle-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 48px; flex-wrap: wrap; gap: 20px; }
+  .see-all { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,.38); text-decoration: none; transition: color .2s; }
+  .see-all:hover { color: var(--accent); }
+  .articles-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 20px; }
+  .article-card { text-decoration: none; color: inherit; display: block; }
+  .article-img {
+    width: 100%; background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px; overflow: hidden; margin-bottom: 16px;
+    position: relative;
+  }
+  .article-card:nth-child(1) .article-img { aspect-ratio: 3/4; }
+  .article-card:nth-child(2) .article-img,
+  .article-card:nth-child(3) .article-img { aspect-ratio: 4/5; }
+
+  /* ← PHOTO SLOT: add <img src="yourphoto.jpg"> inside .article-img divs below */
+  .article-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+  .article-card:hover .article-img img { transform: scale(1.04); }
+  .article-img-placeholder { width: 100%; height: 100%; min-height: 220px; display: flex; align-items: center; justify-content: center; font-size: 40px; color: rgba(0,0,0,.08); }
+
+  /* ── PHOTO GRID ── */
+  .photo-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 16px; align-items: start; }
+  .photo-item { display: flex; flex-direction: column; gap: 12px; }
+  .photo-item:first-child .photo-frame { aspect-ratio: 3/4; }
+  .photo-item:not(:first-child) .photo-frame { aspect-ratio: 4/5; }
+  .photo-frame {
+    width: 100%; background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px; overflow: hidden;
+  }
+  .photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+  .photo-item:hover .photo-frame img { transform: scale(1.03); }
+  .photo-frame-placeholder { width: 100%; height: 100%; min-height: 200px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: rgba(0,0,0,.08); }
+  .photo-caption { font-size: 12px; color: rgba(0,0,0,.38); line-height: 1.65; font-weight: 300; }
+  .photo-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+
+  /* ── PADEL 101 ── */
+  #padel101 { background: var(--bg); }
+  .padel101-inner { max-width: 1100px; margin: 0 auto; }
+  .pills-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 48px; }
+  .pill-card { border: 1px solid var(--border-soft); border-radius: 100px; padding: 14px 24px; display: flex; align-items: center; gap: 10px; transition: border-color .2s, background .2s; background: var(--surface); }
+  .pill-card:hover { border-color: rgba(203,89,87,.3); background: var(--surface-hover); }
+  .pill-icon { font-size: 16px; }
+  .pill-text { font-size: 13px; color: rgba(0,0,0,.44); }
+  .facts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border-soft); margin-top: 60px; border: 1px solid var(--border-soft); border-radius: 4px; overflow: hidden; }
+  .fact { background: var(--surface); padding: 32px 28px; }
+  .fact-num { font-family: var(--font-heading); font-size: 48px; font-weight: 400; font-style: normal; color: var(--accent); line-height: 1; margin-bottom: 8px; }
+  .fact-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .fact-desc { font-size: 12px; color: rgba(0,0,0,.38); line-height: 1.6; }
+
+  /* ── JOIN ── */
+  #join { background: var(--bg); text-align: center; padding: 120px 40px; }
+  .join-inner { max-width: 600px; margin: 0 auto; }
+  .join-inner .section-body { margin: 0 auto 40px; text-align: center; }
+  .join-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 18px 40px; border-radius: 100px;
+    background: rgba(255,255,255,.72); color: var(--text);
+    border: 1.5px solid var(--border-strong);
+    backdrop-filter: blur(14px);
+    font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    text-decoration: none; transition: all .22s; cursor: pointer;
+  }
+  .join-btn:hover { background: #fff; border-color: rgba(0,0,0,.2); box-shadow: 0 8px 32px rgba(0,0,0,.08); transform: translateY(-2px); }
+
+  /* ── FOOTER ── */
+  footer { border-top: 1px solid var(--border-soft); padding: 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .footer-logo { display: flex; align-items: center; text-decoration: none; }
+  .footer-logo svg { height: 15px; width: auto; color: rgba(0,0,0,.42); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(0,0,0,.38); text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-copy { font-size: 10px; letter-spacing: 1px; color: rgba(0,0,0,.32); }
+
+  input, textarea, select {
+    background: #f7f5f2;
+    color: var(--text);
+    border: 1px solid var(--border-soft);
+  }
+
+  .modal, .confirm-box {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+  }
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  #navbar { padding: 0 24px; }
+
+  .scroll-hint {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: max-content;
+  }
+
+  section { padding: 72px 24px; }
+  .divider { margin: 0 24px; }
+
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .about-tag { bottom: -12px; right: -12px; }
+
+  .photo-grid { grid-template-columns: 1fr; }
+
+  .photo-item:first-child .photo-frame,
+  .photo-item:not(:first-child) .photo-frame {
+    aspect-ratio: 16/9;
+  }
+
+  .facts-grid { grid-template-columns: 1fr; }
+
+  footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 32px 24px;
+  }
+
+  .hero-logo svg { height: 28px; }
+  .drawer-link { font-size: 22px; }
+}
+
+/* ── VIDEO FIXES ── */
+
+/* Nuke ALL native iOS video controls including Low Power Mode overlay */
+video::-webkit-media-controls,
+video::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-overlay-play-button,
+video::-webkit-media-controls-overlay-enclosure,
+video::-webkit-media-controls-timeline,
+video::-webkit-media-controls-volume-slider,
+video::-webkit-media-controls-mute-button,
+video::-webkit-media-controls-fullscreen-button {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  -webkit-appearance: none !important;
+}
+
+/* video-wrap: full bleed, no interaction */
+.video-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Both fallback img and video fill the container */
+.video-wrap .fallback-img,
+.video-wrap video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback always underneath */
+.video-wrap .fallback-img {
+  z-index: 0;
+  display: block;
+}
+
+/* Video on top when autoplay works */
+.video-wrap video {
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* When autoplay fails: fade video out, fallback shows through */
+.video-wrap.fallback video {
+  opacity: 0;
+}
+
+/* Overlay gradient: never blocks touches */
+.overlay {
+  pointer-events: none;
+}
+
 </style>
 </head>
 <body>
 
-<!-- SVG LOGO SYMBOL (same as main site) -->
+<!-- SVG LOGO SYMBOL -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
   <symbol id="dpc-logo" viewBox="0 0 164 27">
     <path d="M51.6564 21.3597L58.333 4.76935H60.2214L53.5448 21.3597H51.6564ZM59.9442 21.3597L66.6208 4.76935H68.5091L61.8326 21.3597H59.9442Z" fill="currentColor" transform="translate(-51 0)"/>
@@ -385,452 +536,292 @@
 
 <!-- NAV -->
 <nav id="navbar">
-  <a class="nav-logo" href="/">
+  <a class="nav-logo" href="#home">
     <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
   </a>
-  <a class="nav-back" href="/">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-      <path d="M10 3L5 8l5 5"/>
-    </svg>
-    Back to home
-  </a>
+  <div class="nav-actions">
+    <a class="nav-login" href="./login.html">Login</a>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </nav>
 
-<!-- MAIN -->
-<div class="page-wrap">
+<div class="drawer-overlay" id="drawerOverlay"></div>
 
-  <!-- LEFT DECORATIVE PANEL -->
-  <div class="left-panel">
-    <div class="left-bg-img"></div>
-    <div class="left-overlay"></div>
-    <div class="left-content">
-      <div class="left-eyebrow">Delhi · India</div>
-      <div class="left-title">Track your<br/>game.</div>
-      <p class="left-body">
-        Your rankings, match history, and points — all in one place. Log in to see where you stand in the collective.
-      </p>
-      <div class="left-stats">
-        <div class="stat-item">
-          <div class="stat-num">48+</div>
-          <div class="stat-label">Active Players</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">120+</div>
-          <div class="stat-label">Matches Played</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-num">Est. 2026</div>
-          <div class="stat-label">Delhi NCR</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT FORM PANEL -->
-  <div class="right-panel">
-    <div class="form-box">
-
-      <!-- AUTH FORMS -->
-      <div id="authForms">
-        <div class="form-eyebrow">Member Portal</div>
-        <div class="form-title" id="formTitle">Welcome<br/>back.</div>
-
-        <div class="tab-row">
-          <button class="tab-btn active" onclick="switchTab('login')">Log In</button>
-          <button class="tab-btn" onclick="switchTab('register')">Register</button>
-          <button class="tab-btn" onclick="switchTab('forgot')" id="forgotTab" style="display:none">Reset</button>
-        </div>
-
-        <!-- LOGIN FORM -->
-        <div class="form-panel active" id="loginPanel">
-          <div class="alert alert-error" id="loginError"></div>
-          <div class="alert alert-success" id="loginSuccess"></div>
-
-          <div class="field-group">
-            <label class="field-label" for="loginEmail">WhatsApp Number</label>
-            <input class="field-input" type="tel" id="loginEmail" placeholder="98xxxxxxxx" autocomplete="username"/>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="loginPassword">Password</label>
-            <input class="field-input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
-          </div>
-
-          <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
-            <span id="loginBtnText">Log In</span>
-            <div class="spinner" id="loginSpinner"></div>
-          </button>
-
-          <div class="switch-text">
-            Not a member yet? <a href="#" onclick="switchTab('register'); return false;">Register here</a>
-          </div>
-          <div class="switch-text" style="margin-top:10px;">
-            <a href="#" onclick="switchTab('forgot'); return false;">Forgot password?</a>
-          </div>
-        </div>
-
-        <!-- REGISTER FORM -->
-        <div class="form-panel" id="registerPanel">
-          <div class="alert alert-error" id="registerError"></div>
-          <div class="alert alert-success" id="registerSuccess"></div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label class="field-label" for="regFirst">First Name</label>
-              <input class="field-input" type="text" id="regFirst" placeholder="Arjun"/>
-            </div>
-            <div class="field-group">
-              <label class="field-label" for="regLast">Last Name</label>
-              <input class="field-input" type="text" id="regLast" placeholder="Sharma"/>
-            </div>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="regPhone">WhatsApp Number</label>
-            <input class="field-input" type="tel" id="regPhone" placeholder="98xxxxxxxx"/>
-            <div class="field-hint">This is your login ID — must match what you used on your application.</div>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="regPassword">Password</label>
-            <input class="field-input" type="password" id="regPassword" placeholder="Min. 8 characters" autocomplete="new-password"/>
-          </div>
-
-          <button class="submit-btn" id="registerBtn" onclick="handleRegister()">
-            <span id="registerBtnText">Create Account</span>
-            <div class="spinner" id="registerSpinner"></div>
-          </button>
-
-          <div class="switch-text">
-            Already have an account? <a href="#" onclick="switchTab('login'); return false;">Log in</a>
-          </div>
-        </div>
-        <!-- FORGOT PASSWORD PANEL -->
-        <div class="form-panel" id="forgotPanel">
-          <div class="alert alert-error"  id="forgotError"></div>
-          <div class="alert alert-success" id="forgotSuccess"></div>
-
-          <div class="field-group">
-            <label class="field-label" for="forgotPhone">WhatsApp Number</label>
-            <input class="field-input" type="tel" id="forgotPhone" placeholder="98xxxxxxxx"/>
-            <div class="field-hint">Enter your registered number to reset your password.</div>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="forgotNewPass">New Password</label>
-            <input class="field-input" type="password" id="forgotNewPass" placeholder="Min. 8 characters"/>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="forgotConfirmPass">Confirm Password</label>
-            <input class="field-input" type="password" id="forgotConfirmPass" placeholder="Repeat new password"/>
-          </div>
-
-          <button class="submit-btn" id="forgotBtn" onclick="handleForgotPassword()">
-            <span id="forgotBtnText">Reset Password</span>
-            <div class="spinner" id="forgotSpinner"></div>
-          </button>
-
-          <div class="switch-text" style="margin-top:16px;">
-            <a href="#" onclick="switchTab('login'); return false;">← Back to login</a>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- DASHBOARD (shown after login) -->
-      <div class="dashboard" id="dashboard">
-        <div class="dash-header">
-          <div class="dash-eyebrow">Member Portal</div>
-          <div class="dash-name" id="dashName">Welcome back.</div>
-        </div>
-
-        <div class="dash-stats-row">
-          <div class="dash-stat">
-            <div class="dash-stat-num" id="dashRank">—</div>
-            <div class="dash-stat-label">Ranking</div>
-          </div>
-          <div class="dash-stat">
-            <div class="dash-stat-num" id="dashPoints">—</div>
-            <div class="dash-stat-label">Points</div>
-          </div>
-          <div class="dash-stat">
-            <div class="dash-stat-num" id="dashMatches">—</div>
-            <div class="dash-stat-label">Matches</div>
-          </div>
-        </div>
-
-        <div class="dash-section-title">Recent Matches</div>
-        <div class="match-list" id="matchList">
-          <!-- Populated by JS -->
-          <div style="font-size:13px;color:var(--muted);padding:16px 0;">No matches recorded yet. Get on court!</div>
-        </div>
-
-        <div style="margin-top:24px;">
-          <a href="/leaderboard/" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);text-decoration:none;">
-            View Full Leaderboard →
-          </a>
-        </div>
-
-        <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
-      </div>
-
-    </div>
-  </div>
+<!-- DRAWER -->
+<div class="drawer" id="drawer">
+  <nav class="drawer-nav">
+    <a class="drawer-link" href="#home"      onclick="closeDrawer()">Home</a>
+    <!-- <a class="drawer-link" href="#about"     onclick="closeDrawer()">Our Story</a> -->
+   <!-- <a class="drawer-link" href="#lifestyle" onclick="closeDrawer()">Journal</a> -->
+<a class="drawer-link" href="/calender/">Calendar</a>
+<a class="drawer-link" href="/leaderboard/">Leaderboard</a>
+<a class="drawer-link cta-link" href="/Application/" onclick="closeDrawer()">Apply to Join →</a>
+<a class="drawer-link utility-link" href="./login.html">Login</a>
+  </nav>
 </div>
 
+<!-- HERO -->
+<section id="home" style="padding:0">
+  <div class="video-wrap" id="videoWrap">
+  <img src="fallback.jpeg" class="fallback-img" alt=""/>
+  <video id="bgVideo" autoplay muted loop playsinline webkit-playsinline x5-playsinline>
+    <source src="padel.mp4" type="video/mp4"/>
+  </video>
+</div>
+  <div class="overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">New Delhi &nbsp;·&nbsp; India</div>
+    <div class="hero-logo">
+      <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
+    </div>
+    <div class="hero-ctas">
+     <a class="cta cta-primary"
+       href="/Application/">Apply to Join</a>
+    <a class="cta cta-primary"
+       href="/calender/">Monthly Calendar</a>
+      <a class="cta cta-primary"
+       href="/leaderboard/">
+             Leaderboard</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-arrow"></div>
+    Scroll
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT hidden for now -->
+<section id="about" style="display:none">
+  <div class="about-grid">
+    <div class="about-img-wrap">
+      <div class="about-img">
+        <!--
+          ADD YOUR PHOTO HERE:
+          Replace the placeholder div below with:
+          <img src="your-photo.jpg" alt="Delhi Padel Collective"/>
+        -->
+        <div class="about-img-placeholder">
+          <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
+        </div>
+        <div class="about-tag">Est. 2026 · Delhi</div>
+      </div>
+    </div>
+    <div>
+      <div class="section-eyebrow">Our Story</div>
+      <div class="section-title">Where Delhi<br/>plays padel.</div>
+      <p class="section-body">
+        Delhi//PadelCollective was born from a simple idea — bring together the city's most curious, competitive, and community-driven players under one collective.
+        <br/><br/>
+        We're not a club. We're a movement. From first-timers picking up a racket to seasoned players chasing rankings, everyone has a court here.
+        <br/><br/>
+        We run regular sessions, track player rankings, and connect the padel community across Delhi — one match at a time.
+      </p>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="display:none"></div>
+
+<!-- PHOTOS hidden for now -->
+<section id="life" style="display:none">
+  <div class="life-inner">
+    <div class="life-header">
+      <div>
+        <div class="section-eyebrow">On Court</div>
+        <div class="section-title">Life at<br/>DPC.</div>
+      </div>
+    </div>
+    <div class="photo-grid">
+
+      <div class="photo-item">
+        <div class="photo-frame">
+          <!--
+            ADD PHOTO 1 HERE — replace placeholder div with:
+            <img src="photo1.jpg" alt="DPC Session"/>
+          -->
+          <div class="photo-frame-placeholder">📸</div>
+        </div>
+        <div>
+          <div class="photo-label">Sessions</div>
+          <div class="photo-caption">Early morning courts, good company, and the kind of rallies you talk about all week.</div>
+        </div>
+      </div>
+
+      <div class="photo-item">
+        <div class="photo-frame">
+          <!--
+            ADD PHOTO 2 HERE — replace placeholder div with:
+            <img src="photo2.jpg" alt="DPC Community"/>
+          -->
+          <div class="photo-frame-placeholder">📸</div>
+        </div>
+        <div>
+          <div class="photo-label">Community</div>
+          <div class="photo-caption">From first-timers to ranked players — everyone belongs on our court.</div>
+        </div>
+      </div>
+
+      <div class="photo-item">
+        <div class="photo-frame">
+          <!--
+            ADD PHOTO 3 HERE — replace placeholder div with:
+            <img src="photo3.jpg" alt="DPC Life"/>
+          -->
+          <div class="photo-frame-placeholder">📸</div>
+        </div>
+        <div>
+          <div class="photo-label">The Collective</div>
+          <div class="photo-caption">Delhi's padel scene, one session at a time.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="display:none"></div>
+
+<!-- PADEL 101 -->
+<section id="padel101" style="display:none">
+  <div class="padel101-inner">
+    <div class="section-eyebrow">Padel 101</div>
+    <div class="section-title">New to the<br/>game?</div>
+    <p class="section-body">Padel is doubles, played in a glass-walled enclosed court. Smaller than tennis, more social, faster to learn — and impossibly addictive.</p>
+    <div class="pills-row">
+      <div class="pill-card"><span class="pill-icon">🎾</span><span class="pill-text">Played on a 10m × 20m enclosed court</span></div>
+      <div class="pill-card"><span class="pill-icon">👥</span><span class="pill-text">Always doubles — 4 players per match</span></div>
+      <div class="pill-card"><span class="pill-icon">🧱</span><span class="pill-text">Glass walls are in play — use them</span></div>
+      <div class="pill-card"><span class="pill-icon">🏸</span><span class="pill-text">Solid rackets, no strings</span></div>
+      <div class="pill-card"><span class="pill-icon">⚡</span><span class="pill-text">Easiest racket sport to pick up</span></div>
+      <div class="pill-card"><span class="pill-icon">🌍</span><span class="pill-text">25M+ players worldwide</span></div>
+    </div>
+    <div class="facts-grid">
+      <div class="fact">
+        <div class="fact-num">25M</div>
+        <div class="fact-title">Players Worldwide</div>
+        <div class="fact-desc">Padel is now the world's fastest-growing sport, played in 90+ countries.</div>
+      </div>
+      <div class="fact">
+        <div class="fact-num">60min</div>
+        <div class="fact-title">Average Session</div>
+        <div class="fact-desc">A typical match lasts 60–90 minutes. High intensity, maximum fun.</div>
+      </div>
+      <div class="fact">
+        <div class="fact-num">3 sets</div>
+        <div class="fact-title">Match Format</div>
+        <div class="fact-desc">Best of 3 sets, same scoring as tennis. First to 6 games wins a set.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="display:none"></div>
+
+<!-- JOIN -->
+<section id="join">
+  <div class="join-inner">
+    <div class="section-eyebrow">Membership</div>
+    <div class="section-title">Ready to play?</div>
+    <p class="section-body">We're a curated collective — spots are limited. Apply to join and we'll reach out via WhatsApp with everything you need to get on court.</p>
+    <button class="join-btn cta-dark" onclick="applyAlert()">Apply to Join →</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#home" class="footer-logo">
+    <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
+  </a>
+  <div class="footer-links">
+    <!-- <a href="#about">About</a> -->
+   <a href="/calender/">Calendar</a>
+<a href="/leaderboard/">Rankings</a>
+    <a href="https://instagram.com/delhipadelcollective" target="_blank">Instagram</a>
+  </div>
+  <div class="footer-copy">© 2025 Delhi//PadelCollective</div>
+</footer>
+
 <script>
-// ─── CONFIG ───────────────────────────────────────────────
-const PLAYERS_API  = 'https://script.google.com/macros/s/AKfycbxBKSqH8hrrf_8K55R1jOZm8g7tY4phD0pL_dSLgV3_0eSaI05kMGGAur5EhWDLCSyN/exec';
-const MATCHES_API  = 'https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec';
-const APPS_SCRIPT_URL = PLAYERS_API;
+  const hamburger = document.getElementById("hamburger");
+  const drawer    = document.getElementById("drawer");
+  const overlay   = document.getElementById("drawerOverlay");
 
-// ─── TAB SWITCHING ────────────────────────────────────────
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b, i) => {
-    b.classList.toggle('active',
-      (i === 0 && tab === 'login') ||
-      (i === 1 && tab === 'register')
-    );
+  hamburger.addEventListener("click", () => {
+    const isOpen = drawer.classList.toggle("open");
+    overlay.classList.toggle("open", isOpen);
+    hamburger.classList.toggle("open", isOpen);
+    document.body.style.overflow = isOpen ? "hidden" : "auto";
   });
-  document.getElementById('loginPanel').classList.toggle('active',    tab === 'login');
-  document.getElementById('registerPanel').classList.toggle('active', tab === 'register');
-  document.getElementById('forgotPanel').classList.toggle('active',   tab === 'forgot');
-  // Show/hide forgot tab button
-  document.getElementById('forgotTab').style.display = tab === 'forgot' ? 'inline-block' : 'none';
-  const titles = { login: 'Welcome<br/>back.', register: 'Join the<br/>collective.', forgot: 'Reset your<br/>password.' };
-  document.getElementById('formTitle').innerHTML = titles[tab] || titles.login;
-  clearAlerts();
-}
 
-function clearAlerts() {
-  document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
-}
-
-function showAlert(id, msg) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.classList.add('show');
-}
-
-function setLoading(panel, loading) {
-  const btn = document.getElementById(panel + 'Btn');
-  const txt = document.getElementById(panel + 'BtnText');
-  const sp  = document.getElementById(panel + 'Spinner');
-  btn.classList.toggle('loading', loading);
-  btn.disabled = loading;
-  txt.style.opacity = loading ? '0' : '1';
-  sp.classList.toggle('show', loading);
-}
-
-function isMissingPlayerError(message) {
-  const text = String(message || '').toLowerCase();
-  return (
-    text.includes('not in our system') ||
-    text.includes('apply to join') ||
-    text.includes('number is not in our system') ||
-    text.includes('player not found') ||
-    text.includes('not found')
-  );
-}
-
-function saveSessionAndRedirect(player, phone) {
-  localStorage.setItem('dpcPlayerSession', JSON.stringify(player));
-  localStorage.setItem('dpcPlayerPhone', phone);
-  window.location.href = './dashboard.html';
-}
-
-// ─── LOGIN ────────────────────────────────────────────────
-async function handleLogin() {
-  clearAlerts();
-  const phone    = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-
-  if (!phone || !password) {
-    showAlert('loginError', 'Please enter your phone number and password.');
-    return;
+  overlay.addEventListener("click", closeDrawer);
+  function closeDrawer() {
+    drawer.classList.remove("open");
+    overlay.classList.remove("open");
+    hamburger.classList.remove("open");
+    document.body.style.overflow = "";
   }
 
-  setLoading('login', true);
+  document.addEventListener("keydown", e => { 
+    if(e.key === "Escape") closeDrawer(); 
+  });
 
-  try {
-    const loginRes = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'login', phone, password })
+  window.addEventListener("scroll", () => {
+    document.getElementById("navbar").classList.toggle("scrolled", window.scrollY > 60);
+  });
+
+  const bgVideo = document.getElementById("bgVideo");
+  const videoWrap = document.getElementById("videoWrap");
+
+  // Ensure muted (required for autoplay on all browsers)
+  bgVideo.muted = true;
+  bgVideo.volume = 0;
+
+  function tryPlay() {
+    bgVideo.muted = true;
+    const p = bgVideo.play();
+    if (p !== undefined) {
+      p.then(() => {
+        // Playing fine — hide fallback
+        videoWrap.classList.remove("fallback");
+      }).catch(() => {
+        // Blocked (Low Power Mode, etc.) — show fallback image
+        videoWrap.classList.add("fallback");
+        // Listen for ANY touch on document to retry
+        document.addEventListener("touchend", retryOnTouch, { once: true, passive: true });
+      });
+    }
+  }
+
+  function retryOnTouch() {
+    bgVideo.muted = true;
+    bgVideo.play().then(() => {
+      videoWrap.classList.remove("fallback");
+    }).catch(() => {
+      // Still blocked — keep fallback, try again next touch
+      document.addEventListener("touchend", retryOnTouch, { once: true, passive: true });
     });
-    const loginData = await loginRes.json();
-    if (!loginData.success) throw new Error(loginData.message || 'Login failed.');
-
-    const player = loginData.player;
-    saveSessionAndRedirect(player, phone);
-} catch(e) {
-
-  showAlert('loginError', e.message);
-
-} finally {
-
-  setLoading('login', false);
-
-}
-}
-
-// ─── REGISTER ─────────────────────────────────────────────
-async function handleRegister() {
-  clearAlerts();
-  const first    = document.getElementById('regFirst').value.trim();
-  const last     = document.getElementById('regLast').value.trim();
-  const phone    = document.getElementById('regPhone').value.trim();
-  const password = document.getElementById('regPassword').value;
-
-  if (!first || !last || !phone || !password) {
-    showAlert('registerError', 'Please fill in all fields.');
-    return;
-  }
-  if (password.length < 8) {
-    showAlert('registerError', 'Password must be at least 8 characters.');
-    return;
   }
 
-  setLoading('register', true);
+  bgVideo.addEventListener("error", () => {
+    videoWrap.classList.add("fallback");
+  });
 
-  try {
-    const res = await fetch(PLAYERS_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'register', name: `${first} ${last}`, phone, password })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message || 'Registration failed.');
-    showAlert('registerSuccess', `Account created for ${first}! You can now log in.`);
-    setTimeout(() => switchTab('login'), 2000);
-
-  }  catch(e) {
-
-  showAlert('registerError', e.message);
-
-} finally {
-
-  setLoading('register', false);
-
-}
-}
-
-// ─── SHOW DASHBOARD ───────────────────────────────────────
-function showDashboard(player, matches) {
-  document.getElementById('authForms').style.display = 'none';
-  const dash = document.getElementById('dashboard');
-  dash.classList.add('show');
-
-  document.getElementById('dashName').textContent    = player.name || player;
-  document.getElementById('dashRank').textContent    = player.rank ? '#' + player.rank : '—';
-  document.getElementById('dashPoints').textContent  = player.totalPoints ?? player.points ?? '—';
-  document.getElementById('dashMatches').textContent = matches.length || 0;
-
-  const list = document.getElementById('matchList');
-  if (matches && matches.length) {
-    list.innerHTML = matches.map(m => {
-      const isAm = String(m.matchId).toUpperCase().startsWith('AM');
-      if (isAm) {
-        const rounds = m.roundScores ? m.roundScores.split(',').map(s => s.trim()) : [];
-        const opponentNames = (m.opponents || []).map(o => o.playerName).join(', ');
-        return `
-          <div class="match-row">
-            <div class="match-left">
-              <div class="match-date">${m.date || ''}</div>
-              <div class="match-name">Americano · ${m.matchId}</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px;">vs ${opponentNames || 'others'}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div style="text-align:right;">
-                <div class="match-score">Total: ${m.total || '—'}</div>
-                <div style="font-size:11px;color:var(--muted);">Rank #${m.rank || '—'}</div>
-                <div style="font-size:10px;color:var(--muted);margin-top:2px;">${rounds.join(' · ')}</div>
-              </div>
-            </div>
-          </div>`;
-      } else {
-        const type = String(m.matchId).toUpperCase().startsWith('TM') ? 'Tournament' : 'Personal';
-        return `
-          <div class="match-row">
-            <div class="match-left">
-              <div class="match-date">${m.date || ''}</div>
-              <div class="match-name">${type} · ${m.matchId}</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px;">
-                w/ ${m.partner || '—'} vs ${m.opp1 || '—'} & ${m.opp2 || '—'}
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div class="match-score">${m.score || '—'}</div>
-              <div class="match-badge ${m.result === 'W' ? 'badge-w' : 'badge-l'}">${m.result || '—'}</div>
-            </div>
-          </div>`;
-      }
-    }).join('');
-  } else {
-    list.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:16px 0;">No matches recorded yet. Get on court!</div>';
-  }
-}
-
-// ─── FORGOT PASSWORD ──────────────────────────────────────
-async function handleForgotPassword() {
-  clearAlerts();
-  const phone    = document.getElementById('forgotPhone').value.trim();
-  const newPass  = document.getElementById('forgotNewPass').value;
-  const confirm  = document.getElementById('forgotConfirmPass').value;
-
-  if (!phone || !newPass || !confirm) {
-    showAlert('forgotError', 'Please fill in all fields.'); return;
-  }
-  if (newPass.length < 8) {
-    showAlert('forgotError', 'Password must be at least 8 characters.'); return;
-  }
-  if (newPass !== confirm) {
-    showAlert('forgotError', 'Passwords do not match.'); return;
+  // Try immediately, and again on load
+  tryPlay();
+  window.addEventListener("load", tryPlay);
+  function applyAlert() {
+   window.location.href = "/Application/";
   }
 
-  setLoading('forgot', true);
-
-  try {
-    const res  = await fetch(PLAYERS_API, {
-      method:  'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body:    JSON.stringify({ action: 'updatePassword', phone, newPassword: newPass })
-    });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.message || 'Reset failed.');
-    showAlert('forgotSuccess', 'Password reset! You can now log in.');
-    setTimeout(() => switchTab('login'), 2000);
-  } catch(e) {
-    showAlert('forgotError', e.message);
-  } finally {
-    setLoading('forgot', false);
-  }
-}
-
-function handleLogout() {
-  localStorage.removeItem('dpcPlayerSession');
-  localStorage.removeItem('dpcPlayerPhone');
-  document.getElementById('dashboard').classList.remove('show');
-  document.getElementById('authForms').style.display = '';
-  document.getElementById('loginEmail').value = '';
-  document.getElementById('loginPassword').value = '';
-  switchTab('login');
-}
-
-function redirectIfLoggedIn() {
-  const savedSession = localStorage.getItem('dpcPlayerSession');
-  const savedPhone = localStorage.getItem('dpcPlayerPhone');
-  if (savedSession && savedPhone) {
-    window.location.href = './dashboard.html';
-  }
-}
-
-// Enter key support
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  if (document.getElementById('loginPanel').classList.contains('active'))  handleLogin();
-  else if (document.getElementById('forgotPanel').classList.contains('active')) handleForgotPassword();
-  else handleRegister();
-});
-
-redirectIfLoggedIn();
+  document.getElementById("applyBtn").addEventListener("click", e => {
+    e.preventDefault(); 
+    applyAlert();
+  });
 </script>
-
 </body>
 </html>
