@@ -1,1 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Login · //PadelCollectiveIndia</title>
+<link rel="icon" type="image/png" href="logo.png">
+<meta name="description" content="Login or create your Delhi Padel Collective account to track rankings, matches, and points."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  @font-face {
+    font-family: 'Berling';
+    src: url('Berling Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+  }
+  :root {
+    --font-heading: 'Berling', Georgia, serif;
+    --font-body: -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+    --bg: #f7f5f2;
+    --surface: #ffffff;
+    --surface-hover: #f0ede9;
+    --text: #171513;
+    --muted: rgba(0,0,0,.38);
+    --border-soft: rgba(0,0,0,.08);
+    --border-strong: rgba(0,0,0,.14);
+    --accent: #CB5957;
+    --accent-hover: #b84d4c;
+    --accent-glow: rgba(203,89,87,.35);
+    --accent-light: rgba(203,89,87,.12);
+    --success: #4a8c42;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
+  /* ── NAV ── */
+  #navbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    padding: 0 40px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(247,245,242,.86);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .nav-logo { display: flex; align-items: center; text-decoration: none; }
+  .nav-logo svg { height: 17px; width: 145px; color: var(--text); }
+  .nav-back {
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted);
+    text-decoration: none; transition: color .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-back:hover { color: var(--text); }
+  .nav-back svg { width: 14px; height: 14px; }
+
+  /* ── MAIN LAYOUT ── */
+  .page-wrap {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* LEFT PANEL */
+  .left-panel {
+    position: relative;
+    overflow: hidden;
+    background: var(--text);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 64px 60px;
+    min-height: 100vh;
+  }
+  .left-bg-img {
+    position: absolute; inset: 0;
+    background-image: url('fallback.jpeg');
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+    filter: brightness(.55) saturate(.8);
+    transition: transform 8s ease;
+  }
+  .left-panel:hover .left-bg-img { transform: scale(1.04); }
+  .left-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(
+      170deg,
+      rgba(23,21,19,.1) 0%,
+      rgba(23,21,19,.5) 50%,
+      rgba(23,21,19,.85) 100%
+    );
+  }
+  .left-content {
+    position: relative; z-index: 2;
+  }
+  .left-eyebrow {
+    font-size: 9px; font-weight: 600; letter-spacing: 4px;
+    text-transform: uppercase; color: rgba(255,255,255,.45);
+    margin-bottom: 16px;
+  }
+  .left-title {
+    font-family: var(--font-heading);
+    font-size: clamp(36px, 3.5vw, 52px);
+    font-weight: 400;
+    color: rgba(255,255,255,.92);
+    line-height: 1.08;
+    letter-spacing: -.5px;
+    margin-bottom: 20px;
+  }
+  .left-body {
+    font-size: 14px; color: rgba(255,255,255,.45);
+    line-height: 1.75; font-weight: 300;
+    max-width: 340px;
+  }
+  .left-stats {
+    display: flex; gap: 32px; margin-top: 40px;
+  }
+  .stat-item {}
+  .stat-num {
+    font-family: var(--font-heading);
+    font-size: 28px; font-weight: 400;
+    color: rgba(255,255,255,.85);
+    letter-spacing: -0.5px;
+  }
+  .stat-label {
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 2.5px; text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+    margin-top: 2px;
+  }
+
+  /* RIGHT PANEL */
+  .right-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 60px 60px;
+    background: var(--bg);
+  }
+  .form-box {
+    width: 100%;
+    max-width: 400px;
+  }
+  .form-eyebrow {
+    font-size: 9px; font-weight: 600; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .form-title {
+    font-family: var(--font-heading);
+    font-size: 36px; font-weight: 400;
+    line-height: 1.1; letter-spacing: -.5px;
+    color: var(--text);
+    margin-bottom: 36px;
+  }
+  .tab-row {
+    display: flex;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 32px;
+    gap: 0;
+  }
+  .tab-btn {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted);
+    background: none; border: none; cursor: pointer;
+    padding: 0 0 12px;
+    margin-right: 24px;
+    border-bottom: 1.5px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  .tab-btn.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  /* FORMS */
+  .form-panel { display: none; }
+  .form-panel.active { display: block; animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  .field-group { margin-bottom: 20px; }
+  .field-label {
+    display: block;
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .field-input {
+    width: 100%;
+    padding: 13px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+  }
+  .field-input::placeholder { color: rgba(0,0,0,.28); }
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  .field-hint {
+    font-size: 11px; color: var(--muted);
+    margin-top: 6px; line-height: 1.5;
+  }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .2s, transform .15s;
+    margin-top: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .submit-btn:hover { background: #2e2b28; transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn.loading { opacity: .7; cursor: not-allowed; }
+
+  .divider-or {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; color: var(--muted); font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .divider-or::before, .divider-or::after {
+    content: ""; flex: 1;
+    height: 1px; background: var(--border-soft);
+  }
+
+  .switch-text {
+    text-align: center;
+    font-size: 12px; color: var(--muted);
+    margin-top: 20px;
+  }
+  .switch-text a {
+    color: var(--accent); text-decoration: none; font-weight: 500;
+  }
+  .switch-text a:hover { text-decoration: underline; }
+
+  /* ALERTS */
+  .alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 13px; line-height: 1.5;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .alert.show { display: block; animation: fadeIn .3s ease; }
+  .alert-error { background: rgba(181,79,79,.08); border: 1px solid rgba(181,79,79,.2); color: #8b3a3a; }
+  .alert-success { background: rgba(74,140,66,.08); border: 1px solid rgba(74,140,66,.2); color: #2d6128; }
+
+  /* DASHBOARD (post-login) */
+  .dashboard { display: none; }
+  .dashboard.show { display: block; animation: fadeIn .4s ease; }
+  .dash-header {
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 24px;
+    margin-bottom: 28px;
+  }
+  .dash-eyebrow {
+    font-size: 9px; font-weight: 600; letter-spacing: 4px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+  }
+  .dash-name {
+    font-family: var(--font-heading);
+    font-size: 32px; font-weight: 400;
+    line-height: 1.1;
+  }
+  .dash-stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 28px;
+  }
+  .dash-stat {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .dash-stat-num {
+    font-family: var(--font-heading);
+    font-size: 28px; font-weight: 400;
+    color: var(--text); letter-spacing: -.5px;
+  }
+  .dash-stat-label {
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-top: 4px;
+  }
+  .dash-section-title {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px;
+  }
+  .match-list { display: flex; flex-direction: column; gap: 8px; }
+  .match-row {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex; align-items: center;
+    justify-content: space-between;
+  }
+  .match-left {}
+  .match-date { font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+  .match-name { font-size: 13px; font-weight: 500; }
+  .match-score {
+    font-family: var(--font-heading);
+    font-size: 15px; font-weight: 400;
+  }
+  .match-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 8px; border-radius: 99px;
+  }
+  .badge-w { background: rgba(74,140,66,.1); color: #2d6128; }
+  .badge-l { background: rgba(181,79,79,.08); color: #8b3a3a; }
+  .logout-btn {
+    margin-top: 24px;
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted);
+    background: none; border: 1px solid var(--border-strong);
+    border-radius: 99px; padding: 10px 20px;
+    cursor: pointer; transition: color .2s, border-color .2s;
+  }
+  .logout-btn:hover { color: var(--text); border-color: var(--border-strong); }
+
+  /* SPINNER */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+    display: none;
+  }
+  .spinner.show { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    .page-wrap { grid-template-columns: 1fr; }
+    .left-panel { display: none; }
+    .right-panel { padding: 100px 32px 60px; }
+    #navbar { padding: 0 24px; }
+    .field-row { grid-template-columns: 1fr; }
+    .dash-stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 400px) {
+    .right-panel { padding: 88px 20px 48px; }
+    .form-title { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SVG LOGO SYMBOL (same as main site) -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="dpc-logo" viewBox="0 0 164 27">
+    <path d="M51.6564 21.3597L58.333 4.76935H60.2214L53.5448 21.3597H51.6564ZM59.9442 21.3597L66.6208 4.76935H68.5091L61.8326 21.3597H59.9442Z" fill="currentColor" transform="translate(-51 0)"/>
+    <path d="M70.0154 21.1957V20.528C71.4619 20.5058 71.8625 19.9717 71.8625 18.7255V7.82089C71.8625 6.57465 71.4619 6.04055 70.0154 6.0183V5.35067C70.772 5.39518 71.8625 5.41743 72.7972 5.41743C73.9766 5.41743 75.1561 5.35067 76.3356 5.35067C80.6974 5.35067 82.2329 7.28679 82.2329 9.84602C82.2329 12.4275 80.5416 13.9853 76.4468 13.9853C75.8015 13.9853 75.0226 13.963 74.6665 13.9185V18.7255C74.6665 19.9717 75.0671 20.5058 76.5136 20.528V21.1957C74.7333 21.1512 73.9766 21.1289 73.2645 21.1289C72.5524 21.1289 71.7957 21.1512 70.0154 21.1957ZM74.6665 6.10731V12.9839C75.0893 13.0729 75.6902 13.1396 76.1353 13.1396C78.1382 13.1396 79.3399 12.2272 79.3399 10.0686C79.3399 8.42175 78.5165 6.0183 75.6234 6.0183C75.2229 6.0183 74.9781 6.04055 74.6665 6.10731ZM91.9469 19.4598V20.1275C91.6798 20.1275 89.4989 20.9509 88.6533 21.3514C88.4307 20.9954 88.3195 20.4613 88.2972 20.1275C87.0065 21.0176 85.649 21.3514 84.8256 21.3514C83.5126 21.3514 82.3553 20.172 82.3553 19.0815C82.3553 17.1454 84.1579 16.2552 88.1637 15.7656V13.696C88.1637 12.4275 87.2513 11.9602 86.4279 11.9602C85.7825 11.9602 85.1149 12.1827 85.1149 13.0729C85.1149 13.2954 85.2261 13.696 85.4264 14.1188L82.9339 15.1203C82.6669 14.7197 82.5779 14.3636 82.5779 13.963C82.5779 12.2495 85.4709 11.0255 87.7186 11.0255C88.9871 11.0255 90.7007 11.9379 90.7007 14.0521V19.1038C90.7007 19.5934 90.8342 19.6824 91.168 19.6824C91.2793 19.6824 91.4351 19.6601 91.9469 19.4598ZM88.1637 18.7477V16.3443C86.2276 16.5445 85.0703 17.457 85.0703 18.4361C85.0703 19.4376 85.649 20.0607 86.6059 20.0607C87.1845 20.0607 87.8076 19.9049 88.2082 19.5934C88.1859 19.3931 88.1637 19.0593 88.1637 18.7477ZM98.8779 5.84026V5.17264C99.8348 5.17264 101.927 4.63853 102.995 4.1712V19.3041C102.995 19.7491 103.173 19.9494 103.574 19.9494C103.818 19.9494 103.996 19.8604 104.241 19.7269V20.3945C103.596 20.3945 101.66 21.1289 100.858 21.485C100.703 21.2179 100.525 20.7061 100.458 20.3278C99.5455 20.9731 98.4105 21.3514 97.2756 21.3514C94.7831 21.3514 92.6244 19.3041 92.6244 16.6113C92.6244 13.518 94.8276 11.0255 97.7652 11.0255C99.0114 11.0255 99.5455 11.1368 100.458 11.4928V6.44113C100.458 6.04055 100.302 5.75125 99.5677 5.75125C99.2562 5.75125 99.1004 5.7735 98.8779 5.84026ZM100.458 19.6601V12.6055C99.6345 11.9602 98.9224 11.6931 97.9877 11.6931C96.2741 11.6931 95.2504 13.2509 95.2504 15.4096C95.2504 17.5905 96.697 20.0607 98.8779 20.0607C99.6123 20.0607 100.102 19.8159 100.458 19.6601ZM114.451 18.5919L114.584 20.3278C113.449 21.0844 112.181 21.3514 110.645 21.3514C107.018 21.3514 105.371 18.9925 105.371 16.411C105.371 12.6501 108.019 11.0255 110.645 11.0255C112.359 11.0255 114.651 12.1159 114.651 15.8547H108.086C108.108 19.126 110.111 20.5058 111.558 20.5058C112.559 20.5058 113.538 20.0384 114.451 18.5919ZM108.086 15.187H111.936C111.936 13.0729 111.691 11.6931 110.111 11.6931C108.375 11.6931 108.108 13.3844 108.086 15.187ZM115.484 21.1957V20.528H115.662C116.352 20.528 116.753 20.1942 116.753 19.4821V6.64141C116.753 5.99604 116.597 5.72899 116.018 5.72899C115.774 5.72899 115.573 5.7735 115.395 5.81801V5.15038C116.731 4.9946 117.977 4.66079 119.29 4.1712V19.4821C119.29 20.1942 119.69 20.528 120.38 20.528H120.558V21.1957C119.846 21.1734 118.711 21.1289 118.021 21.1289C117.331 21.1289 116.197 21.1734 115.484 21.1957ZM137.234 6.3076V10.2911H136.655C136.166 7.0865 133.451 5.90703 130.78 5.90703C127.82 5.90703 124.95 8.24372 124.95 12.561C124.95 16.7448 127.353 20.5503 131.203 20.5503C132.872 20.5503 135.476 19.5711 137.39 16.5445L137.59 19.1705C135.253 20.8619 132.872 21.485 130.491 21.485C122.791 21.485 121.656 15.5208 121.656 13.0951C121.656 9.48995 124.215 5.06136 131.136 5.06136C132.538 5.06136 135.12 5.46194 137.234 6.3076ZM141.282 14.8087C141.282 16.5445 141.794 20.5948 144.308 20.5948C146.111 20.5948 146.489 19.1928 146.489 17.8575C146.489 15.9214 146 11.7821 143.574 11.7821C141.482 11.7821 141.282 13.3844 141.282 14.8087ZM138.656 16.411C138.656 12.6501 141.304 11.0255 143.93 11.0255C146.556 11.0255 149.204 12.6501 149.204 16.411C149.204 18.9925 147.291 21.3514 143.93 21.3514C140.303 21.3514 138.656 18.7255 138.656 16.411ZM150.03 21.1957V20.528H150.208C150.898 20.528 151.298 20.1942 151.298 19.4821V6.64141C151.298 5.99604 151.142 5.72899 150.564 5.72899C150.319 5.72899 150.119 5.7735 149.941 5.81801V5.15038C151.276 4.9946 152.522 4.66079 153.835 4.1712V19.4821C153.835 20.1942 154.236 20.528 154.926 20.528H155.104V21.1957C154.392 21.1734 153.257 21.1289 152.567 21.1289C151.877 21.1289 150.742 21.1734 150.03 21.1957ZM155.778 21.1957V20.528H155.956C156.646 20.528 157.047 20.1942 157.047 19.4821V6.64141C157.047 5.99604 156.891 5.72899 156.313 5.72899C156.068 5.72899 155.867 5.7735 155.689 5.81801V5.15038C157.025 4.9946 158.271 4.66079 159.584 4.1712V19.4821C159.584 20.1942 159.984 20.528 160.674 20.528H160.852V21.1957C160.14 21.1734 159.005 21.1289 158.315 21.1289C157.626 21.1289 156.491 21.1734 155.778 21.1957ZM170.763 18.5919L170.896 20.3278C169.761 21.0844 168.493 21.3514 166.957 21.3514C163.33 21.3514 161.683 18.9925 161.683 16.411C161.683 12.6501 164.331 11.0255 166.957 11.0255C168.671 11.0255 170.963 12.1159 170.963 15.8547H164.398C164.42 19.126 166.423 20.5058 167.87 20.5058C168.871 20.5058 169.85 20.0384 170.763 18.5919ZM164.398 15.187H168.248C168.248 13.0729 168.003 11.6931 166.423 11.6931C164.687 11.6931 164.42 13.3844 164.398 15.187ZM180.587 11.5151L180.72 14.1411H180.208C180.053 13.2954 179.14 11.6931 177.315 11.6931C175.713 11.6931 174.578 12.9394 174.578 15.2315C174.578 17.4125 176.002 20.5058 178.161 20.5058C179.229 20.5058 180.275 19.7269 180.831 18.9035V20.4168C179.897 20.8841 178.628 21.3514 177.271 21.3514C173.599 21.3514 171.952 18.9925 171.952 16.411C171.952 12.6501 174.6 11.0255 177.271 11.0255C178.272 11.0255 179.563 11.1813 180.587 11.5151ZM182.921 18.4139V12.2717H181.118V11.6041C182.253 10.9365 184.479 9.20065 185.458 7.97667V11.248H188.484L188.128 12.2717H185.458V18.6587C185.458 19.3263 185.769 19.8827 186.548 19.8827C187.038 19.8827 187.55 19.5711 188.017 19.126L188.395 19.7491L185.97 21.2847C185.792 21.3292 185.614 21.3514 185.458 21.3514C184.301 21.3514 182.921 20.6616 182.921 18.4139ZM188.618 21.1957V20.528H188.796C189.486 20.528 189.887 20.1942 189.887 19.4821V13.785C189.887 13.1842 189.731 12.9171 189.152 12.9171C189.019 12.9171 188.774 12.9616 188.529 13.0506V12.3385C189.085 12.2495 191.244 11.6264 192.424 11.0255V19.4821C192.424 20.1942 192.824 20.528 193.514 20.528H193.692V21.1957C192.98 21.1734 191.845 21.1289 191.155 21.1289C190.465 21.1289 189.33 21.1734 188.618 21.1957ZM189.508 7.55384C189.508 6.68592 190.198 5.99604 191.066 5.99604C191.934 5.99604 192.624 6.68592 192.624 7.55384C192.624 8.42175 191.934 9.11163 191.066 9.11163C190.198 9.11163 189.508 8.42175 189.508 7.55384ZM193.677 11.8489V11.1813C194.589 11.2035 195.858 11.248 196.303 11.248C196.748 11.248 198.017 11.2035 198.929 11.1813V11.8489H198.595C198.083 11.8489 197.861 12.0714 197.861 12.4498C197.861 12.6501 197.861 12.7391 198.172 13.4735L200.042 17.9466L201.488 13.7405C201.688 13.1619 201.778 12.8058 201.778 12.5388C201.778 11.9379 201.533 11.8489 200.442 11.8489V11.1813C200.999 11.2035 201.8 11.248 202.445 11.248C203.024 11.248 203.691 11.2035 204.248 11.1813V11.8489C203.402 11.8712 203.068 12.4053 202.645 13.4067L199.33 21.3514H198.929L195.235 13.0506C194.767 12.0047 194.567 11.9379 193.677 11.8489ZM213.459 18.5919L213.592 20.3278C212.457 21.0844 211.189 21.3514 209.653 21.3514C206.026 21.3514 204.379 18.9925 204.379 16.411C204.379 12.6501 207.027 11.0255 209.653 11.0255C211.367 11.0255 213.659 12.1159 213.659 15.8547H207.094C207.116 19.126 209.119 20.5058 210.565 20.5058C211.567 20.5058 212.546 20.0384 213.459 18.5919ZM207.094 15.187H210.944C210.944 13.0729 210.699 11.6931 209.119 11.6931C207.383 11.6931 207.116 13.3844 207.094 15.187Z" fill="currentColor" transform="translate(-51 0)"/>
+  </symbol>
+</svg>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a class="nav-logo" href="/">
+    <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
+  </a>
+  <a class="nav-back" href="/">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M10 3L5 8l5 5"/>
+    </svg>
+    Back to home
+  </a>
+</nav>
+
+<!-- MAIN -->
+<div class="page-wrap">
+
+  <!-- LEFT DECORATIVE PANEL -->
+  <div class="left-panel">
+    <div class="left-bg-img"></div>
+    <div class="left-overlay"></div>
+    <div class="left-content">
+      <div class="left-eyebrow">Delhi · India</div>
+      <div class="left-title">Track your<br/>game.</div>
+      <p class="left-body">
+        Your rankings, match history, and points — all in one place. Log in to see where you stand in the collective.
+      </p>
+      <div class="left-stats">
+        <div class="stat-item">
+          <div class="stat-num">48+</div>
+          <div class="stat-label">Active Players</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">120+</div>
+          <div class="stat-label">Matches Played</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">Est. 2026</div>
+          <div class="stat-label">Delhi NCR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT FORM PANEL -->
+  <div class="right-panel">
+    <div class="form-box">
+
+      <!-- AUTH FORMS -->
+      <div id="authForms">
+        <div class="form-eyebrow">Member Portal</div>
+        <div class="form-title" id="formTitle">Welcome<br/>back.</div>
+
+        <div class="tab-row">
+          <button class="tab-btn active" onclick="switchTab('login')">Log In</button>
+          <button class="tab-btn" onclick="switchTab('register')">Register</button>
+          <button class="tab-btn" onclick="switchTab('forgot')" id="forgotTab" style="display:none">Reset</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div class="form-panel active" id="loginPanel">
+          <div class="alert alert-error" id="loginError"></div>
+          <div class="alert alert-success" id="loginSuccess"></div>
+
+          <div class="field-group">
+            <label class="field-label" for="loginEmail">WhatsApp Number</label>
+            <input class="field-input" type="tel" id="loginEmail" placeholder="98xxxxxxxx" autocomplete="username"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="loginPassword">Password</label>
+            <input class="field-input" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"/>
+          </div>
+
+          <button class="submit-btn" id="loginBtn" onclick="handleLogin()">
+            <span id="loginBtnText">Log In</span>
+            <div class="spinner" id="loginSpinner"></div>
+          </button>
+
+          <div class="switch-text">
+            Not a member yet? <a href="#" onclick="switchTab('register'); return false;">Register here</a>
+          </div>
+          <div class="switch-text" style="margin-top:10px;">
+            <a href="#" onclick="switchTab('forgot'); return false;">Forgot password?</a>
+          </div>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div class="form-panel" id="registerPanel">
+          <div class="alert alert-error" id="registerError"></div>
+          <div class="alert alert-success" id="registerSuccess"></div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="regFirst">First Name</label>
+              <input class="field-input" type="text" id="regFirst" placeholder="Arjun"/>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="regLast">Last Name</label>
+              <input class="field-input" type="text" id="regLast" placeholder="Sharma"/>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="regPhone">WhatsApp Number</label>
+            <input class="field-input" type="tel" id="regPhone" placeholder="98xxxxxxxx"/>
+            <div class="field-hint">This is your login ID — must match what you used on your application.</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="regPassword">Password</label>
+            <input class="field-input" type="password" id="regPassword" placeholder="Min. 8 characters" autocomplete="new-password"/>
+          </div>
+
+          <button class="submit-btn" id="registerBtn" onclick="handleRegister()">
+            <span id="registerBtnText">Create Account</span>
+            <div class="spinner" id="registerSpinner"></div>
+          </button>
+
+          <div class="switch-text">
+            Already have an account? <a href="#" onclick="switchTab('login'); return false;">Log in</a>
+          </div>
+        </div>
+        <!-- FORGOT PASSWORD PANEL -->
+        <div class="form-panel" id="forgotPanel">
+          <div class="alert alert-error"  id="forgotError"></div>
+          <div class="alert alert-success" id="forgotSuccess"></div>
+
+          <div class="field-group">
+            <label class="field-label" for="forgotPhone">WhatsApp Number</label>
+            <input class="field-input" type="tel" id="forgotPhone" placeholder="98xxxxxxxx"/>
+            <div class="field-hint">Enter your registered number to reset your password.</div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="forgotNewPass">New Password</label>
+            <input class="field-input" type="password" id="forgotNewPass" placeholder="Min. 8 characters"/>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="forgotConfirmPass">Confirm Password</label>
+            <input class="field-input" type="password" id="forgotConfirmPass" placeholder="Repeat new password"/>
+          </div>
+
+          <button class="submit-btn" id="forgotBtn" onclick="handleForgotPassword()">
+            <span id="forgotBtnText">Reset Password</span>
+            <div class="spinner" id="forgotSpinner"></div>
+          </button>
+
+          <div class="switch-text" style="margin-top:16px;">
+            <a href="#" onclick="switchTab('login'); return false;">← Back to login</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DASHBOARD (shown after login) -->
+      <div class="dashboard" id="dashboard">
+        <div class="dash-header">
+          <div class="dash-eyebrow">Member Portal</div>
+          <div class="dash-name" id="dashName">Welcome back.</div>
+        </div>
+
+        <div class="dash-stats-row">
+          <div class="dash-stat">
+            <div class="dash-stat-num" id="dashRank">—</div>
+            <div class="dash-stat-label">Ranking</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-num" id="dashPoints">—</div>
+            <div class="dash-stat-label">Points</div>
+          </div>
+          <div class="dash-stat">
+            <div class="dash-stat-num" id="dashMatches">—</div>
+            <div class="dash-stat-label">Matches</div>
+          </div>
+        </div>
+
+        <div class="dash-section-title">Recent Matches</div>
+        <div class="match-list" id="matchList">
+          <!-- Populated by JS -->
+          <div style="font-size:13px;color:var(--muted);padding:16px 0;">No matches recorded yet. Get on court!</div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <a href="/leaderboard/" style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);text-decoration:none;">
+            View Full Leaderboard →
+          </a>
+        </div>
+
+        <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const PLAYERS_API  = 'https://script.google.com/macros/s/AKfycbxBKSqH8hrrf_8K55R1jOZm8g7tY4phD0pL_dSLgV3_0eSaI05kMGGAur5EhWDLCSyN/exec';
+const MATCHES_API  = 'https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec';
+const APPS_SCRIPT_URL = PLAYERS_API;
+
+// ─── TAB SWITCHING ────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active',
+      (i === 0 && tab === 'login') ||
+      (i === 1 && tab === 'register')
+    );
+  });
+  document.getElementById('loginPanel').classList.toggle('active',    tab === 'login');
+  document.getElementById('registerPanel').classList.toggle('active', tab === 'register');
+  document.getElementById('forgotPanel').classList.toggle('active',   tab === 'forgot');
+  // Show/hide forgot tab button
+  document.getElementById('forgotTab').style.display = tab === 'forgot' ? 'inline-block' : 'none';
+  const titles = { login: 'Welcome<br/>back.', register: 'Join the<br/>collective.', forgot: 'Reset your<br/>password.' };
+  document.getElementById('formTitle').innerHTML = titles[tab] || titles.login;
+  clearAlerts();
+}
+
+function clearAlerts() {
+  document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
+}
+
+function showAlert(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function setLoading(panel, loading) {
+  const btn = document.getElementById(panel + 'Btn');
+  const txt = document.getElementById(panel + 'BtnText');
+  const sp  = document.getElementById(panel + 'Spinner');
+  btn.classList.toggle('loading', loading);
+  btn.disabled = loading;
+  txt.style.opacity = loading ? '0' : '1';
+  sp.classList.toggle('show', loading);
+}
+
+function isMissingPlayerError(message) {
+  const text = String(message || '').toLowerCase();
+  return (
+    text.includes('not in our system') ||
+    text.includes('apply to join') ||
+    text.includes('number is not in our system') ||
+    text.includes('player not found') ||
+    text.includes('not found')
+  );
+}
+
+function saveSessionAndRedirect(player, phone) {
+  localStorage.setItem('dpcPlayerSession', JSON.stringify(player));
+  localStorage.setItem('dpcPlayerPhone', phone);
+  window.location.href = './dashboard.html';
+}
+
+// ─── LOGIN ────────────────────────────────────────────────
+async function handleLogin() {
+  clearAlerts();
+  const phone    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!phone || !password) {
+    showAlert('loginError', 'Please enter your phone number and password.');
+    return;
+  }
+
+  setLoading('login', true);
+
+  try {
+    const loginRes = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'login', phone, password })
+    });
+    const loginData = await loginRes.json();
+    if (!loginData.success) throw new Error(loginData.message || 'Login failed.');
+
+    const player = loginData.player;
+    saveSessionAndRedirect(player, phone);
+} catch(e) {
+
+  showAlert('loginError', e.message);
+
+} finally {
+
+  setLoading('login', false);
+
+}
+}
+
+// ─── REGISTER ─────────────────────────────────────────────
+async function handleRegister() {
+  clearAlerts();
+  const first    = document.getElementById('regFirst').value.trim();
+  const last     = document.getElementById('regLast').value.trim();
+  const phone    = document.getElementById('regPhone').value.trim();
+  const password = document.getElementById('regPassword').value;
+
+  if (!first || !last || !phone || !password) {
+    showAlert('registerError', 'Please fill in all fields.');
+    return;
+  }
+  if (password.length < 8) {
+    showAlert('registerError', 'Password must be at least 8 characters.');
+    return;
+  }
+
+  setLoading('register', true);
+
+  try {
+    const res = await fetch(PLAYERS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'register', name: `${first} ${last}`, phone, password })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Registration failed.');
+    showAlert('registerSuccess', `Account created for ${first}! You can now log in.`);
+    setTimeout(() => switchTab('login'), 2000);
+
+  }  catch(e) {
+
+  showAlert('registerError', e.message);
+
+} finally {
+
+  setLoading('register', false);
+
+}
+}
+
+// ─── SHOW DASHBOARD ───────────────────────────────────────
+function showDashboard(player, matches) {
+  document.getElementById('authForms').style.display = 'none';
+  const dash = document.getElementById('dashboard');
+  dash.classList.add('show');
+
+  document.getElementById('dashName').textContent    = player.name || player;
+  document.getElementById('dashRank').textContent    = player.rank ? '#' + player.rank : '—';
+  document.getElementById('dashPoints').textContent  = player.totalPoints ?? player.points ?? '—';
+  document.getElementById('dashMatches').textContent = matches.length || 0;
+
+  const list = document.getElementById('matchList');
+  if (matches && matches.length) {
+    list.innerHTML = matches.map(m => {
+      const isAm = String(m.matchId).toUpperCase().startsWith('AM');
+      if (isAm) {
+        const rounds = m.roundScores ? m.roundScores.split(',').map(s => s.trim()) : [];
+        const opponentNames = (m.opponents || []).map(o => o.playerName).join(', ');
+        return `
+          <div class="match-row">
+            <div class="match-left">
+              <div class="match-date">${m.date || ''}</div>
+              <div class="match-name">Americano · ${m.matchId}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">vs ${opponentNames || 'others'}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="text-align:right;">
+                <div class="match-score">Total: ${m.total || '—'}</div>
+                <div style="font-size:11px;color:var(--muted);">Rank #${m.rank || '—'}</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:2px;">${rounds.join(' · ')}</div>
+              </div>
+            </div>
+          </div>`;
+      } else {
+        const type = String(m.matchId).toUpperCase().startsWith('TM') ? 'Tournament' : 'Personal';
+        return `
+          <div class="match-row">
+            <div class="match-left">
+              <div class="match-date">${m.date || ''}</div>
+              <div class="match-name">${type} · ${m.matchId}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+                w/ ${m.partner || '—'} vs ${m.opp1 || '—'} & ${m.opp2 || '—'}
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="match-score">${m.score || '—'}</div>
+              <div class="match-badge ${m.result === 'W' ? 'badge-w' : 'badge-l'}">${m.result || '—'}</div>
+            </div>
+          </div>`;
+      }
+    }).join('');
+  } else {
+    list.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:16px 0;">No matches recorded yet. Get on court!</div>';
+  }
+}
+
+// ─── FORGOT PASSWORD ──────────────────────────────────────
+async function handleForgotPassword() {
+  clearAlerts();
+  const phone    = document.getElementById('forgotPhone').value.trim();
+  const newPass  = document.getElementById('forgotNewPass').value;
+  const confirm  = document.getElementById('forgotConfirmPass').value;
+
+  if (!phone || !newPass || !confirm) {
+    showAlert('forgotError', 'Please fill in all fields.'); return;
+  }
+  if (newPass.length < 8) {
+    showAlert('forgotError', 'Password must be at least 8 characters.'); return;
+  }
+  if (newPass !== confirm) {
+    showAlert('forgotError', 'Passwords do not match.'); return;
+  }
+
+  setLoading('forgot', true);
+
+  try {
+    const res  = await fetch(PLAYERS_API, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body:    JSON.stringify({ action: 'updatePassword', phone, newPassword: newPass })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Reset failed.');
+    showAlert('forgotSuccess', 'Password reset! You can now log in.');
+    setTimeout(() => switchTab('login'), 2000);
+  } catch(e) {
+    showAlert('forgotError', e.message);
+  } finally {
+    setLoading('forgot', false);
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('dpcPlayerSession');
+  localStorage.removeItem('dpcPlayerPhone');
+  document.getElementById('dashboard').classList.remove('show');
+  document.getElementById('authForms').style.display = '';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  switchTab('login');
+}
+
+function redirectIfLoggedIn() {
+  const savedSession = localStorage.getItem('dpcPlayerSession');
+  const savedPhone = localStorage.getItem('dpcPlayerPhone');
+  if (savedSession && savedPhone) {
+    window.location.href = './dashboard.html';
+  }
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('loginPanel').classList.contains('active'))  handleLogin();
+  else if (document.getElementById('forgotPanel').classList.contains('active')) handleForgotPassword();
+  else handleRegister();
+});
+
+redirectIfLoggedIn();
+</script>
+
+</body>
+</html>
