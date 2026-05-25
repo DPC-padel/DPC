@@ -632,7 +632,7 @@ function isMissingPlayerError(message) {
 function saveSessionAndRedirect(player, phone) {
   localStorage.setItem('dpcPlayerSession', JSON.stringify(player));
   localStorage.setItem('dpcPlayerPhone', phone);
-  window.location.href = './dashboard.html';
+  window.location.href = '/dashboard/';
 }
 
 // ─── LOGIN ────────────────────────────────────────────────
@@ -817,7 +817,7 @@ function redirectIfLoggedIn() {
   const savedSession = localStorage.getItem('dpcPlayerSession');
   const savedPhone = localStorage.getItem('dpcPlayerPhone');
   if (savedSession && savedPhone) {
-    window.location.href = './dashboard.html';
+   window.location.href = '/dashboard/';
   }
 }
 
