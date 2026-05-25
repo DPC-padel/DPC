@@ -339,7 +339,7 @@ async function bootstrapDashboard() {
   const savedPhone   = localStorage.getItem('dpcPlayerPhone');
   if (!savedSession || !savedPhone) { currentPlayer = { name: 'Guest', venue: '—', joiningDate: '—' }; allMatches = []; showDashboard(); return; }
   try { currentPlayer = JSON.parse(savedSession); } catch(e) {
-    localStorage.clear(); window.location.href = './login.html'; return;
+    localStorage.clear(); window.location.href = '/'; return;
   }
   // Fetch latest stats from Master tab (rating, totalPoints, ranking, venue)
   try {
@@ -555,7 +555,7 @@ function toggleExpand(idx) {
 function handleLogout() {
   localStorage.removeItem('dpcPlayerSession');
   localStorage.removeItem('dpcPlayerPhone');
-  window.location.href = './login.html';
+  window.location.href = '/';
 }
 
 bootstrapDashboard();
