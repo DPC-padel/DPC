@@ -56,6 +56,9 @@ const elements = {
   americanoPanel: document.getElementById("americanoPanel")
 };
 
+const DEFAULT_VISIBLE_RANKINGS = 10;
+const tableSearchState = new Map();
+
 document.addEventListener("DOMContentLoaded", () => {
   initPageSelector();
   initAdminMode();
@@ -429,12 +432,21 @@ function renderBasicTable(target, rankings, colspan, emptyMessage = "No ranking 
     return;
   }
 
+  ensureSearchUi(target);
+
   if (!rankings.length) {
     renderMessageRow(target, emptyMessage, colspan);
     return;
   }
 
-  target.innerHTML = rankings
+  const visibleRankings = getVisibleRankings(target, rankings);
+
+  if (!visibleRankings.length) {
+    renderMessageRow(target, "No players found for that search.", colspan);
+    return;
+  }
+
+  target.innerHTML = visibleRankings
     .map((player, index) => {
       const badge = renderBadge(player.rank);
 
@@ -455,12 +467,21 @@ function renderTournamentTable(target, rankings, colspan) {
     return;
   }
 
+  ensureSearchUi(target);
+
   if (!rankings.length) {
     renderMessageRow(target, "No tournament entries yet.", colspan);
     return;
   }
 
-  target.innerHTML = rankings
+  const visibleRankings = getVisibleRankings(target, rankings);
+
+  if (!visibleRankings.length) {
+    renderMessageRow(target, "No players found for that search.", colspan);
+    return;
+  }
+
+  target.innerHTML = visibleRankings
     .map((player, index) => {
       const badge = renderBadge(player.rank);
 
@@ -483,12 +504,21 @@ function renderOverallTable(target, rankings, colspan) {
     return;
   }
 
+  ensureSearchUi(target);
+
   if (!rankings.length) {
     renderMessageRow(target, "No overall entries yet.", colspan);
     return;
   }
 
-  target.innerHTML = rankings
+  const visibleRankings = getVisibleRankings(target, rankings);
+
+  if (!visibleRankings.length) {
+    renderMessageRow(target, "No players found for that search.", colspan);
+    return;
+  }
+
+  target.innerHTML = visibleRankings
     .map((player, index) => {
       const badge = renderBadge(player.rank);
 
@@ -530,6 +560,55 @@ function renderBadge(rank) {
   }
 
   return null;
+}
+
+function ensureSearchUi(target) {
+  if (!target?.id) {
+    return;
+  }
+
+  const tableWrap = target.closest(".table-wrap");
+
+  if (!tableWrap || tableWrap.previousElementSibling?.classList.contains("leaderboard-search")) {
+    return;
+  }
+
+  tableWrap.insertAdjacentHTML(
+    "beforebegin",
+    `
+      <div class="leaderboard-search">
+        <input
+          class="leaderboard-search-input"
+          type="search"
+          placeholder="Search player name"
+          aria-label="Search player name"
+          data-search-target="${target.id}"
+        />
+        <p class="leaderboard-search-note">Showing top 10 by default. Search any player by name.</p>
+      </div>
+    `
+  );
+
+  const input = tableWrap.previousElementSibling?.querySelector(".leaderboard-search-input");
+
+  if (!input) {
+    return;
+  }
+
+  input.addEventListener("input", (event) => {
+    tableSearchState.set(target.id, event.target.value.trim().toLowerCase());
+    config?.loader(false);
+  });
+}
+
+function getVisibleRankings(target, rankings) {
+  const query = tableSearchState.get(target.id) || "";
+
+  if (!query) {
+    return rankings.slice(0, DEFAULT_VISIBLE_RANKINGS);
+  }
+
+  return rankings.filter((player) => player.name.toLowerCase().includes(query));
 }
 
 function updateStatus(message, isError = false) {
