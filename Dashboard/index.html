@@ -334,12 +334,47 @@ function toggleMobileMenu() {
   btn.classList.toggle('open');
   document.body.style.overflow = drawer.classList.contains('open') ? 'hidden' : '';
 }
+const SESSION_KEY = 'dpcPlayerSession';
+const SESSION_PHONE_KEY = 'dpcPlayerPhone';
+const SESSION_SAVED_AT_KEY = 'dpcPlayerSessionSavedAt';
+const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
+
+function clearStoredSession() {
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(SESSION_PHONE_KEY);
+  localStorage.removeItem(SESSION_SAVED_AT_KEY);
+}
+
+function getValidSessionPhone() {
+  const savedSession = localStorage.getItem(SESSION_KEY);
+  const savedPhone = localStorage.getItem(SESSION_PHONE_KEY);
+  const savedAt = Number(localStorage.getItem(SESSION_SAVED_AT_KEY) || 0);
+
+  if (!savedSession || !savedPhone || !savedAt) {
+    clearStoredSession();
+    return null;
+  }
+
+  if (Date.now() - savedAt > SESSION_TTL) {
+    clearStoredSession();
+    return null;
+  }
+
+  return { savedSession, savedPhone };
+}
+
 async function bootstrapDashboard() {
-  const savedSession = localStorage.getItem('dpcPlayerSession');
-  const savedPhone   = localStorage.getItem('dpcPlayerPhone');
-  if (!savedSession || !savedPhone) { currentPlayer = { name: 'Guest', venue: '—', joiningDate: '—' }; allMatches = []; showDashboard(); return; }
+  const session = getValidSessionPhone();
+  if (!session) {
+    window.location.href = '/login/';
+    return;
+  }
+
+  const { savedSession, savedPhone } = session;
   try { currentPlayer = JSON.parse(savedSession); } catch(e) {
-    localStorage.clear(); window.location.href = '/'; return;
+    clearStoredSession();
+    window.location.href = '/login/';
+    return;
   }
   // Fetch latest stats from Master tab (rating, totalPoints, ranking, venue)
   try {
@@ -347,7 +382,8 @@ async function bootstrapDashboard() {
     const pData = await pRes.json();
     if (pData.success && pData.player) {
       currentPlayer = { ...currentPlayer, ...pData.player };
-      localStorage.setItem('dpcPlayerSession', JSON.stringify(currentPlayer));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(currentPlayer));
+      localStorage.setItem(SESSION_SAVED_AT_KEY, String(Date.now()));
     }
   } catch(e) { /* keep session data as fallback */ }
   // Fetch match history
@@ -553,9 +589,8 @@ function toggleExpand(idx) {
 }
 
 function handleLogout() {
-  localStorage.removeItem('dpcPlayerSession');
-  localStorage.removeItem('dpcPlayerPhone');
-  window.location.href = '/';
+  clearStoredSession();
+  window.location.href = '/login/';
 }
 
 bootstrapDashboard();
