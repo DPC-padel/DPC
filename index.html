@@ -73,7 +73,8 @@
   .nav-actions:not(.auth-ready) .nav-dashboard {
     display: none;
   }
-  .nav-login {
+  .nav-login,
+  .nav-dashboard {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -95,12 +96,10 @@
       inset 0 -1px 0 rgba(255,255,255,.06);
     transition: background .22s ease, transform .22s ease;
   }
-  .nav-login:hover {
+  .nav-login:hover,
+  .nav-dashboard:hover {
     background: rgba(255,255,255,.08);
     transform: translateY(-1px);
-  }
-  .nav-dashboard {
-    display: inline-flex;
   }
 
   .hamburger {
@@ -556,7 +555,7 @@ video::-webkit-media-controls-fullscreen-button {
   </a>
   <div class="nav-actions" id="navActions">
   <a class="nav-login" href="/login/">Login</a>
-  <a class="nav-login nav-dashboard" href="/Dashboard/">Dashboard</a>
+  <a class="nav-dashboard" href="/Dashboard/">Dashboard</a>
     <button class="hamburger" id="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -589,7 +588,7 @@ video::-webkit-media-controls-fullscreen-button {
 </div>
   <div class="overlay"></div>
   <div class="hero-content">
-    <div class="hero-eyebrow">India</div>
+    <div class="hero-eyebrow">New Delhi &nbsp;·&nbsp; India</div>
     <div class="hero-logo">
       <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
     </div>
