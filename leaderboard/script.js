@@ -180,36 +180,37 @@ async function loadNoidaPage(isManualRefresh) {
 async function getAllRankingsData(forceRefresh = false) {
   const cached = readCache();
 
-  //h
   if (!forceRefresh && cached) {
     return cached.data;
   }
 
-  
   const data = await fetchAllRankingsData();
   writeCache(data);
   return data;
 }
 
+// ✅ KEY FIX: All three APIs fetched in parallel
 async function fetchAllRankingsData() {
-  const firstServe = await fetchJson(API_URLS.firstServe);
+  const [firstServeRes, breakPointRes, noidaRes] = await Promise.all([
+    fetch(API_URLS.firstServe),
+    fetch(API_URLS.breakPoint),
+    fetch(API_URLS.noida)
+  ]);
 
-  const breakPointResponse = await fetch(API_URLS.breakPoint);
-  if (!breakPointResponse.ok) {
-    throw new Error("Failed to fetch Break Point data");
-  }
-  const breakPointData = await breakPointResponse.json();
+  if (!firstServeRes.ok) throw new Error("Failed to fetch First Serve data");
+  if (!breakPointRes.ok) throw new Error("Failed to fetch Break Point data");
+  if (!noidaRes.ok) throw new Error("Failed to fetch Noida data");
 
-  const noidaResponse = await fetch(API_URLS.noida);
-  if (!noidaResponse.ok) {
-    throw new Error("Failed to fetch Noida data");
-  }
-  const noidaData = await noidaResponse.json();
+  const [firstServeData, breakPointData, noidaData] = await Promise.all([
+    firstServeRes.json(),
+    breakPointRes.json(),
+    noidaRes.json()
+  ]);
 
   return {
-    firstServe: firstServe.firstServe || [],
-    firstServePersonal: firstServe.pmMatchScores || [],
-    firstServeRanking: pickFirstServeRankingRows(firstServe),
+    firstServe: firstServeData.firstServe || [],
+    firstServePersonal: firstServeData.pmMatchScores || [],
+    firstServeRanking: pickFirstServeRankingRows(firstServeData),
     breakPointOverall: breakPointData.breakPointOverall || [],
     breakPointTournament: breakPointData.breakPointTournament || [],
     breakPointAmericano: breakPointData.breakPointAmericano || [],
