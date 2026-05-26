@@ -579,6 +579,10 @@
 const PLAYERS_API  = 'https://script.google.com/macros/s/AKfycbxBKSqH8hrrf_8K55R1jOZm8g7tY4phD0pL_dSLgV3_0eSaI05kMGGAur5EhWDLCSyN/exec';
 const MATCHES_API  = 'https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec';
 const APPS_SCRIPT_URL = PLAYERS_API;
+const SESSION_KEY = 'dpcPlayerSession';
+const SESSION_PHONE_KEY = 'dpcPlayerPhone';
+const SESSION_SAVED_AT_KEY = 'dpcPlayerSessionSavedAt';
+const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
 
 // ─── TAB SWITCHING ────────────────────────────────────────
 function switchTab(tab) {
@@ -629,9 +633,34 @@ function isMissingPlayerError(message) {
   );
 }
 
+function clearStoredSession() {
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(SESSION_PHONE_KEY);
+  localStorage.removeItem(SESSION_SAVED_AT_KEY);
+}
+
+function hasValidSession() {
+  const savedSession = localStorage.getItem(SESSION_KEY);
+  const savedPhone = localStorage.getItem(SESSION_PHONE_KEY);
+  const savedAt = Number(localStorage.getItem(SESSION_SAVED_AT_KEY) || 0);
+
+  if (!savedSession || !savedPhone || !savedAt) {
+    clearStoredSession();
+    return false;
+  }
+
+  if (Date.now() - savedAt > SESSION_TTL) {
+    clearStoredSession();
+    return false;
+  }
+
+  return true;
+}
+
 function saveSessionAndRedirect(player, phone) {
-  localStorage.setItem('dpcPlayerSession', JSON.stringify(player));
-  localStorage.setItem('dpcPlayerPhone', phone);
+  localStorage.setItem(SESSION_KEY, JSON.stringify(player));
+  localStorage.setItem(SESSION_PHONE_KEY, phone);
+  localStorage.setItem(SESSION_SAVED_AT_KEY, String(Date.now()));
   window.location.href = '/Dashboard/';
 }
 
@@ -804,8 +833,7 @@ async function handleForgotPassword() {
 }
 
 function handleLogout() {
-  localStorage.removeItem('dpcPlayerSession');
-  localStorage.removeItem('dpcPlayerPhone');
+  clearStoredSession();
   document.getElementById('dashboard').classList.remove('show');
   document.getElementById('authForms').style.display = '';
   document.getElementById('loginEmail').value = '';
@@ -814,10 +842,8 @@ function handleLogout() {
 }
 
 function redirectIfLoggedIn() {
-  const savedSession = localStorage.getItem('dpcPlayerSession');
-  const savedPhone = localStorage.getItem('dpcPlayerPhone');
-  if (savedSession && savedPhone) {
-   window.location.href = '/Dashboard/';
+  if (hasValidSession()) {
+    window.location.href = '/Dashboard/';
   }
 }
 
