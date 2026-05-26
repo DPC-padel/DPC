@@ -12,9 +12,14 @@ const PAGE_CONFIG = {
     loader: loadFirstServePage
   },
   "break-point": {
-    selectorValue: "break-point.html",
+    selectorValue: "breakpoint.html",
     refreshText: "Refresh All",
     loader: loadBreakPointPage
+  },
+  "match-point": {
+    selectorValue: "matchpoint.html",
+    refreshText: "Refresh All",
+    loader: loadMatchPointPage
   },
   "noida": {
     selectorValue: "noida.html",
@@ -26,6 +31,7 @@ const PAGE_CONFIG = {
 const API_URLS = {
   firstServe: "https://script.google.com/macros/s/AKfycbyUACkr6V5Kn4yla7Wv6vIJ6cNXoxtHR4yFYrXS66uHfhumDjgIJVzOFpuMZK3o5uGa/exec",
   breakPoint: "https://script.google.com/macros/s/AKfycbxz0ee4RK4niCcg0lVwmktJKoCmy6lP3q9O5c6Md41m6AElQcxRN-wU810bkCbYVsk8/exec",
+  matchPoint: "https://script.google.com/macros/s/AKfycbz0EuOkKQvC7F2BAjymJQEoGF1qmglQRnP07eqMrLmECTXSZrXj-PpvDZ18cBeLrRHF6A/exec",
   noida: "https://script.google.com/macros/s/AKfycbyum4imblCdj5mFLbr-zDFthSM8Am0f-1DrEVgdF7jioZueooMguFDgy5GX7V_3yRNH/exec"
 };
 
@@ -154,6 +160,35 @@ async function loadBreakPointPage(isManualRefresh) {
   }
 }
 
+async function loadMatchPointPage(isManualRefresh) {
+  setLoadingState(true);
+  updateStatus(isManualRefresh ? "Refreshing rankings..." : "");
+
+  try {
+    const data = await getAllRankingsData(isManualRefresh);
+    const overallRankings = normalizeOverallRankings(data.matchPointOverall);
+    const tournamentRankings = normalizeTournamentRankings(data.matchPointTournament);
+    const americanoRankings = normalizeBasicRankings(data.matchPointAmericano);
+
+    if (!overallRankings.length && !tournamentRankings.length && !americanoRankings.length) {
+      throw new Error("No Match Point rankings were found.");
+    }
+
+    renderOverallTable(elements.overallRankingBody, overallRankings, 4);
+    renderTournamentTable(elements.tournamentRankingBody, tournamentRankings, 6);
+    renderBasicTable(elements.americanoRankingBody, americanoRankings, 4);
+    updateStatus("");
+  } catch (error) {
+    console.error("Failed to load Match Point rankings:", error);
+    renderMessageRow(elements.overallRankingBody, "Overall leaderboard is not available right now.", 4);
+    renderMessageRow(elements.tournamentRankingBody, "Tournament leaderboard is not available right now.", 6);
+    renderMessageRow(elements.americanoRankingBody, "Americano leaderboard is not available right now.", 4);
+    updateStatus("Could not load the live rankings right now.", true);
+  } finally {
+    setLoadingState(false);
+  }
+}
+
 async function loadNoidaPage(isManualRefresh) {
   setLoadingState(true);
   updateStatus(isManualRefresh ? "Refreshing leaderboard..." : "");
@@ -191,19 +226,22 @@ async function getAllRankingsData(forceRefresh = false) {
 
 // ✅ KEY FIX: All three APIs fetched in parallel
 async function fetchAllRankingsData() {
-  const [firstServeRes, breakPointRes, noidaRes] = await Promise.all([
+  const [firstServeRes, breakPointRes, matchPointRes, noidaRes] = await Promise.all([
     fetch(API_URLS.firstServe),
     fetch(API_URLS.breakPoint),
+    fetch(API_URLS.matchPoint),
     fetch(API_URLS.noida)
   ]);
 
   if (!firstServeRes.ok) throw new Error("Failed to fetch First Serve data");
   if (!breakPointRes.ok) throw new Error("Failed to fetch Break Point data");
+  if (!matchPointRes.ok) throw new Error("Failed to fetch Match Point data");
   if (!noidaRes.ok) throw new Error("Failed to fetch Noida data");
 
-  const [firstServeData, breakPointData, noidaData] = await Promise.all([
+  const [firstServeData, breakPointData, matchPointData, noidaData] = await Promise.all([
     firstServeRes.json(),
     breakPointRes.json(),
+    matchPointRes.json(),
     noidaRes.json()
   ]);
 
@@ -214,6 +252,9 @@ async function fetchAllRankingsData() {
     breakPointOverall: breakPointData.breakPointOverall || [],
     breakPointTournament: breakPointData.breakPointTournament || [],
     breakPointAmericano: breakPointData.breakPointAmericano || [],
+    matchPointOverall: pickOverallRows(matchPointData),
+    matchPointTournament: pickTournamentRows(matchPointData),
+    matchPointAmericano: pickAmericanoRows(matchPointData),
     noida: Array.isArray(noidaData.data) ? noidaData.data : []
   };
 }
@@ -631,7 +672,12 @@ function setLoadingState(isLoading) {
 }
 
 function initBreakPointTabs() {
-  if (page !== "break-point" || !elements.overallTab || !elements.tournamentTab || !elements.americanoTab) {
+  if (
+    (page !== "break-point" && page !== "match-point") ||
+    !elements.overallTab ||
+    !elements.tournamentTab ||
+    !elements.americanoTab
+  ) {
     return;
   }
 
@@ -773,6 +819,64 @@ function pickFirstServeRankingRows(firstServeData) {
       "playerName" in firstRow;
 
     if (hasRating && hasScore && hasName) {
+      return value;
+    }
+  }
+
+  return [];
+}
+
+function pickOverallRows(data) {
+  return pickRowsByKeys(data, [
+    "matchPointOverall",
+    "overall",
+    "overallRanking",
+    "overallRankings",
+    "ranking",
+    "rankings"
+  ], ["Rating", "Score"], ["Name", "Player Name", "playerName"]);
+}
+
+function pickTournamentRows(data) {
+  return pickRowsByKeys(data, [
+    "matchPointTournament",
+    "tournament",
+    "tournamentRanking",
+    "tournamentRankings"
+  ], ["won", "Loss", "MP"], ["Player Name", "Name", "playerName"]);
+}
+
+function pickAmericanoRows(data) {
+  return pickRowsByKeys(data, [
+    "matchPointAmericano",
+    "americano",
+    "americanoRanking",
+    "americanoRankings"
+  ], ["Score", "MP"], ["Player Name", "Name", "playerName"]);
+}
+
+function pickRowsByKeys(data, preferredKeys, requiredKeys, nameKeys) {
+  for (const key of preferredKeys) {
+    if (Array.isArray(data[key])) {
+      return data[key];
+    }
+  }
+
+  for (const value of Object.values(data)) {
+    if (!Array.isArray(value)) {
+      continue;
+    }
+
+    const firstRow = value.find((row) => row && typeof row === "object");
+
+    if (!firstRow) {
+      continue;
+    }
+
+    const hasRequired = requiredKeys.every((requiredKey) => requiredKey in firstRow);
+    const hasName = nameKeys.some((nameKey) => nameKey in firstRow);
+
+    if (hasRequired && hasName) {
       return value;
     }
   }
