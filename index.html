@@ -67,6 +67,12 @@
     align-items: center;
     gap: 10px;
   }
+  .nav-actions.auth-ready .nav-login {
+    display: none;
+  }
+  .nav-actions:not(.auth-ready) .nav-dashboard {
+    display: none;
+  }
   .nav-login {
     display: inline-flex;
     align-items: center;
@@ -92,6 +98,9 @@
   .nav-login:hover {
     background: rgba(255,255,255,.08);
     transform: translateY(-1px);
+  }
+  .nav-dashboard {
+    display: inline-flex;
   }
 
   .hamburger {
@@ -165,6 +174,12 @@
   .drawer-link.utility-link:hover {
     color: var(--text);
     transform: none;
+  }
+  .drawer-nav.auth-ready .login-link {
+    display: none;
+  }
+  .drawer-nav:not(.auth-ready) .dashboard-link {
+    display: none;
   }
 
   /* ── HERO ── */
@@ -539,8 +554,9 @@ video::-webkit-media-controls-fullscreen-button {
   <a class="nav-logo" href="#home">
     <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
   </a>
-  <div class="nav-actions">
+  <div class="nav-actions" id="navActions">
   <a class="nav-login" href="/login/">Login</a>
+  <a class="nav-login nav-dashboard" href="/Dashboard/">Dashboard</a>
     <button class="hamburger" id="hamburger" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -551,14 +567,15 @@ video::-webkit-media-controls-fullscreen-button {
 
 <!-- DRAWER -->
 <div class="drawer" id="drawer">
-  <nav class="drawer-nav">
+  <nav class="drawer-nav" id="drawerNav">
     <a class="drawer-link" href="#home"      onclick="closeDrawer()">Home</a>
     <!-- <a class="drawer-link" href="#about"     onclick="closeDrawer()">Our Story</a> -->
    <!-- <a class="drawer-link" href="#lifestyle" onclick="closeDrawer()">Journal</a> -->
 <a class="drawer-link" href="/calender/">Calendar</a>
 <a class="drawer-link" href="/leaderboard/">Leaderboard</a>
 <a class="drawer-link cta-link" href="/Application/" onclick="closeDrawer()">Apply to Join →</a>
-<a class="drawer-link utility-link" href="/login/">Login</a>
+<a class="drawer-link utility-link login-link" href="/login/" onclick="closeDrawer()">Login</a>
+<a class="drawer-link utility-link dashboard-link" href="/Dashboard/" onclick="closeDrawer()">Dashboard</a>
   </nav>
 </div>
 
@@ -747,9 +764,43 @@ video::-webkit-media-controls-fullscreen-button {
 </footer>
 
 <script>
+  const SESSION_KEY = "dpcPlayerSession";
+  const SESSION_PHONE_KEY = "dpcPlayerPhone";
+  const SESSION_SAVED_AT_KEY = "dpcPlayerSessionSavedAt";
+  const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
   const hamburger = document.getElementById("hamburger");
   const drawer    = document.getElementById("drawer");
   const overlay   = document.getElementById("drawerOverlay");
+  const navActions = document.getElementById("navActions");
+  const drawerNav = document.getElementById("drawerNav");
+
+  function hasValidDashboardSession() {
+    const savedSession = localStorage.getItem(SESSION_KEY);
+    const savedPhone = localStorage.getItem(SESSION_PHONE_KEY);
+    const savedAt = Number(localStorage.getItem(SESSION_SAVED_AT_KEY) || 0);
+
+    if (!savedSession || !savedPhone || !savedAt) {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_PHONE_KEY);
+      localStorage.removeItem(SESSION_SAVED_AT_KEY);
+      return false;
+    }
+
+    if (Date.now() - savedAt > SESSION_TTL) {
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(SESSION_PHONE_KEY);
+      localStorage.removeItem(SESSION_SAVED_AT_KEY);
+      return false;
+    }
+
+    return true;
+  }
+
+  function syncDashboardCta() {
+    const hasSession = hasValidDashboardSession();
+    navActions.classList.toggle("auth-ready", hasSession);
+    drawerNav.classList.toggle("auth-ready", hasSession);
+  }
 
   hamburger.addEventListener("click", () => {
     const isOpen = drawer.classList.toggle("open");
@@ -814,6 +865,7 @@ video::-webkit-media-controls-fullscreen-button {
   // Try immediately, and again on load
   tryPlay();
   window.addEventListener("load", tryPlay);
+  window.addEventListener("load", syncDashboardCta);
   function applyAlert() {
    window.location.href = "/Application/";
   }
