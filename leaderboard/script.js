@@ -1,6 +1,6 @@
 const CACHE_TTL = 1 * 60 * 60 * 1000;
 const MASTER_CACHE_KEY = "dpcRankingCache:all-pages";
-const CACHE_SCHEMA_VERSION = 5;
+const CACHE_SCHEMA_VERSION = 6;
 const ADMIN_STORAGE_KEY = "dpcRankingAdmin";
 const ADMIN_QUERY_KEY = "admin";
 const ADMIN_QUERY_VALUE = "1";
@@ -76,10 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initPageSelector() {
-  if (!elements.pageSelector || !config) {
-    return;
-  }
-
+  if (!elements.pageSelector || !config) return;
   elements.pageSelector.value = config.selectorValue;
   elements.pageSelector.addEventListener("change", (event) => {
     window.location.href = event.target.value;
@@ -87,16 +84,11 @@ function initPageSelector() {
 }
 
 function initAdminMode() {
-  if (!elements.refreshButton || !config) {
-    return;
-  }
-
+  if (!elements.refreshButton || !config) return;
   const params = new URLSearchParams(window.location.search);
-
   if (params.get(ADMIN_QUERY_KEY) === ADMIN_QUERY_VALUE) {
     window.localStorage.setItem(ADMIN_STORAGE_KEY, "true");
   }
-
   const isAdmin = window.localStorage.getItem(ADMIN_STORAGE_KEY) === "true";
   elements.refreshButton.hidden = !isAdmin;
   elements.refreshButton.textContent = config.refreshText;
@@ -105,17 +97,14 @@ function initAdminMode() {
 async function loadFirstServePage(isManualRefresh) {
   setLoadingState(true);
   updateStatus(isManualRefresh ? "Refreshing leaderboard..." : "");
-
   try {
     const data = await getAllRankingsData(isManualRefresh);
     const overallRankings = normalizeFlexibleOverallRankings(data.firstServeRanking);
     const rankings = normalizeBasicRankings(data.firstServe);
     const personalGamesRankings = normalizeBasicRankings(data.firstServePersonal);
-
     if (!overallRankings.length && !rankings.length && !personalGamesRankings.length) {
       throw new Error("No ranking entries were found.");
     }
-
     renderOverallTable(elements.firstServeRankingBody, overallRankings, 4);
     renderBasicTable(elements.rankingBody, rankings, 4);
     renderBasicTable(elements.personalRankingBody, personalGamesRankings, 4, "No personal matches entries yet.");
@@ -134,17 +123,14 @@ async function loadFirstServePage(isManualRefresh) {
 async function loadBreakPointPage(isManualRefresh) {
   setLoadingState(true);
   updateStatus(isManualRefresh ? "Refreshing rankings..." : "");
-
   try {
     const data = await getAllRankingsData(isManualRefresh);
     const overallRankings = normalizeOverallRankings(data.breakPointOverall);
     const tournamentRankings = normalizeTournamentRankings(data.breakPointTournament);
     const americanoRankings = normalizeBasicRankings(data.breakPointAmericano);
-
     if (!overallRankings.length && !tournamentRankings.length && !americanoRankings.length) {
       throw new Error("No Break Point rankings were found.");
     }
-
     renderOverallTable(elements.overallRankingBody, overallRankings, 4);
     renderTournamentTable(elements.tournamentRankingBody, tournamentRankings, 6);
     renderBasicTable(elements.americanoRankingBody, americanoRankings, 4);
@@ -163,26 +149,18 @@ async function loadBreakPointPage(isManualRefresh) {
 async function loadMatchPointPage(isManualRefresh) {
   setLoadingState(true);
   updateStatus(isManualRefresh ? "Refreshing rankings..." : "");
-
   try {
     const data = await getAllRankingsData(isManualRefresh);
-    const overallRankings = normalizeOverallRankings(data.matchPointOverall);
-    const tournamentRankings = normalizeTournamentRankings(data.matchPointTournament);
-    const americanoRankings = normalizeBasicRankings(data.matchPointAmericano);
-
-    if (!overallRankings.length && !tournamentRankings.length && !americanoRankings.length) {
+    // Match Point API returns { success: true, players: [...] } with fields: id, name, score, rating
+    const overallRankings = normalizeMatchPointRankings(data.matchPointPlayers);
+    if (!overallRankings.length) {
       throw new Error("No Match Point rankings were found.");
     }
-
     renderOverallTable(elements.overallRankingBody, overallRankings, 4);
-    renderTournamentTable(elements.tournamentRankingBody, tournamentRankings, 6);
-    renderBasicTable(elements.americanoRankingBody, americanoRankings, 4);
     updateStatus("");
   } catch (error) {
     console.error("Failed to load Match Point rankings:", error);
     renderMessageRow(elements.overallRankingBody, "Overall leaderboard is not available right now.", 4);
-    renderMessageRow(elements.tournamentRankingBody, "Tournament leaderboard is not available right now.", 6);
-    renderMessageRow(elements.americanoRankingBody, "Americano leaderboard is not available right now.", 4);
     updateStatus("Could not load the live rankings right now.", true);
   } finally {
     setLoadingState(false);
@@ -192,15 +170,12 @@ async function loadMatchPointPage(isManualRefresh) {
 async function loadNoidaPage(isManualRefresh) {
   setLoadingState(true);
   updateStatus(isManualRefresh ? "Refreshing leaderboard..." : "");
-
   try {
     const data = await getAllRankingsData(isManualRefresh);
     const rankings = normalizeNoidaRankings(data.noida);
-
     if (!rankings.length) {
       throw new Error("No Noida ranking entries were found.");
     }
-
     renderBasicTable(elements.rankingBody, rankings, 4);
     updateStatus("");
   } catch (error) {
@@ -214,17 +189,13 @@ async function loadNoidaPage(isManualRefresh) {
 
 async function getAllRankingsData(forceRefresh = false) {
   const cached = readCache();
-
-  if (!forceRefresh && cached) {
-    return cached.data;
-  }
-
+  if (!forceRefresh && cached) return cached.data;
   const data = await fetchAllRankingsData();
   writeCache(data);
   return data;
 }
 
-// ✅ KEY FIX: All three APIs fetched in parallel
+// ✅ All four APIs fetched in parallel
 async function fetchAllRankingsData() {
   const [firstServeRes, breakPointRes, matchPointRes, noidaRes] = await Promise.all([
     fetch(API_URLS.firstServe),
@@ -252,43 +223,24 @@ async function fetchAllRankingsData() {
     breakPointOverall: breakPointData.breakPointOverall || [],
     breakPointTournament: breakPointData.breakPointTournament || [],
     breakPointAmericano: breakPointData.breakPointAmericano || [],
-    matchPointOverall: pickOverallRows(matchPointData),
-    matchPointTournament: pickTournamentRows(matchPointData),
-    matchPointAmericano: pickAmericanoRows(matchPointData),
+    matchPointPlayers: matchPointData.players || [],  // ✅ correct key from Match Point API
     noida: Array.isArray(noidaData.data) ? noidaData.data : []
   };
-}
-
-async function fetchJson(url) {
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(`Request failed with status ${response.status}`);
-  }
-
-  return response.json();
 }
 
 function readCache() {
   try {
     const raw = window.localStorage.getItem(MASTER_CACHE_KEY);
-
-    if (!raw) {
-      return null;
-    }
-
+    if (!raw) return null;
     const parsed = JSON.parse(raw);
-
     if (!parsed?.savedAt || !parsed?.data || parsed.version !== CACHE_SCHEMA_VERSION) {
       window.localStorage.removeItem(MASTER_CACHE_KEY);
       return null;
     }
-
     if (Date.now() - parsed.savedAt > CACHE_TTL) {
       window.localStorage.removeItem(MASTER_CACHE_KEY);
       return null;
     }
-
     return parsed;
   } catch (error) {
     console.error("Failed to read cached rankings:", error);
@@ -300,11 +252,7 @@ function writeCache(data) {
   try {
     window.localStorage.setItem(
       MASTER_CACHE_KEY,
-      JSON.stringify({
-        version: CACHE_SCHEMA_VERSION,
-        savedAt: Date.now(),
-        data
-      })
+      JSON.stringify({ version: CACHE_SCHEMA_VERSION, savedAt: Date.now(), data })
     );
   } catch (error) {
     console.error("Failed to cache rankings:", error);
@@ -321,7 +269,6 @@ function normalizeBasicRankings(rows) {
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((left, right) => compareByScore(left, right));
-
   return addClusterRanks(sorted);
 }
 
@@ -337,21 +284,11 @@ function normalizeTournamentRankings(rows) {
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((left, right) => {
-      if (right.score !== left.score) {
-        return right.score - left.score;
-      }
-
-      if (right.wins !== left.wins) {
-        return right.wins - left.wins;
-      }
-
-      if (right.matches !== left.matches) {
-        return right.matches - left.matches;
-      }
-
+      if (right.score !== left.score) return right.score - left.score;
+      if (right.wins !== left.wins) return right.wins - left.wins;
+      if (right.matches !== left.matches) return right.matches - left.matches;
       return left.name.localeCompare(right.name);
     });
-
   return addClusterRanks(sorted);
 }
 
@@ -365,29 +302,44 @@ function normalizeOverallRankings(rows) {
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((left, right) => {
-      if (right.rating !== left.rating) {
-        return right.rating - left.rating;
-      }
-
-      if (right.score !== left.score) {
-        return right.score - left.score;
-      }
-
+      if (right.rating !== left.rating) return right.rating - left.rating;
+      if (right.score !== left.score) return right.score - left.score;
       return left.name.localeCompare(right.name);
     });
 
   let lastRating = null;
   let lastRank = 0;
-
   return sorted.map((player, index) => {
     const rank = player.rating === lastRating ? lastRank : index + 1;
     lastRating = player.rating;
     lastRank = rank;
+    return { ...player, rank };
+  });
+}
 
-    return {
-      ...player,
-      rank
-    };
+// ✅ Match Point normalizer — matches the API fields: id, name, score, rating
+function normalizeMatchPointRankings(rows) {
+  const sorted = rows
+    .map((row) => ({
+      id: String(row.id || "").trim(),
+      name: String(row.name || "").trim(),
+      score: toNumber(row.score),
+      rating: toDecimal(row.rating)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((left, right) => {
+      if (right.rating !== left.rating) return right.rating - left.rating;
+      if (right.score !== left.score) return right.score - left.score;
+      return left.name.localeCompare(right.name);
+    });
+
+  let lastRating = null;
+  let lastRank = 0;
+  return sorted.map((player, index) => {
+    const rank = player.rating === lastRating ? lastRank : index + 1;
+    lastRating = player.rating;
+    lastRank = rank;
+    return { ...player, rank };
   });
 }
 
@@ -401,29 +353,18 @@ function normalizeFlexibleOverallRankings(rows) {
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((left, right) => {
-      if (right.rating !== left.rating) {
-        return right.rating - left.rating;
-      }
-
-      if (right.score !== left.score) {
-        return right.score - left.score;
-      }
-
+      if (right.rating !== left.rating) return right.rating - left.rating;
+      if (right.score !== left.score) return right.score - left.score;
       return left.name.localeCompare(right.name);
     });
 
   let lastRating = null;
   let lastRank = 0;
-
   return sorted.map((player, index) => {
     const rank = player.rating === lastRating ? lastRank : index + 1;
     lastRating = player.rating;
     lastRank = rank;
-
-    return {
-      ...player,
-      rank
-    };
+    return { ...player, rank };
   });
 }
 
@@ -437,206 +378,112 @@ function normalizeNoidaRankings(rows) {
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((left, right) => compareByScore(left, right));
-
   return addClusterRanks(sorted);
 }
 
 function addClusterRanks(players) {
   let lastScore = null;
   let lastRank = 0;
-
   return players.map((player, index) => {
     const rank = player.score === lastScore ? lastRank : index + 1;
     lastScore = player.score;
     lastRank = rank;
-
-    return {
-      ...player,
-      rank
-    };
+    return { ...player, rank };
   });
 }
 
 function compareByScore(left, right) {
-  if (right.score !== left.score) {
-    return right.score - left.score;
-  }
-
-  if (right.matches !== left.matches) {
-    return right.matches - left.matches;
-  }
-
+  if (right.score !== left.score) return right.score - left.score;
+  if (right.matches !== left.matches) return right.matches - left.matches;
   return left.name.localeCompare(right.name);
 }
 
 function renderBasicTable(target, rankings, colspan, emptyMessage = "No ranking entries yet.") {
-  if (!target) {
-    return;
-  }
-
+  if (!target) return;
   ensureSearchUi(target);
-
-  if (!rankings.length) {
-    renderMessageRow(target, emptyMessage, colspan);
-    return;
-  }
-
+  if (!rankings.length) { renderMessageRow(target, emptyMessage, colspan); return; }
   const visibleRankings = getVisibleRankings(target, rankings);
-
-  if (!visibleRankings.length) {
-    renderMessageRow(target, "No players found for that search.", colspan);
-    return;
-  }
-
-  target.innerHTML = visibleRankings
-    .map((player, index) => {
-      const badge = renderBadge(player.rank);
-
-      return `
-        <tr class="${index === 0 ? "highlight" : ""}">
-          <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
-          <td><div class="player-name">${escapeHtml(player.name)}</div></td>
-          <td class="stat-cell">${player.matches}</td>
-          <td class="stat-cell points-cell">${player.score}</td>
-        </tr>
-      `;
-    })
-    .join("");
+  if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
+  target.innerHTML = visibleRankings.map((player, index) => {
+    const badge = renderBadge(player.rank);
+    return `
+      <tr class="${index === 0 ? "highlight" : ""}">
+        <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
+        <td><div class="player-name">${escapeHtml(player.name)}</div></td>
+        <td class="stat-cell">${player.matches}</td>
+        <td class="stat-cell points-cell">${player.score}</td>
+      </tr>`;
+  }).join("");
 }
 
 function renderTournamentTable(target, rankings, colspan) {
-  if (!target) {
-    return;
-  }
-
+  if (!target) return;
   ensureSearchUi(target);
-
-  if (!rankings.length) {
-    renderMessageRow(target, "No tournament entries yet.", colspan);
-    return;
-  }
-
+  if (!rankings.length) { renderMessageRow(target, "No tournament entries yet.", colspan); return; }
   const visibleRankings = getVisibleRankings(target, rankings);
-
-  if (!visibleRankings.length) {
-    renderMessageRow(target, "No players found for that search.", colspan);
-    return;
-  }
-
-  target.innerHTML = visibleRankings
-    .map((player, index) => {
-      const badge = renderBadge(player.rank);
-
-      return `
-        <tr class="${index === 0 ? "highlight" : ""}">
-          <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
-          <td><div class="player-name">${escapeHtml(player.name)}</div></td>
-          <td class="stat-cell">${player.matches}</td>
-          <td class="stat-cell">${player.wins}</td>
-          <td class="stat-cell">${player.losses}</td>
-          <td class="stat-cell points-cell">${player.score}</td>
-        </tr>
-      `;
-    })
-    .join("");
+  if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
+  target.innerHTML = visibleRankings.map((player, index) => {
+    const badge = renderBadge(player.rank);
+    return `
+      <tr class="${index === 0 ? "highlight" : ""}">
+        <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
+        <td><div class="player-name">${escapeHtml(player.name)}</div></td>
+        <td class="stat-cell">${player.matches}</td>
+        <td class="stat-cell">${player.wins}</td>
+        <td class="stat-cell">${player.losses}</td>
+        <td class="stat-cell points-cell">${player.score}</td>
+      </tr>`;
+  }).join("");
 }
 
 function renderOverallTable(target, rankings, colspan) {
-  if (!target) {
-    return;
-  }
-
+  if (!target) return;
   ensureSearchUi(target);
-
-  if (!rankings.length) {
-    renderMessageRow(target, "No overall entries yet.", colspan);
-    return;
-  }
-
+  if (!rankings.length) { renderMessageRow(target, "No overall entries yet.", colspan); return; }
   const visibleRankings = getVisibleRankings(target, rankings);
-
-  if (!visibleRankings.length) {
-    renderMessageRow(target, "No players found for that search.", colspan);
-    return;
-  }
-
-  target.innerHTML = visibleRankings
-    .map((player, index) => {
-      const badge = renderBadge(player.rank);
-
-      return `
-        <tr class="${index === 0 ? "highlight" : ""}">
-          <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
-          <td><div class="player-name">${escapeHtml(player.name)}</div></td>
-          <td class="stat-cell">${player.score}</td>
-          <td class="stat-cell points-cell">${player.rating.toFixed(1)}</td>
-        </tr>
-      `;
-    })
-    .join("");
+  if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
+  target.innerHTML = visibleRankings.map((player, index) => {
+    const badge = renderBadge(player.rank);
+    return `
+      <tr class="${index === 0 ? "highlight" : ""}">
+        <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
+        <td><div class="player-name">${escapeHtml(player.name)}</div></td>
+        <td class="stat-cell">${player.score}</td>
+        <td class="stat-cell points-cell">${player.rating.toFixed(1)}</td>
+      </tr>`;
+  }).join("");
 }
 
 function renderMessageRow(target, message, colspan) {
-  if (!target) {
-    return;
-  }
-
-  target.innerHTML = `
-    <tr>
-      <td colspan="${colspan}">${escapeHtml(message)}</td>
-    </tr>
-  `;
+  if (!target) return;
+  target.innerHTML = `<tr><td colspan="${colspan}">${escapeHtml(message)}</td></tr>`;
 }
 
 function renderBadge(rank) {
-  if (rank === 1) {
-    return { className: "badge first", label: "1" };
-  }
-
-  if (rank === 2) {
-    return { className: "badge second", label: "2" };
-  }
-
-  if (rank === 3) {
-    return { className: "badge third", label: "3" };
-  }
-
+  if (rank === 1) return { className: "badge first", label: "1" };
+  if (rank === 2) return { className: "badge second", label: "2" };
+  if (rank === 3) return { className: "badge third", label: "3" };
   return null;
 }
 
 function ensureSearchUi(target) {
-  if (!target?.id) {
-    return;
-  }
-
+  if (!target?.id) return;
   const tableWrap = target.closest(".table-wrap");
-
-  if (!tableWrap || tableWrap.previousElementSibling?.classList.contains("leaderboard-search")) {
-    return;
-  }
-
-  tableWrap.insertAdjacentHTML(
-    "beforebegin",
-    `
-      <div class="leaderboard-search">
-        <input
-          class="leaderboard-search-input"
-          type="search"
-          placeholder="Search player name"
-          aria-label="Search player name"
-          data-search-target="${target.id}"
-        />
-        <p class="leaderboard-search-note">Showing top 10 by default. Search any player by name.</p>
-      </div>
-    `
-  );
-
+  if (!tableWrap || tableWrap.previousElementSibling?.classList.contains("leaderboard-search")) return;
+  tableWrap.insertAdjacentHTML("beforebegin", `
+    <div class="leaderboard-search">
+      <input
+        class="leaderboard-search-input"
+        type="search"
+        placeholder="Search player name"
+        aria-label="Search player name"
+        data-search-target="${target.id}"
+      />
+      <p class="leaderboard-search-note">Showing top 10 by default. Search any player by name.</p>
+    </div>
+  `);
   const input = tableWrap.previousElementSibling?.querySelector(".leaderboard-search-input");
-
-  if (!input) {
-    return;
-  }
-
+  if (!input) return;
   input.addEventListener("input", (event) => {
     tableSearchState.set(target.id, event.target.value.trim().toLowerCase());
     config?.loader(false);
@@ -645,28 +492,18 @@ function ensureSearchUi(target) {
 
 function getVisibleRankings(target, rankings) {
   const query = tableSearchState.get(target.id) || "";
-
-  if (!query) {
-    return rankings.slice(0, DEFAULT_VISIBLE_RANKINGS);
-  }
-
+  if (!query) return rankings.slice(0, DEFAULT_VISIBLE_RANKINGS);
   return rankings.filter((player) => player.name.toLowerCase().includes(query));
 }
 
 function updateStatus(message, isError = false) {
-  if (!elements.statusMessage) {
-    return;
-  }
-
+  if (!elements.statusMessage) return;
   elements.statusMessage.textContent = message;
   elements.statusMessage.classList.toggle("is-error", isError);
 }
 
 function setLoadingState(isLoading) {
-  if (!elements.refreshButton || !config) {
-    return;
-  }
-
+  if (!elements.refreshButton || !config) return;
   elements.refreshButton.disabled = isLoading;
   elements.refreshButton.textContent = isLoading ? "Refreshing" : config.refreshText;
 }
@@ -674,13 +511,8 @@ function setLoadingState(isLoading) {
 function initBreakPointTabs() {
   if (
     (page !== "break-point" && page !== "match-point") ||
-    !elements.overallTab ||
-    !elements.tournamentTab ||
-    !elements.americanoTab
-  ) {
-    return;
-  }
-
+    !elements.overallTab || !elements.tournamentTab || !elements.americanoTab
+  ) return;
   elements.overallTab.addEventListener("click", () => setBreakPointTab("overall"));
   elements.tournamentTab.addEventListener("click", () => setBreakPointTab("tournament"));
   elements.americanoTab.addEventListener("click", () => setBreakPointTab("americano"));
@@ -690,13 +522,8 @@ function initBreakPointTabs() {
 function initFirstServeTabs() {
   if (
     page !== "first-serve" ||
-    !elements.firstServeRankingTab ||
-    !elements.firstServeOverallTab ||
-    !elements.firstServePersonalTab
-  ) {
-    return;
-  }
-
+    !elements.firstServeRankingTab || !elements.firstServeOverallTab || !elements.firstServePersonalTab
+  ) return;
   elements.firstServeRankingTab.addEventListener("click", () => setFirstServeTab("ranking"));
   elements.firstServeOverallTab.addEventListener("click", () => setFirstServeTab("overall"));
   elements.firstServePersonalTab.addEventListener("click", () => setFirstServeTab("personal"));
@@ -705,20 +532,12 @@ function initFirstServeTabs() {
 
 function setFirstServeTab(tabName) {
   if (
-    !elements.firstServeRankingTab ||
-    !elements.firstServeOverallTab ||
-    !elements.firstServePersonalTab ||
-    !elements.firstServeRankingPanel ||
-    !elements.firstServeOverallPanel ||
-    !elements.firstServePersonalPanel
-  ) {
-    return;
-  }
-
+    !elements.firstServeRankingTab || !elements.firstServeOverallTab || !elements.firstServePersonalTab ||
+    !elements.firstServeRankingPanel || !elements.firstServeOverallPanel || !elements.firstServePersonalPanel
+  ) return;
   const isRanking = tabName === "ranking";
   const isOverall = tabName === "overall";
   const isPersonal = tabName === "personal";
-
   elements.firstServeRankingTab.classList.toggle("is-active", isRanking);
   elements.firstServeOverallTab.classList.toggle("is-active", isOverall);
   elements.firstServePersonalTab.classList.toggle("is-active", isPersonal);
@@ -735,20 +554,12 @@ function setFirstServeTab(tabName) {
 
 function setBreakPointTab(tabName) {
   if (
-    !elements.overallTab ||
-    !elements.tournamentTab ||
-    !elements.americanoTab ||
-    !elements.overallPanel ||
-    !elements.tournamentPanel ||
-    !elements.americanoPanel
-  ) {
-    return;
-  }
-
+    !elements.overallTab || !elements.tournamentTab || !elements.americanoTab ||
+    !elements.overallPanel || !elements.tournamentPanel || !elements.americanoPanel
+  ) return;
   const isOverall = tabName === "overall";
   const isTournament = tabName === "tournament";
   const isAmericano = tabName === "americano";
-
   elements.overallTab.classList.toggle("is-active", isOverall);
   elements.tournamentTab.classList.toggle("is-active", isTournament);
   elements.americanoTab.classList.toggle("is-active", isAmericano);
@@ -783,103 +594,18 @@ function escapeHtml(value) {
 }
 
 function pickFirstServeRankingRows(firstServeData) {
-  const preferredKeys = [
-    "overallRanking",
-    "overallRankings",
-    "ranking",
-    "rankings",
-    "finalScore",
-    "finalScores",
-    "scoreRating",
-    "scoreRatings"
-  ];
-
+  const preferredKeys = ["overallRanking","overallRankings","ranking","rankings","finalScore","finalScores","scoreRating","scoreRatings"];
   for (const key of preferredKeys) {
-    if (Array.isArray(firstServeData[key])) {
-      return firstServeData[key];
-    }
+    if (Array.isArray(firstServeData[key])) return firstServeData[key];
   }
-
   for (const [key, value] of Object.entries(firstServeData)) {
-    if (!Array.isArray(value) || key === "firstServe" || key === "pmMatchScores") {
-      continue;
-    }
-
+    if (!Array.isArray(value) || key === "firstServe" || key === "pmMatchScores") continue;
     const firstRow = value.find((row) => row && typeof row === "object");
-
-    if (!firstRow) {
-      continue;
-    }
-
+    if (!firstRow) continue;
     const hasRating = "Rating" in firstRow || "rating" in firstRow;
     const hasScore = "Score" in firstRow || "score" in firstRow;
-    const hasName =
-      "Name" in firstRow ||
-      "Player Name" in firstRow ||
-      "playerName" in firstRow;
-
-    if (hasRating && hasScore && hasName) {
-      return value;
-    }
+    const hasName = "Name" in firstRow || "Player Name" in firstRow || "playerName" in firstRow;
+    if (hasRating && hasScore && hasName) return value;
   }
-
-  return [];
-}
-
-function pickOverallRows(data) {
-  return pickRowsByKeys(data, [
-    "matchPointOverall",
-    "overall",
-    "overallRanking",
-    "overallRankings",
-    "ranking",
-    "rankings"
-  ], ["Rating", "Score"], ["Name", "Player Name", "playerName"]);
-}
-
-function pickTournamentRows(data) {
-  return pickRowsByKeys(data, [
-    "matchPointTournament",
-    "tournament",
-    "tournamentRanking",
-    "tournamentRankings"
-  ], ["won", "Loss", "MP"], ["Player Name", "Name", "playerName"]);
-}
-
-function pickAmericanoRows(data) {
-  return pickRowsByKeys(data, [
-    "matchPointAmericano",
-    "americano",
-    "americanoRanking",
-    "americanoRankings"
-  ], ["Score", "MP"], ["Player Name", "Name", "playerName"]);
-}
-
-function pickRowsByKeys(data, preferredKeys, requiredKeys, nameKeys) {
-  for (const key of preferredKeys) {
-    if (Array.isArray(data[key])) {
-      return data[key];
-    }
-  }
-
-  for (const value of Object.values(data)) {
-    if (!Array.isArray(value)) {
-      continue;
-    }
-
-    const firstRow = value.find((row) => row && typeof row === "object");
-
-    if (!firstRow) {
-      continue;
-    }
-
-    const hasRequired = requiredKeys.every((requiredKey) => requiredKey in firstRow);
-    const hasName = nameKeys.some((nameKey) => nameKey in firstRow);
-
-    if (hasRequired && hasName) {
-      return value;
-    }
-  }
-
   return [];
 }
