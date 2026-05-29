@@ -1,6 +1,6 @@
 const CACHE_TTL = 1 * 60 * 60 * 1000;
 const MASTER_CACHE_KEY = "dpcRankingCache:all-pages";
-const CACHE_SCHEMA_VERSION = 6;
+const CACHE_SCHEMA_VERSION = 7;
 const ADMIN_STORAGE_KEY = "dpcRankingAdmin";
 const ADMIN_QUERY_KEY = "admin";
 const ADMIN_QUERY_VALUE = "1";
@@ -293,79 +293,43 @@ function normalizeTournamentRankings(rows) {
 }
 
 function normalizeOverallRankings(rows) {
-  const sorted = rows
+  return rows
     .map((row) => ({
       id: String(row.ID || "").trim(),
       name: String(row.Name || "").trim(),
       score: toNumber(row.Score),
-      rating: toDecimal(row.Rating)
+      rating: toDecimal(row.Rating),
+      rank: toNumber(row.Ranking) || toNumber(row.ranking) || toNumber(row.Rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => {
-      if (right.rating !== left.rating) return right.rating - left.rating;
-      if (right.score !== left.score) return right.score - left.score;
-      return left.name.localeCompare(right.name);
-    });
-
-  let lastRating = null;
-  let lastRank = 0;
-  return sorted.map((player, index) => {
-    const rank = player.rating === lastRating ? lastRank : index + 1;
-    lastRating = player.rating;
-    lastRank = rank;
-    return { ...player, rank };
-  });
+    .sort((left, right) => left.rank - right.rank);
 }
 
-// ✅ Match Point normalizer — matches the API fields: id, name, score, rating
+// ✅ Match Point normalizer — uses sheet Ranking column
 function normalizeMatchPointRankings(rows) {
-  const sorted = rows
+  return rows
     .map((row) => ({
       id: String(row.id || "").trim(),
       name: String(row.name || "").trim(),
       score: toNumber(row.score),
-      rating: toDecimal(row.rating)
+      rating: toDecimal(row.rating),
+      rank: toNumber(row.Ranking || row.ranking || row.Rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => {
-      if (right.rating !== left.rating) return right.rating - left.rating;
-      if (right.score !== left.score) return right.score - left.score;
-      return left.name.localeCompare(right.name);
-    });
-
-  let lastRating = null;
-  let lastRank = 0;
-  return sorted.map((player, index) => {
-    const rank = player.rating === lastRating ? lastRank : index + 1;
-    lastRating = player.rating;
-    lastRank = rank;
-    return { ...player, rank };
-  });
+    .sort((left, right) => left.rank - right.rank);
 }
 
 function normalizeFlexibleOverallRankings(rows) {
-  const sorted = rows
+  return rows
     .map((row) => ({
       id: String(row.ID || row["Player ID"] || row.playerId || "").trim(),
       name: String(row.Name || row["Player Name"] || row.playerName || "").trim(),
       score: toNumber(row.Score || row.score),
-      rating: toDecimal(row.Rating || row.rating)
+      rating: toDecimal(row.Rating || row.rating),
+      rank: toNumber(row.Ranking || row.ranking || row.Rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => {
-      if (right.rating !== left.rating) return right.rating - left.rating;
-      if (right.score !== left.score) return right.score - left.score;
-      return left.name.localeCompare(right.name);
-    });
-
-  let lastRating = null;
-  let lastRank = 0;
-  return sorted.map((player, index) => {
-    const rank = player.rating === lastRating ? lastRank : index + 1;
-    lastRating = player.rating;
-    lastRank = rank;
-    return { ...player, rank };
-  });
+    .sort((left, right) => left.rank - right.rank);
 }
 
 function normalizeNoidaRankings(rows) {
@@ -609,3 +573,16 @@ function pickFirstServeRankingRows(firstServeData) {
   }
   return [];
 }
+
+// Preload on every page — data ready before user clicks leaderboard
+(async function preload() {
+  try {
+    const cached = readCache();
+    if (!cached) {
+      const data = await fetchAllRankingsData();
+      writeCache(data);
+    }
+  } catch (e) {
+    // silent fail
+  }
+})();
