@@ -330,13 +330,12 @@ function normalizeFlexibleOverallRankings(rows) {
       id: String(row.ID || row["Player ID"] || row.playerId || "").trim(),
       name: String(row.Name || row["Player Name"] || row.playerName || "").trim(),
       score: toNumber(row.Score || row.score),
-      rating: toDecimal(row.Rating || row.rating),
+      rating: toDecimal(row.Rating ?? row.rating ?? 0),  // ← use ?? not ||
       rank: toNumber(row.Ranking || row.ranking || row.Rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((left, right) => left.rank - right.rank);
 }
-
 function normalizeNoidaRankings(rows) {
   const sorted = rows
     .map((row) => ({
