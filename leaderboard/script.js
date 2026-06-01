@@ -260,16 +260,21 @@ function writeCache(data) {
 }
 
 function normalizeBasicRankings(rows) {
-  const sorted = rows
+  return rows
     .map((row) => ({
       id: String(row["Player ID"] || "").trim(),
       name: String(row["Player Name"] || "").trim(),
       matches: toNumber(row.MP),
-      score: toNumber(row.Score)
+      score: toNumber(row.Score),
+      rank: toNumber(
+        row.Ranking ||
+        row.ranking ||
+        row.Rank ||
+        row.rank
+      )
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => compareByScore(left, right));
-  return addClusterRanks(sorted);
+    .sort((left, right) => left.rank - right.rank);
 }
 
 function normalizeTournamentRankings(rows) {
