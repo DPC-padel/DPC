@@ -100,19 +100,20 @@ async function loadFirstServePage(isManualRefresh) {
   try {
     const data = await getAllRankingsData(isManualRefresh);
     const overallRankings = normalizeFlexibleOverallRankings(data.firstServeRanking);
-    const rankings = normalizeBasicRankings(data.firstServe);
+    // ✅ Americano tab — rank calculated on the fly from firstServe scores
+    const americanoRankings = normalizeAmericanoRankings(data.firstServe);
     const personalGamesRankings = normalizeBasicRankings(data.firstServePersonal);
-    if (!overallRankings.length && !rankings.length && !personalGamesRankings.length) {
+    if (!overallRankings.length && !americanoRankings.length && !personalGamesRankings.length) {
       throw new Error("No ranking entries were found.");
     }
     renderOverallTable(elements.firstServeRankingBody, overallRankings, 4);
-    renderBasicTable(elements.rankingBody, rankings, 4);
+    renderBasicTable(elements.rankingBody, americanoRankings, 4, "No Americano entries yet.");
     renderBasicTable(elements.personalRankingBody, personalGamesRankings, 4, "No personal matches entries yet.");
     updateStatus("");
   } catch (error) {
     console.error("Failed to load First Serve rankings:", error);
     renderMessageRow(elements.firstServeRankingBody, "Ranking data is not available right now.", 4);
-    renderMessageRow(elements.rankingBody, "Leaderboard data is not available right now.", 4);
+    renderMessageRow(elements.rankingBody, "Americano leaderboard is not available right now.", 4);
     renderMessageRow(elements.personalRankingBody, "Personal matches leaderboard is not available right now.", 4);
     updateStatus("Could not load the live leaderboard right now.", true);
   } finally {
@@ -127,13 +128,14 @@ async function loadBreakPointPage(isManualRefresh) {
     const data = await getAllRankingsData(isManualRefresh);
     const overallRankings = normalizeOverallRankings(data.breakPointOverall);
     const tournamentRankings = normalizeTournamentRankings(data.breakPointTournament);
-    const americanoRankings = normalizeBasicRankings(data.breakPointAmericano);
+    // ✅ Americano rank calculated on the fly
+    const americanoRankings = normalizeAmericanoRankings(data.breakPointAmericano);
     if (!overallRankings.length && !tournamentRankings.length && !americanoRankings.length) {
       throw new Error("No Break Point rankings were found.");
     }
     renderOverallTable(elements.overallRankingBody, overallRankings, 4);
     renderTournamentTable(elements.tournamentRankingBody, tournamentRankings, 6);
-    renderBasicTable(elements.americanoRankingBody, americanoRankings, 4);
+    renderBasicTable(elements.americanoRankingBody, americanoRankings, 4, "No Americano entries yet.");
     updateStatus("");
   } catch (error) {
     console.error("Failed to load Break Point rankings:", error);
@@ -151,7 +153,6 @@ async function loadMatchPointPage(isManualRefresh) {
   updateStatus(isManualRefresh ? "Refreshing rankings..." : "");
   try {
     const data = await getAllRankingsData(isManualRefresh);
-    // Match Point API returns { success: true, players: [...] } with fields: id, name, score, rating
     const overallRankings = normalizeMatchPointRankings(data.matchPointPlayers);
     if (!overallRankings.length) {
       throw new Error("No Match Point rankings were found.");
@@ -223,7 +224,7 @@ async function fetchAllRankingsData() {
     breakPointOverall: breakPointData.breakPointOverall || [],
     breakPointTournament: breakPointData.breakPointTournament || [],
     breakPointAmericano: breakPointData.breakPointAmericano || [],
-    matchPointPlayers: matchPointData.players || [],  // ✅ correct key from Match Point API
+    matchPointPlayers: matchPointData.players || [],
     noida: Array.isArray(noidaData.data) ? noidaData.data : []
   };
 }
@@ -275,6 +276,20 @@ function normalizeBasicRankings(rows) {
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((left, right) => left.rank - right.rank);
+}
+
+// ✅ Americano — rank calculated on the fly by score, ties get same rank
+function normalizeAmericanoRankings(rows) {
+  const sorted = rows
+    .map((row) => ({
+      id: String(row["Player ID"] || row.playerId || "").trim(),
+      name: String(row["Player Name"] || row.playerName || row.Name || row.name || "").trim(),
+      matches: toNumber(row.MP || row.mp),
+      score: toNumber(row.Score || row.score)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((left, right) => compareByScore(left, right));
+  return addClusterRanks(sorted);
 }
 
 function normalizeTournamentRankings(rows) {
@@ -330,12 +345,13 @@ function normalizeFlexibleOverallRankings(rows) {
       id: String(row.ID || row["Player ID"] || row.playerId || "").trim(),
       name: String(row.Name || row["Player Name"] || row.playerName || "").trim(),
       score: toNumber(row.Score || row.score),
-      rating: toDecimal(row.Rating ?? row.rating ?? 0),  // ← use ?? not ||
+      rating: toDecimal(row.Rating ?? row.rating ?? 0),
       rank: toNumber(row.Ranking || row.ranking || row.Rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((left, right) => left.rank - right.rank);
 }
+
 function normalizeNoidaRankings(rows) {
   const sorted = rows
     .map((row) => ({
