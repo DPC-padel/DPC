@@ -1,6 +1,6 @@
 const CACHE_TTL = 1 * 60 * 60 * 1000;
 const MASTER_CACHE_KEY = "dpcRankingCache:all-pages";
-const CACHE_SCHEMA_VERSION = 7;
+const CACHE_SCHEMA_VERSION = 8; // bumped to bust old cache after tournament addition
 const ADMIN_STORAGE_KEY = "dpcRankingAdmin";
 const ADMIN_QUERY_KEY = "admin";
 const ADMIN_QUERY_VALUE = "1";
@@ -39,25 +39,31 @@ const page = document.body.dataset.page;
 const config = PAGE_CONFIG[page];
 
 const elements = {
-  statusMessage: document.getElementById("statusMessage"),
-  refreshButton: document.getElementById("refreshButton"),
-  pageSelector: document.getElementById("pageSelector"),
-  rankingBody: document.getElementById("rankingBody"),
-  firstServeRankingBody: document.getElementById("firstServeRankingBody"),
-  personalRankingBody: document.getElementById("personalRankingBody"),
-  overallRankingBody: document.getElementById("overallRankingBody"),
-  tournamentRankingBody: document.getElementById("tournamentRankingBody"),
-  americanoRankingBody: document.getElementById("americanoRankingBody"),
-  firstServeRankingTab: document.getElementById("firstServeRankingTab"),
-  firstServeOverallTab: document.getElementById("firstServeOverallTab"),
-  firstServePersonalTab: document.getElementById("firstServePersonalTab"),
-  firstServeRankingPanel: document.getElementById("firstServeRankingPanel"),
-  firstServeOverallPanel: document.getElementById("firstServeOverallPanel"),
-  firstServePersonalPanel: document.getElementById("firstServePersonalPanel"),
-  overallTab: document.getElementById("overallTab"),
-  tournamentTab: document.getElementById("tournamentTab"),
-  americanoTab: document.getElementById("americanoTab"),
-  overallPanel: document.getElementById("overallPanel"),
+  statusMessage:              document.getElementById("statusMessage"),
+  refreshButton:              document.getElementById("refreshButton"),
+  pageSelector:               document.getElementById("pageSelector"),
+  rankingBody:                document.getElementById("rankingBody"),
+  firstServeRankingBody:      document.getElementById("firstServeRankingBody"),
+  personalRankingBody:        document.getElementById("personalRankingBody"),
+  firstServeTournamentBody:   document.getElementById("firstServeTournamentBody"),
+  overallRankingBody:         document.getElementById("overallRankingBody"),
+  tournamentRankingBody:      document.getElementById("tournamentRankingBody"),
+  americanoRankingBody:       document.getElementById("americanoRankingBody"),
+  // First Serve tabs
+  firstServeRankingTab:       document.getElementById("firstServeRankingTab"),
+  firstServeOverallTab:       document.getElementById("firstServeOverallTab"),
+  firstServePersonalTab:      document.getElementById("firstServePersonalTab"),
+  firstServeTournamentTab:    document.getElementById("firstServeTournamentTab"),
+  // First Serve panels
+  firstServeRankingPanel:     document.getElementById("firstServeRankingPanel"),
+  firstServeOverallPanel:     document.getElementById("firstServeOverallPanel"),
+  firstServePersonalPanel:    document.getElementById("firstServePersonalPanel"),
+  firstServeTournamentPanel:  document.getElementById("firstServeTournamentPanel"),
+  // Break Point tabs/panels
+  overallTab:     document.getElementById("overallTab"),
+  tournamentTab:  document.getElementById("tournamentTab"),
+  americanoTab:   document.getElementById("americanoTab"),
+  overallPanel:   document.getElementById("overallPanel"),
   tournamentPanel: document.getElementById("tournamentPanel"),
   americanoPanel: document.getElementById("americanoPanel")
 };
@@ -70,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initAdminMode();
   initFirstServeTabs();
   initBreakPointTabs();
-
   elements.refreshButton?.addEventListener("click", () => config?.loader(true));
   config?.loader(false);
 });
@@ -94,27 +99,34 @@ function initAdminMode() {
   elements.refreshButton.textContent = config.refreshText;
 }
 
+// ─── PAGE LOADERS ────────────────────────────────────────────────────────────
+
 async function loadFirstServePage(isManualRefresh) {
   setLoadingState(true);
   updateStatus(isManualRefresh ? "Refreshing leaderboard..." : "");
   try {
     const data = await getAllRankingsData(isManualRefresh);
-    const overallRankings = normalizeFlexibleOverallRankings(data.firstServeRanking);
-    // ✅ Americano tab — rank calculated on the fly from firstServe scores
-    const americanoRankings = normalizeAmericanoRankings(data.firstServe);
+    const overallRankings     = normalizeFlexibleOverallRankings(data.firstServeRanking);
+    const americanoRankings   = normalizeAmericanoRankings(data.firstServe);
     const personalGamesRankings = normalizeBasicRankings(data.firstServePersonal);
+    const tournamentRankings  = normalizeTournamentRankings(data.firstServeTournament);
+
     if (!overallRankings.length && !americanoRankings.length && !personalGamesRankings.length) {
       throw new Error("No ranking entries were found.");
     }
+
     renderOverallTable(elements.firstServeRankingBody, overallRankings, 4);
     renderBasicTable(elements.rankingBody, americanoRankings, 4, "No Americano entries yet.");
     renderBasicTable(elements.personalRankingBody, personalGamesRankings, 4, "No personal matches entries yet.");
+    renderTournamentTable(elements.firstServeTournamentBody, tournamentRankings, 6, "No tournament entries yet.");
+
     updateStatus("");
   } catch (error) {
     console.error("Failed to load First Serve rankings:", error);
     renderMessageRow(elements.firstServeRankingBody, "Ranking data is not available right now.", 4);
     renderMessageRow(elements.rankingBody, "Americano leaderboard is not available right now.", 4);
     renderMessageRow(elements.personalRankingBody, "Personal matches leaderboard is not available right now.", 4);
+    renderMessageRow(elements.firstServeTournamentBody, "Tournament leaderboard is not available right now.", 6);
     updateStatus("Could not load the live leaderboard right now.", true);
   } finally {
     setLoadingState(false);
@@ -126,13 +138,14 @@ async function loadBreakPointPage(isManualRefresh) {
   updateStatus(isManualRefresh ? "Refreshing rankings..." : "");
   try {
     const data = await getAllRankingsData(isManualRefresh);
-    const overallRankings = normalizeOverallRankings(data.breakPointOverall);
-    const tournamentRankings = normalizeTournamentRankings(data.breakPointTournament);
-    // ✅ Americano rank calculated on the fly
-    const americanoRankings = normalizeAmericanoRankings(data.breakPointAmericano);
+    const overallRankings     = normalizeOverallRankings(data.breakPointOverall);
+    const tournamentRankings  = normalizeTournamentRankings(data.breakPointTournament);
+    const americanoRankings   = normalizeAmericanoRankings(data.breakPointAmericano);
+
     if (!overallRankings.length && !tournamentRankings.length && !americanoRankings.length) {
       throw new Error("No Break Point rankings were found.");
     }
+
     renderOverallTable(elements.overallRankingBody, overallRankings, 4);
     renderTournamentTable(elements.tournamentRankingBody, tournamentRankings, 6);
     renderBasicTable(elements.americanoRankingBody, americanoRankings, 4, "No Americano entries yet.");
@@ -154,9 +167,7 @@ async function loadMatchPointPage(isManualRefresh) {
   try {
     const data = await getAllRankingsData(isManualRefresh);
     const overallRankings = normalizeMatchPointRankings(data.matchPointPlayers);
-    if (!overallRankings.length) {
-      throw new Error("No Match Point rankings were found.");
-    }
+    if (!overallRankings.length) throw new Error("No Match Point rankings were found.");
     renderOverallTable(elements.overallRankingBody, overallRankings, 4);
     updateStatus("");
   } catch (error) {
@@ -174,9 +185,7 @@ async function loadNoidaPage(isManualRefresh) {
   try {
     const data = await getAllRankingsData(isManualRefresh);
     const rankings = normalizeNoidaRankings(data.noida);
-    if (!rankings.length) {
-      throw new Error("No Noida ranking entries were found.");
-    }
+    if (!rankings.length) throw new Error("No Noida ranking entries were found.");
     renderBasicTable(elements.rankingBody, rankings, 4);
     updateStatus("");
   } catch (error) {
@@ -188,6 +197,8 @@ async function loadNoidaPage(isManualRefresh) {
   }
 }
 
+// ─── DATA FETCHING ───────────────────────────────────────────────────────────
+
 async function getAllRankingsData(forceRefresh = false) {
   const cached = readCache();
   if (!forceRefresh && cached) return cached.data;
@@ -196,7 +207,6 @@ async function getAllRankingsData(forceRefresh = false) {
   return data;
 }
 
-// ✅ All four APIs fetched in parallel
 async function fetchAllRankingsData() {
   const [firstServeRes, breakPointRes, matchPointRes, noidaRes] = await Promise.all([
     fetch(API_URLS.firstServe),
@@ -218,16 +228,19 @@ async function fetchAllRankingsData() {
   ]);
 
   return {
-    firstServe: firstServeData.firstServe || [],
-    firstServePersonal: firstServeData.pmMatchScores || [],
-    firstServeRanking: pickFirstServeRankingRows(firstServeData),
-    breakPointOverall: breakPointData.breakPointOverall || [],
+    firstServe:           firstServeData.firstServe || [],
+    firstServePersonal:   firstServeData.pmMatchScores || [],
+    firstServeRanking:    pickFirstServeRankingRows(firstServeData),
+    firstServeTournament: firstServeData.tournamentScores || [],   // ← NEW
+    breakPointOverall:    breakPointData.breakPointOverall || [],
     breakPointTournament: breakPointData.breakPointTournament || [],
-    breakPointAmericano: breakPointData.breakPointAmericano || [],
-    matchPointPlayers: matchPointData.players || [],
-    noida: Array.isArray(noidaData.data) ? noidaData.data : []
+    breakPointAmericano:  breakPointData.breakPointAmericano || [],
+    matchPointPlayers:    matchPointData.players || [],
+    noida:                Array.isArray(noidaData.data) ? noidaData.data : []
   };
 }
+
+// ─── CACHE ───────────────────────────────────────────────────────────────────
 
 function readCache() {
   try {
@@ -260,54 +273,50 @@ function writeCache(data) {
   }
 }
 
+// ─── NORMALIZERS ─────────────────────────────────────────────────────────────
+
 function normalizeBasicRankings(rows) {
   return rows
     .map((row) => ({
-      id: String(row["Player ID"] || "").trim(),
-      name: String(row["Player Name"] || "").trim(),
+      id:      String(row["Player ID"] || "").trim(),
+      name:    String(row["Player Name"] || "").trim(),
       matches: toNumber(row.MP),
-      score: toNumber(row.Score),
-      rank: toNumber(
-        row.Ranking ||
-        row.ranking ||
-        row.Rank ||
-        row.rank
-      )
+      score:   toNumber(row.Score),
+      rank:    toNumber(row.Ranking || row.ranking || row.Rank || row.rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => left.rank - right.rank);
+    .sort((a, b) => a.rank - b.rank);
 }
 
-// ✅ Americano — rank calculated on the fly by score, ties get same rank
 function normalizeAmericanoRankings(rows) {
   const sorted = rows
     .map((row) => ({
-      id: String(row["Player ID"] || row.playerId || "").trim(),
-      name: String(row["Player Name"] || row.playerName || row.Name || row.name || "").trim(),
+      id:      String(row["Player ID"] || row.playerId || "").trim(),
+      name:    String(row["Player Name"] || row.playerName || row.Name || row.name || "").trim(),
       matches: toNumber(row.MP || row.mp),
-      score: toNumber(row.Score || row.score)
+      score:   toNumber(row.Score || row.score)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => compareByScore(left, right));
+    .sort((a, b) => compareByScore(a, b));
   return addClusterRanks(sorted);
 }
 
 function normalizeTournamentRankings(rows) {
   const sorted = rows
     .map((row) => ({
-      id: String(row["Player ID"] || "").trim(),
-      name: String(row["Player Name"] || "").trim(),
+      id:      String(row["Player ID"] || "").trim(),
+      name:    String(row["Player Name"] || "").trim(),
       matches: toNumber(row.MP),
-      wins: toNumber(row.won),
-      losses: toNumber(row.Loss),
-      score: toNumber(row.Score)
+      wins:    toNumber(row.won),
+      losses:  toNumber(row.Loss),
+      score:   toNumber(row.Score)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => {
-      if (right.score !== left.score) return right.score - left.score;
-      if (right.wins !== left.wins) return right.wins - left.wins;
-      if (right.matches !== left.matches) return right.matches - left.matches;
-      return left.name.localeCompare(right.name);
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.wins  !== a.wins)  return b.wins  - a.wins;
+      if (b.matches !== a.matches) return b.matches - a.matches;
+      return a.name.localeCompare(b.name);
     });
   return addClusterRanks(sorted);
 }
@@ -315,72 +324,73 @@ function normalizeTournamentRankings(rows) {
 function normalizeOverallRankings(rows) {
   return rows
     .map((row) => ({
-      id: String(row.ID || "").trim(),
-      name: String(row.Name || "").trim(),
-      score: toNumber(row.Score),
+      id:     String(row.ID || "").trim(),
+      name:   String(row.Name || "").trim(),
+      score:  toNumber(row.Score),
       rating: toDecimal(row.Rating),
-      rank: toNumber(row.Ranking) || toNumber(row.ranking) || toNumber(row.Rank)
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => left.rank - right.rank);
+    .sort((a, b) => a.rank - b.rank);
 }
 
-// ✅ Match Point normalizer — uses sheet Ranking column
 function normalizeMatchPointRankings(rows) {
   return rows
     .map((row) => ({
-      id: String(row.id || "").trim(),
-      name: String(row.name || "").trim(),
-      score: toNumber(row.score),
+      id:     String(row.id || "").trim(),
+      name:   String(row.name || "").trim(),
+      score:  toNumber(row.score),
       rating: toDecimal(row.rating),
-      rank: toNumber(row.Ranking || row.ranking || row.Rank)
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => left.rank - right.rank);
+    .sort((a, b) => a.rank - b.rank);
 }
 
 function normalizeFlexibleOverallRankings(rows) {
   return rows
     .map((row) => ({
-      id: String(row.ID || row["Player ID"] || row.playerId || "").trim(),
-      name: String(row.Name || row["Player Name"] || row.playerName || "").trim(),
-      score: toNumber(row.Score || row.score),
+      id:     String(row.ID || row["Player ID"] || row.playerId || "").trim(),
+      name:   String(row.Name || row["Player Name"] || row.playerName || "").trim(),
+      score:  toNumber(row.Score || row.score),
       rating: toDecimal(row.Rating ?? row.rating ?? 0),
-      rank: toNumber(row.Ranking || row.ranking || row.Rank)
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => left.rank - right.rank);
+    .sort((a, b) => a.rank - b.rank);
 }
 
 function normalizeNoidaRankings(rows) {
   const sorted = rows
     .map((row) => ({
-      id: String(row.playerId || "").trim(),
-      name: String(row.playerName || "").trim(),
+      id:      String(row.playerId || "").trim(),
+      name:    String(row.playerName || "").trim(),
       matches: toNumber(row.mp),
-      score: toNumber(row.score)
+      score:   toNumber(row.score)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((left, right) => compareByScore(left, right));
+    .sort((a, b) => compareByScore(a, b));
   return addClusterRanks(sorted);
 }
 
 function addClusterRanks(players) {
   let lastScore = null;
-  let lastRank = 0;
+  let lastRank  = 0;
   return players.map((player, index) => {
     const rank = player.score === lastScore ? lastRank : index + 1;
-    lastScore = player.score;
-    lastRank = rank;
+    lastScore  = player.score;
+    lastRank   = rank;
     return { ...player, rank };
   });
 }
 
-function compareByScore(left, right) {
-  if (right.score !== left.score) return right.score - left.score;
-  if (right.matches !== left.matches) return right.matches - left.matches;
-  return left.name.localeCompare(right.name);
+function compareByScore(a, b) {
+  if (b.score   !== a.score)   return b.score   - a.score;
+  if (b.matches !== a.matches) return b.matches  - a.matches;
+  return a.name.localeCompare(b.name);
 }
+
+// ─── RENDERERS ───────────────────────────────────────────────────────────────
 
 function renderBasicTable(target, rankings, colspan, emptyMessage = "No ranking entries yet.") {
   if (!target) return;
@@ -400,10 +410,10 @@ function renderBasicTable(target, rankings, colspan, emptyMessage = "No ranking 
   }).join("");
 }
 
-function renderTournamentTable(target, rankings, colspan) {
+function renderTournamentTable(target, rankings, colspan, emptyMessage = "No tournament entries yet.") {
   if (!target) return;
   ensureSearchUi(target);
-  if (!rankings.length) { renderMessageRow(target, "No tournament entries yet.", colspan); return; }
+  if (!rankings.length) { renderMessageRow(target, emptyMessage, colspan); return; }
   const visibleRankings = getVisibleRankings(target, rankings);
   if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
   target.innerHTML = visibleRankings.map((player, index) => {
@@ -444,11 +454,13 @@ function renderMessageRow(target, message, colspan) {
 }
 
 function renderBadge(rank) {
-  if (rank === 1) return { className: "badge first", label: "1" };
+  if (rank === 1) return { className: "badge first",  label: "1" };
   if (rank === 2) return { className: "badge second", label: "2" };
-  if (rank === 3) return { className: "badge third", label: "3" };
+  if (rank === 3) return { className: "badge third",  label: "3" };
   return null;
 }
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
 
 function ensureSearchUi(target) {
   if (!target?.id) return;
@@ -480,6 +492,8 @@ function getVisibleRankings(target, rankings) {
   return rankings.filter((player) => player.name.toLowerCase().includes(query));
 }
 
+// ─── STATUS & LOADING ────────────────────────────────────────────────────────
+
 function updateStatus(message, isError = false) {
   if (!elements.statusMessage) return;
   elements.statusMessage.textContent = message;
@@ -492,48 +506,44 @@ function setLoadingState(isLoading) {
   elements.refreshButton.textContent = isLoading ? "Refreshing" : config.refreshText;
 }
 
-function initBreakPointTabs() {
-  if (
-    (page !== "break-point" && page !== "match-point") ||
-    !elements.overallTab || !elements.tournamentTab || !elements.americanoTab
-  ) return;
-  elements.overallTab.addEventListener("click", () => setBreakPointTab("overall"));
-  elements.tournamentTab.addEventListener("click", () => setBreakPointTab("tournament"));
-  elements.americanoTab.addEventListener("click", () => setBreakPointTab("americano"));
-  setBreakPointTab("overall");
-}
+// ─── TAB INIT ────────────────────────────────────────────────────────────────
 
 function initFirstServeTabs() {
-  if (
-    page !== "first-serve" ||
-    !elements.firstServeRankingTab || !elements.firstServeOverallTab || !elements.firstServePersonalTab
-  ) return;
-  elements.firstServeRankingTab.addEventListener("click", () => setFirstServeTab("ranking"));
-  elements.firstServeOverallTab.addEventListener("click", () => setFirstServeTab("overall"));
-  elements.firstServePersonalTab.addEventListener("click", () => setFirstServeTab("personal"));
+  if (page !== "first-serve") return;
+  if (!elements.firstServeRankingTab) return;
+  elements.firstServeRankingTab.addEventListener("click",    () => setFirstServeTab("ranking"));
+  elements.firstServeOverallTab.addEventListener("click",    () => setFirstServeTab("overall"));
+  elements.firstServePersonalTab.addEventListener("click",   () => setFirstServeTab("personal"));
+  elements.firstServeTournamentTab?.addEventListener("click", () => setFirstServeTab("tournament"));
   setFirstServeTab("ranking");
 }
 
+function initBreakPointTabs() {
+  if (page !== "break-point" && page !== "match-point") return;
+  if (!elements.overallTab || !elements.tournamentTab || !elements.americanoTab) return;
+  elements.overallTab.addEventListener("click",    () => setBreakPointTab("overall"));
+  elements.tournamentTab.addEventListener("click", () => setBreakPointTab("tournament"));
+  elements.americanoTab.addEventListener("click",  () => setBreakPointTab("americano"));
+  setBreakPointTab("overall");
+}
+
+// ─── TAB SWITCHERS ───────────────────────────────────────────────────────────
+
 function setFirstServeTab(tabName) {
-  if (
-    !elements.firstServeRankingTab || !elements.firstServeOverallTab || !elements.firstServePersonalTab ||
-    !elements.firstServeRankingPanel || !elements.firstServeOverallPanel || !elements.firstServePersonalPanel
-  ) return;
-  const isRanking = tabName === "ranking";
-  const isOverall = tabName === "overall";
-  const isPersonal = tabName === "personal";
-  elements.firstServeRankingTab.classList.toggle("is-active", isRanking);
-  elements.firstServeOverallTab.classList.toggle("is-active", isOverall);
-  elements.firstServePersonalTab.classList.toggle("is-active", isPersonal);
-  elements.firstServeRankingTab.setAttribute("aria-selected", String(isRanking));
-  elements.firstServeOverallTab.setAttribute("aria-selected", String(isOverall));
-  elements.firstServePersonalTab.setAttribute("aria-selected", String(isPersonal));
-  elements.firstServeRankingPanel.hidden = !isRanking;
-  elements.firstServeOverallPanel.hidden = !isOverall;
-  elements.firstServePersonalPanel.hidden = !isPersonal;
-  elements.firstServeRankingPanel.classList.toggle("panel-hidden", !isRanking);
-  elements.firstServeOverallPanel.classList.toggle("panel-hidden", !isOverall);
-  elements.firstServePersonalPanel.classList.toggle("panel-hidden", !isPersonal);
+  const tabs = {
+    ranking:    { tab: elements.firstServeRankingTab,    panel: elements.firstServeRankingPanel },
+    overall:    { tab: elements.firstServeOverallTab,    panel: elements.firstServeOverallPanel },
+    personal:   { tab: elements.firstServePersonalTab,   panel: elements.firstServePersonalPanel },
+    tournament: { tab: elements.firstServeTournamentTab, panel: elements.firstServeTournamentPanel }
+  };
+  Object.entries(tabs).forEach(([key, { tab, panel }]) => {
+    if (!tab || !panel) return;
+    const isActive = key === tabName;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+    panel.hidden = !isActive;
+    panel.classList.toggle("panel-hidden", !isActive);
+  });
 }
 
 function setBreakPointTab(tabName) {
@@ -541,22 +551,24 @@ function setBreakPointTab(tabName) {
     !elements.overallTab || !elements.tournamentTab || !elements.americanoTab ||
     !elements.overallPanel || !elements.tournamentPanel || !elements.americanoPanel
   ) return;
-  const isOverall = tabName === "overall";
+  const isOverall    = tabName === "overall";
   const isTournament = tabName === "tournament";
-  const isAmericano = tabName === "americano";
+  const isAmericano  = tabName === "americano";
   elements.overallTab.classList.toggle("is-active", isOverall);
   elements.tournamentTab.classList.toggle("is-active", isTournament);
   elements.americanoTab.classList.toggle("is-active", isAmericano);
   elements.overallTab.setAttribute("aria-selected", String(isOverall));
   elements.tournamentTab.setAttribute("aria-selected", String(isTournament));
   elements.americanoTab.setAttribute("aria-selected", String(isAmericano));
-  elements.overallPanel.hidden = !isOverall;
+  elements.overallPanel.hidden    = !isOverall;
   elements.tournamentPanel.hidden = !isTournament;
-  elements.americanoPanel.hidden = !isAmericano;
+  elements.americanoPanel.hidden  = !isAmericano;
   elements.overallPanel.classList.toggle("panel-hidden", !isOverall);
   elements.tournamentPanel.classList.toggle("panel-hidden", !isTournament);
   elements.americanoPanel.classList.toggle("panel-hidden", !isAmericano);
 }
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 function toNumber(value) {
   const parsed = Number.parseInt(value, 10);
@@ -583,18 +595,19 @@ function pickFirstServeRankingRows(firstServeData) {
     if (Array.isArray(firstServeData[key])) return firstServeData[key];
   }
   for (const [key, value] of Object.entries(firstServeData)) {
-    if (!Array.isArray(value) || key === "firstServe" || key === "pmMatchScores") continue;
+    if (!Array.isArray(value) || key === "firstServe" || key === "pmMatchScores" || key === "tournamentScores") continue;
     const firstRow = value.find((row) => row && typeof row === "object");
     if (!firstRow) continue;
     const hasRating = "Rating" in firstRow || "rating" in firstRow;
-    const hasScore = "Score" in firstRow || "score" in firstRow;
-    const hasName = "Name" in firstRow || "Player Name" in firstRow || "playerName" in firstRow;
+    const hasScore  = "Score"  in firstRow || "score"  in firstRow;
+    const hasName   = "Name"   in firstRow || "Player Name" in firstRow || "playerName" in firstRow;
     if (hasRating && hasScore && hasName) return value;
   }
   return [];
 }
 
-// Preload on every page — data ready before user clicks leaderboard
+// ─── PRELOAD ─────────────────────────────────────────────────────────────────
+
 (async function preload() {
   try {
     const cached = readCache();
