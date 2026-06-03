@@ -15,11 +15,10 @@
     <section class="leaderboard-card">
       <header class="topbar">
         <div class="brand-lockup">
-         <a class="brand-link" href="https://www.padelcollectiveindia.com/">
+          <a class="brand-link" href="https://www.padelcollectiveindia.com/">
             <img class="brand-logo" src="dpc-logo.svg" alt="Delhi Padel Collective logo">
           </a>
         </div>
-
         <div class="topbar-tools">
           <label class="page-switcher">
             <span class="sr-only">Select leaderboard</span>
@@ -62,15 +61,18 @@
           <button id="firstServePersonalTab" class="tab-button" type="button" data-tab="personal" role="tab" aria-selected="false" onclick="setFirstServeTab('personal')">
             Games
           </button>
+          <button id="firstServeTournamentTab" class="tab-button" type="button" data-tab="tournament" role="tab" aria-selected="false" onclick="setFirstServeTab('tournament')">
+            Tournament
+          </button>
         </div>
 
         <div id="statusMessage" class="status-message" aria-live="polite"></div>
 
+        <!-- RANKING PANEL -->
         <section id="firstServeRankingPanel" class="subsection" role="tabpanel" aria-labelledby="firstServeRankingTab">
           <div class="subsection-head">
             <h2>Ranking</h2>
           </div>
-
           <div class="table-wrap">
             <table>
               <thead>
@@ -82,19 +84,17 @@
                 </tr>
               </thead>
               <tbody id="firstServeRankingBody">
-                <tr>
-                  <td colspan="4">Loading ranking...</td>
-                </tr>
+                <tr><td colspan="4">Loading ranking...</td></tr>
               </tbody>
             </table>
           </div>
         </section>
 
+        <!-- AMERICANO PANEL -->
         <section id="firstServeOverallPanel" class="subsection panel-hidden" role="tabpanel" aria-labelledby="firstServeOverallTab" hidden>
           <div class="subsection-head">
             <h2>Americano</h2>
           </div>
-
           <div class="table-wrap">
             <table>
               <thead>
@@ -106,19 +106,17 @@
                 </tr>
               </thead>
               <tbody id="rankingBody">
-                <tr>
-                  <td colspan="4">Loading leaderboard...</td>
-                </tr>
+                <tr><td colspan="4">Loading leaderboard...</td></tr>
               </tbody>
             </table>
           </div>
         </section>
 
+        <!-- GAMES PANEL -->
         <section id="firstServePersonalPanel" class="subsection panel-hidden" role="tabpanel" aria-labelledby="firstServePersonalTab" hidden>
           <div class="subsection-head">
             <h2>Games</h2>
           </div>
-
           <div class="table-wrap">
             <table>
               <thead>
@@ -130,13 +128,36 @@
                 </tr>
               </thead>
               <tbody id="personalRankingBody">
-                <tr>
-                  <td colspan="4">Loading personal games leaderboard...</td>
-                </tr>
+                <tr><td colspan="4">Loading personal games leaderboard...</td></tr>
               </tbody>
             </table>
           </div>
         </section>
+
+        <!-- TOURNAMENT PANEL -->
+        <section id="firstServeTournamentPanel" class="subsection panel-hidden" role="tabpanel" aria-labelledby="firstServeTournamentTab" hidden>
+          <div class="subsection-head">
+            <h2>Tournament</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th class="rank-col">#</th>
+                  <th>Player</th>
+                  <th>MP</th>
+                  <th>W</th>
+                  <th>L</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="firstServeTournamentBody">
+                <tr><td colspan="6">Loading tournament leaderboard...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
       </section>
 
       <footer class="card-footer">
