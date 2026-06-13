@@ -207,8 +207,6 @@ header {
   box-shadow: 0 4px 20px rgba(0,0,0,.08);
 }
 
-
-
 .date-col {
   background: rgba(0,0,0,.02);
   border-right: 1px solid var(--border);
@@ -219,8 +217,6 @@ header {
   padding: 14px 8px;
   text-align: center;
 }
-
-
 
 .dc-day {
   font-family: var(--font-heading);
@@ -609,6 +605,59 @@ footer {
 .partner-fields{display:none;}
 .partner-fields.show{display:block;}
 .partner-divider{height:1px;background:var(--border);margin:4px 0 16px;}
+
+/* ── PAYMENT CTA ── */
+.pay-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: rgba(184,219,176,.07);
+  border: 1px solid rgba(184,219,176,.22);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-top: 12px;
+  text-align: center;
+}
+.pay-cta-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pay-cta-title {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.pay-cta-sub {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.btn-pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--green);
+  color: var(--green-dk);
+  border: none;
+  border-radius: 100px;
+  padding: 11px 22px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .2s, box-shadow .2s;
+  margin-top: 2px;
+}
+.btn-pay:hover { background: #cae8c1; box-shadow: 0 4px 16px rgba(184,219,176,.3); }
 </style>
 </head>
 <body>
@@ -752,7 +801,10 @@ const FLABELS={all:"All Upcoming Sessions",open:"Sessions with Open Slots",today
 async function load(){
   try{
     [allEvents,allRSVPs]=await Promise.all([Sheets.fetchEvents(),Sheets.fetchRSVPs()]);
-    allEvents.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    allEvents.sort((a,b)=>{
+      const da=parseSheetDate(a.date), db=parseSheetDate(b.date);
+      return (da||0)-(db||0);
+    });
     render();
   }catch(e){
     document.getElementById("eventsContainer").innerHTML=`<div class="state-msg"><h3>Couldn't load</h3><p>${e.message}</p></div>`;
@@ -763,8 +815,8 @@ function filtered(){
   const today=new Date();today.setHours(0,0,0,0);
   const we=new Date(today);we.setDate(we.getDate()+7);
   return allEvents.filter(ev=>{
-    const d=new Date(ev.date+"T00:00:00");
-    if(d<today)return false;
+    const d=parseSheetDate(ev.date);
+    if(!d||isNaN(d)||d<today)return false;
     if(currentFilter==="open")return confirmedCnt(ev.id)<ev.totalSlots;
     if(currentFilter==="today")return d.toDateString()===today.toDateString();
     if(currentFilter==="week")return d>=today&&d<=we;
@@ -790,9 +842,12 @@ function cardHTML(ev,me){
   const iDid=!!myEntry&&myEntry.status==="confirmed",iWait=!!myEntry&&myEntry.status==="waitlist";
   const pct=Math.min(100,Math.round((taken/ev.totalSlots)*100));
 
-  const d=new Date(ev.date+"T00:00:00");
-  const day=d.getDate(),mon=d.toLocaleDateString("en-IN",{month:"short"}).toUpperCase(),dow=d.toLocaleDateString("en-IN",{weekday:"short"}).toUpperCase();
-  const dayLabel=formatDayLabel(ev.date);
+  // ── FIX: use parseSheetDate instead of new Date(ev.date + "T00:00:00") ──
+  const d = parseSheetDate(ev.date);
+  const day  = d && !isNaN(d) ? d.getDate() : "—";
+  const mon  = d && !isNaN(d) ? d.toLocaleDateString("en-IN",{month:"short"}).toUpperCase() : "—";
+  const dow  = d && !isNaN(d) ? d.toLocaleDateString("en-IN",{weekday:"short"}).toUpperCase() : "—";
+  const dayLabel = formatDayLabel(ev.date);
 
   let stc,stx;
   if(isFull&&wlCount>0){stc="tag-waitlist";stx="Waitlist Open";}
@@ -855,6 +910,10 @@ function cardHTML(ev,me){
 
 function openModal(id,mode){
   activeId=id;activeMode=mode;
+  bookingMode="single";
+  document.getElementById("btnSingle").classList.add("active");
+  document.getElementById("btnPartner").classList.remove("active");
+  document.getElementById("partnerFields").classList.remove("show");
   const ev=allEvents.find(e=>e.id===id);
   const hd=document.getElementById("modalHd"),ey=document.getElementById("modalEy"),btn=document.getElementById("mSubmit");
   document.getElementById("mTitle").textContent=ev.title;
@@ -862,9 +921,10 @@ function openModal(id,mode){
   if(mode==="waitlist"){hd.className="modal-hd waitlist-hd";ey.textContent="Join Waitlist";btn.className="btn-go wl";btn.textContent="Join Waitlist →";}
   else{hd.className="modal-hd";ey.textContent="Mark Your Interest";btn.className="btn-go";btn.textContent="I'm In →";}
   const cn=document.getElementById("costNotice");
-  if(ev.cost&&mode==="join"){cn.style.display="block";cn.innerHTML=`<strong>💰 ${ev.cost}</strong>We’ll be in touch on WhatsApp to confirm your spot`;}
+  if(ev.cost&&mode==="join"){cn.style.display="block";cn.innerHTML=`<strong>💰 ${ev.cost}</strong>We'll be in touch on WhatsApp to confirm your spot`;}
   else{cn.style.display="none";}
   document.getElementById("rName").value="";document.getElementById("rPhone").value="";
+  document.getElementById("rName2").value="";document.getElementById("rPhone2").value="";
   document.getElementById("mMsg").innerHTML="";btn.disabled=false;
   document.getElementById("overlay").classList.add("open");
 }
@@ -893,32 +953,50 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
   const ev=allEvents.find(e=>e.id===activeId);
   const status=activeMode==="waitlist"?"waitlist":"confirmed";
   try{
-    // Submit player 1
     await Sheets.addRSVP({eventId:activeId,eventName:ev?ev.title:"",name,phone,status});
     saveMyRSVP(activeId,{status,phone,name});
     allRSVPs.push({eventId:activeId,eventName:ev?ev.title:"",name,phone,status,timestamp:new Date().toISOString()});
 
-    // Submit player 2 if partner booking
     if(bookingMode==="partner"){
       await Sheets.addRSVP({eventId:activeId,eventName:ev?ev.title:"",name:name2,phone:phone2,status});
       allRSVPs.push({eventId:activeId,eventName:ev?ev.title:"",name:name2,phone:phone2,status,timestamp:new Date().toISOString()});
     }
 
     if(status==="confirmed"){
+      const payLink=bookingMode==="partner"?ev?.link2:ev?.link1;
       if(bookingMode==="partner"){
-        msgEl.innerHTML=ev&&ev.cost
-          ?`<div class="mbox ok">🎾 Both in! Total: <strong>${ev.cost} × 2</strong>. We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> with payment details.</div>`
+        let baseMsg=ev&&ev.cost
+          ?`<div class="mbox ok">🎾 Both in! Total: <strong>${ev.cost} × 2</strong>. We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> with details.</div>`
           :`<div class="mbox ok">🎾 Both in! We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> to confirm your slots.</div>`;
+        if(payLink){
+          baseMsg+=`<div class="pay-cta">
+            <div class="pay-cta-label">Next Step</div>
+            <div class="pay-cta-title">Complete Your Payment</div>
+            <div class="pay-cta-sub">Tap below to pay for both spots and lock in your booking.</div>
+            <a class="btn-pay" href="${payLink}" target="_blank" rel="noopener">💳 Pay Now →</a>
+          </div>`;
+        }
+        msgEl.innerHTML=baseMsg;
       } else {
-        msgEl.innerHTML=ev&&ev.cost
-          ?`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> with payment details (${ev.cost}) to confirm your slot.</div>`
+        let baseMsg=ev&&ev.cost
+          ?`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> with details (${ev.cost}).</div>`
           :`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> to confirm your slot.</div>`;
+        if(payLink){
+          baseMsg+=`<div class="pay-cta">
+            <div class="pay-cta-label">Next Step</div>
+            <div class="pay-cta-title">Complete Your Payment</div>
+            <div class="pay-cta-sub">Tap below to pay${ev.cost?` (${ev.cost})`:"" } and lock in your spot.</div>
+            <a class="btn-pay" href="${payLink}" target="_blank" rel="noopener">💳 Pay Now →</a>
+          </div>`;
+        }
+        msgEl.innerHTML=baseMsg;
       }
     } else {
       msgEl.innerHTML=`<div class="mbox info">⏳ You're on the waitlist! We'll WhatsApp you on <strong>${phone}</strong> if a slot opens up.</div>`;
     }
     btn.textContent="Done ✓";
-    setTimeout(()=>{closeModal();render();showToast(bookingMode==="partner"?"Both players registered!":status==="waitlist"?"Added to waitlist!":"RSVP saved — see you on court!");},5000);
+    const hasPayLink=status==="confirmed"&&(bookingMode==="partner"?ev?.link2:ev?.link1);
+    setTimeout(()=>{closeModal();render();showToast(bookingMode==="partner"?"Both players registered!":status==="waitlist"?"Added to waitlist!":"RSVP saved — see you on court!");},hasPayLink?12000:5000);
   }catch(err){
     btn.disabled=false;btn.textContent=activeMode==="waitlist"?"Join Waitlist →":"I'm In →";
     msgEl.innerHTML=`<div class="mbox err">${err.message}</div>`;
