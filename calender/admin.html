@@ -96,6 +96,34 @@
   .new-ev-btn { background: #000; color: #fff; border: none; padding: 11px 22px; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
   .new-ev-btn:hover { background: #222; }
 
+  /* Payment links section divider */
+  .form-section-divider {
+    grid-column: 1/-1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 6px 0 2px;
+  }
+  .form-section-divider .fsd-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .form-section-divider .fsd-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .pay-link-wrap {
+    grid-column: 1/-1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
   /* TABLE */
   .tbl-wrap { background: #fff; border: 1px solid var(--border); overflow: hidden; overflow-x: auto; }
   .rsvp-tbl { width: 100%; border-collapse: collapse; min-width: 580px; }
@@ -120,7 +148,7 @@
   .loading-row { display: flex; align-items: center; gap: 12px; color: var(--muted); padding: 28px; }
 
   /* EDIT MODAL */
-  .emodal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .emodal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .2s; overflow-y: auto; }
   .emodal-overlay.open { opacity: 1; pointer-events: all; }
   .emodal { background: #fff; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; transform: translateY(14px); transition: transform .2s; }
   .emodal-overlay.open .emodal { transform: translateY(0); }
@@ -147,25 +175,6 @@
     transition: all .15s;
   }
   .btn-paid:hover { background: #f0fdf4; border-color: #4ade80; }
-  .btn-paid.is-paid {
-    background: #f0fdf4; border-color: #4ade80; color: #15803d;
-    cursor: default;
-  }
-  .status-paid {
-    font-size: 9px; font-weight: 700; letter-spacing: 1px;
-    text-transform: uppercase; background: #f0fdf4;
-    color: #15803d; border: 1px solid #bbf7d0; padding: 2px 7px;
-  }
-
-    /* Paid CTA */
-  .btn-paid {
-    background: transparent; border: 1px solid #bbf7d0;
-    color: var(--green); font-family: 'Inter', sans-serif;
-    font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
-    text-transform: uppercase; padding: 4px 10px; cursor: pointer;
-    transition: all .15s;
-  }
-  .btn-paid:hover { background: #f0fdf4; border-color: #4ade80; }
   .btn-paid:disabled { opacity: .5; cursor: not-allowed; }
   .status-paid {
     font-size: 9px; font-weight: 700; letter-spacing: 1px;
@@ -180,6 +189,7 @@
     .stats { grid-template-columns: 1fr 1fr; }
     .fgrid { grid-template-columns: 1fr; }
     .ff { grid-column: 1; }
+    .pay-link-wrap { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -266,7 +276,23 @@
             <div class="fg ff">
               <label>Cost per Person</label>
               <input type="text" id="evCost" placeholder="e.g. ₹500 per person, ₹800 per pair, Free"/>
-              <div class="hint">This will be shown on the event card and in the booking modal.</div>
+              <div class="hint">Shown on the event card and in the booking modal.</div>
+            </div>
+            <div class="form-section-divider">
+              <span class="fsd-label">Payment Links</span>
+              <div class="fsd-line"></div>
+            </div>
+            <div class="pay-link-wrap">
+              <div class="fg">
+                <label>Link 1 — Single Booking</label>
+                <input type="url" id="evLink1" placeholder="https://rzp.io/l/single…"/>
+                <div class="hint">Shown to players who sign up solo.</div>
+              </div>
+              <div class="fg">
+                <label>Link 2 — Partner Booking</label>
+                <input type="url" id="evLink2" placeholder="https://rzp.io/l/partner…"/>
+                <div class="hint">Shown to players who sign up with a partner.</div>
+              </div>
             </div>
           </div>
           <div id="createMsg"></div>
@@ -326,6 +352,22 @@
         </div>
         <div class="fg"><label>Total Slots</label><input type="number" id="editSlots" min="1" max="100"/></div>
         <div class="fg ff"><label>Cost per Person</label><input type="text" id="editCost" placeholder="e.g. ₹500 per person"/></div>
+        <div class="form-section-divider">
+          <span class="fsd-label">Payment Links</span>
+          <div class="fsd-line"></div>
+        </div>
+        <div class="pay-link-wrap">
+          <div class="fg">
+            <label>Link 1 — Single Booking</label>
+            <input type="url" id="editLink1" placeholder="https://rzp.io/l/single…"/>
+            <div class="hint">Shown to solo sign-ups after booking.</div>
+          </div>
+          <div class="fg">
+            <label>Link 2 — Partner Booking</label>
+            <input type="url" id="editLink2" placeholder="https://rzp.io/l/partner…"/>
+            <div class="hint">Shown to partner sign-ups after booking.</div>
+          </div>
+        </div>
       </div>
       <div id="editMsg"></div>
     </div>
@@ -372,7 +414,10 @@ const waitlistCnt  = id => allRSVPs.filter(r=>r.eventId===id && r.status==="wait
 async function init(){
   try{
     [allEvents,allRSVPs]=await Promise.all([Sheets.fetchEvents(),Sheets.fetchRSVPs()]);
-    allEvents.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    allEvents.sort((a,b)=>{
+      const da=parseSheetDate(a.date), db=parseSheetDate(b.date);
+      return (da||0)-(db||0);
+    });
     renderOverview(); renderRSVPs(); buildFilter();
   }catch(e){
     document.getElementById("overviewList").innerHTML=`<div class="loading-row" style="color:var(--red)">Error: ${e.message}</div>`;
@@ -382,7 +427,10 @@ async function init(){
 
 function renderOverview(){
   const today=new Date();today.setHours(0,0,0,0);
-  const up=allEvents.filter(e=>new Date(e.date+"T00:00:00")>=today);
+  const up=allEvents.filter(e=>{
+    const d=parseSheetDate(e.date);
+    return d && !isNaN(d) && d>=today;
+  });
   const totalS=up.reduce((s,e)=>s+e.totalSlots,0);
   const takenS=up.reduce((s,e)=>s+confirmedCnt(e.id),0);
   const totalWait=allRSVPs.filter(r=>r.status==="waitlist").length;
@@ -397,10 +445,17 @@ function renderOverview(){
   }
   document.getElementById("overviewList").innerHTML=up.map(ev=>{
     const taken=confirmedCnt(ev.id), wl=waitlistCnt(ev.id);
-    const d=new Date(ev.date+"T00:00:00");
+    // ── FIX: use parseSheetDate ──
+    const d=parseSheetDate(ev.date);
+    const dayNum  = d && !isNaN(d) ? d.getDate() : "—";
+    const monStr  = d && !isNaN(d) ? d.toLocaleDateString("en-IN",{month:"short"}).toUpperCase() : "—";
     const timeStr=formatTimeRange(ev.startTime,ev.endTime);
+    const linkBadges=[
+      ev.link1?`<span title="Single pay link set" style="font-size:9px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:1px 6px;font-weight:700;letter-spacing:1px;">👤 Pay Link</span>`:"",
+      ev.link2?`<span title="Partner pay link set" style="font-size:9px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:1px 6px;font-weight:700;letter-spacing:1px;">👥 Pay Link</span>`:"",
+    ].filter(Boolean).join(" ");
     return `<div class="ev-row">
-      <div class="er-date"><div class="er-day">${d.getDate()}</div><div class="er-mon">${d.toLocaleDateString("en-IN",{month:"short"}).toUpperCase()}</div></div>
+      <div class="er-date"><div class="er-day">${dayNum}</div><div class="er-mon">${monStr}</div></div>
       <div class="er-body">
         <div class="er-title">${ev.title}</div>
         <div class="er-meta">
@@ -409,6 +464,7 @@ function renderOverview(){
           <span>🎾 ${ev.game}</span>
           ${ev.level?`<span>⭐ ${ev.level}</span>`:""}
           ${ev.cost?`<span class="cost-tag">💰 ${ev.cost}</span>`:""}
+          ${linkBadges}
         </div>
       </div>
       <div class="er-right">
@@ -481,6 +537,8 @@ document.getElementById("createBtn").addEventListener("click",async()=>{
   const level=document.getElementById("evLevel").value.trim();
   const slots=parseInt(document.getElementById("evSlots").value);
   const cost=document.getElementById("evCost").value.trim();
+  const link1=document.getElementById("evLink1").value.trim();
+  const link2=document.getElementById("evLink2").value.trim();
   const msgEl=document.getElementById("createMsg"),btn=document.getElementById("createBtn");
 
   if(!title||!date||!startTime||!loc||!slots){
@@ -490,15 +548,19 @@ document.getElementById("createBtn").addEventListener("click",async()=>{
 
   btn.disabled=true;btn.textContent="Creating…";msgEl.innerHTML="";
   try{
-    const ev={id:genId(),title,date,startTime,endTime,location:loc,game,level,totalSlots:slots,cost};
+    const ev={id:genId(),title,date,startTime,endTime,location:loc,game,level,totalSlots:slots,cost,link1,link2};
     await Sheets.addEvent(ev);
-    allEvents.push(ev);allEvents.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    allEvents.push(ev);
+    allEvents.sort((a,b)=>{
+      const da=parseSheetDate(a.date), db=parseSheetDate(b.date);
+      return (da||0)-(db||0);
+    });
     renderOverview();
     const sel=document.getElementById("evFilter"),o=document.createElement("option");
     o.value=ev.id;o.textContent=`${ev.title} — ${formatDateShort(ev.date)}`;sel.appendChild(o);
     msgEl.innerHTML=`<div class="fmsg ok">✓ "${title}" is now live on the public calendar!</div>`;
     btn.disabled=false;btn.textContent="Create Session →";
-    ["evTitle","evDate","evStartTime","evEndTime","evLoc","evSlots","evLevel","evCost"].forEach(id=>document.getElementById(id).value="");
+    ["evTitle","evDate","evStartTime","evEndTime","evLoc","evSlots","evLevel","evCost","evLink1","evLink2"].forEach(id=>document.getElementById(id).value="");
     document.getElementById("evGame").selectedIndex=0;
   }catch(err){
     btn.disabled=false;btn.textContent="Create Session →";
@@ -507,7 +569,7 @@ document.getElementById("createBtn").addEventListener("click",async()=>{
 });
 
 document.getElementById("resetBtn").addEventListener("click",()=>{
-  ["evTitle","evDate","evStartTime","evEndTime","evLoc","evSlots","evLevel","evCost"].forEach(id=>document.getElementById(id).value="");
+  ["evTitle","evDate","evStartTime","evEndTime","evLoc","evSlots","evLevel","evCost","evLink1","evLink2"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("evGame").selectedIndex=0;
   document.getElementById("createMsg").innerHTML="";
 });
@@ -519,12 +581,14 @@ function openEditModal(id){
   document.getElementById("editModalTitle").textContent=ev.title;
   document.getElementById("editTitle").value=ev.title;
   document.getElementById("editDate").value=ev.date;
-  document.getElementById("editStartTime").value=ev.startTime||"";
-  document.getElementById("editEndTime").value=ev.endTime||"";
+  document.getElementById("editStartTime").value=normalizeTimeValue(ev.startTime||"");
+  document.getElementById("editEndTime").value=normalizeTimeValue(ev.endTime||"");
   document.getElementById("editLoc").value=ev.location;
   document.getElementById("editLevel").value=ev.level||"";
   document.getElementById("editSlots").value=ev.totalSlots;
   document.getElementById("editCost").value=ev.cost||"";
+  document.getElementById("editLink1").value=ev.link1||"";
+  document.getElementById("editLink2").value=ev.link2||"";
   const sel=document.getElementById("editGame");
   for(let o of sel.options){ if(o.value===ev.game){o.selected=true;break;} }
   document.getElementById("editMsg").innerHTML="";
@@ -548,6 +612,8 @@ document.getElementById("editSave").addEventListener("click",async()=>{
   const level=document.getElementById("editLevel").value.trim();
   const slots=parseInt(document.getElementById("editSlots").value);
   const cost=document.getElementById("editCost").value.trim();
+  const link1=document.getElementById("editLink1").value.trim();
+  const link2=document.getElementById("editLink2").value.trim();
   const msgEl=document.getElementById("editMsg"),btn=document.getElementById("editSave");
 
   if(!title||!date||!startTime||!loc||!slots){
@@ -555,7 +621,7 @@ document.getElementById("editSave").addEventListener("click",async()=>{
   }
   btn.disabled=true;btn.textContent="Saving…";msgEl.innerHTML="";
   try{
-    const updated={id,title,date,startTime,endTime,location:loc,game,level,totalSlots:slots,cost};
+    const updated={id,title,date,startTime,endTime,location:loc,game,level,totalSlots:slots,cost,link1,link2};
     await Sheets.editEvent(updated);
     const idx=allEvents.findIndex(e=>e.id===id);
     if(idx>-1) allEvents[idx]=updated;
@@ -571,7 +637,6 @@ document.getElementById("editSave").addEventListener("click",async()=>{
 
 // MARK PAID
 async function markPaid(btn, eventId, phone) {
-  if (btn.classList.contains("is-paid")) return;
   btn.textContent = "Saving…";
   btn.disabled = true;
   try {
@@ -582,10 +647,8 @@ async function markPaid(btn, eventId, phone) {
     });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || "Failed");
-    // Update local data so re-render reflects it
     const rsvp = allRSVPs.find(r => r.eventId === eventId && r.phone === phone);
     if (rsvp) rsvp.paid = "true";
-    // Replace button cell with paid badge
     const td = btn.closest("td");
     td.innerHTML = `<span class="status-paid">✓ Paid</span>`;
   } catch(err) {
