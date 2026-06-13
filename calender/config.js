@@ -1,5 +1,5 @@
 // ============================================================
-//  Delhi//PadelCollective — config.js v3
+//  Delhi//PadelCollective — config.js v4
 // ============================================================
 
 const CONFIG = {
@@ -69,17 +69,64 @@ function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
+// ── Date parsing ─────────────────────────────────────────────
+// Parses dates coming back from the Sheet, which may arrive as:
+//  - "YYYY-MM-DD"            (preferred)
+//  - "YYYY-MM-DDTHH:mm:ss..." (ISO with time/timezone)
+//  - "DD/MM/YYYY" or "D/M/YYYY" (Indian locale text dates)
+//  - any other string Date() can parse natively
+// Returns a Date object set to local midnight, or null if unparseable.
+function parseSheetDate(dateStr) {
+  if (dateStr === null || dateStr === undefined || dateStr === "") return null;
+
+  if (dateStr instanceof Date) {
+    return isNaN(dateStr.getTime()) ? null : dateStr;
+  }
+
+  const raw = String(dateStr).trim();
+  if (!raw) return null;
+
+  // YYYY-MM-DD (optionally followed by a time/timezone component)
+  let m = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    const d = new Date(
+      Number(m[1]),
+      Number(m[2]) - 1,
+      Number(m[3])
+    );
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // DD/MM/YYYY or D/M/YYYY (Indian locale)
+  m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) {
+    const d = new Date(
+      Number(m[3]),
+      Number(m[2]) - 1,
+      Number(m[1])
+    );
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // Fallback — let the JS engine try (handles things like
+  // "Wed Jun 10 2026 00:00:00 GMT+0530 (India Standard Time)")
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return null;
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
 function formatDate(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr + "T00:00:00");
+  const d = parseSheetDate(dateStr);
+  if (!d) return "";
   return d.toLocaleDateString("en-IN", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 }
 
 function formatDateShort(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr + "T00:00:00");
+  const d = parseSheetDate(dateStr);
+  if (!d) return "";
   return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
 }
 
@@ -144,18 +191,10 @@ function formatTimeRange(start, end) {
   return `${formatTime(start)} – ${formatTime(end)}`;
 }
 
-// Parse a "YYYY-MM-DD" sheet date string into a Date object (local time).
-// Returns null if the string is missing/invalid.
-function parseSheetDate(dateStr) {
-  if (!dateStr) return null;
-  const d = new Date(dateStr + "T00:00:00");
-  return isNaN(d.getTime()) ? null : d;
-}
-
 // Get day label like "Wednesday, 29th April"
 function formatDayLabel(dateStr) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr + "T00:00:00");
+  const d = parseSheetDate(dateStr);
+  if (!d) return "";
   const weekday = d.toLocaleDateString("en-IN", { weekday: "long" });
   const day     = d.getDate();
   const suffix  = day === 1 || day === 21 || day === 31 ? "st"
