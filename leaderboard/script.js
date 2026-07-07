@@ -1,4 +1,4 @@
-const CACHE_TTL = 1 * 60 * 60 * 1000;
+const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 const MASTER_CACHE_KEY = "dpcRankingCache:all-pages";
 const CACHE_SCHEMA_VERSION = 8; // bumped to bust old cache after tournament addition
 const ADMIN_STORAGE_KEY = "dpcRankingAdmin";
@@ -71,13 +71,18 @@ const elements = {
 const DEFAULT_VISIBLE_RANKINGS = 10;
 const tableSearchState = new Map();
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   initPageSelector();
   initAdminMode();
   initFirstServeTabs();
   initBreakPointTabs();
-  elements.refreshButton?.addEventListener("click", () => config?.loader(true));
-  config?.loader(false);
+  elements.refreshButton?.addEventListener("click", async () => {
+    await config?.loader(true);
+    // Consume this fetch; a later Refresh click pulls live data again.
+    pendingFetch = null;
+  });
+  await config?.loader(false);
+  revalidateInBackground();
 });
 
 function initPageSelector() {
@@ -94,8 +99,7 @@ function initAdminMode() {
   if (params.get(ADMIN_QUERY_KEY) === ADMIN_QUERY_VALUE) {
     window.localStorage.setItem(ADMIN_STORAGE_KEY, "true");
   }
-  const isAdmin = window.localStorage.getItem(ADMIN_STORAGE_KEY) === "true";
-  elements.refreshButton.hidden = !isAdmin;
+  elements.refreshButton.hidden = false;
   elements.refreshButton.textContent = config.refreshText;
 }
 
@@ -199,12 +203,40 @@ async function loadNoidaPage(isManualRefresh) {
 
 // ─── DATA FETCHING ───────────────────────────────────────────────────────────
 
-async function getAllRankingsData(forceRefresh = false) {
+let pendingFetch = null;
+
+async function getAllRankingsData(useFresh = false) {
+  if (useFresh) {
+    // Refresh click: reuse the background fetch started on page open —
+    // already resolved (instant) or still in flight (await it).
+    return startBackgroundFetch();
+  }
   const cached = readCache();
-  if (!forceRefresh && cached) return cached.data;
-  const data = await fetchAllRankingsData();
-  writeCache(data);
-  return data;
+  if (cached) return cached.data;
+  return startBackgroundFetch();
+}
+
+function startBackgroundFetch() {
+  if (!pendingFetch) {
+    pendingFetch = fetchAllRankingsData()
+      .then((data) => {
+        writeCache(data);
+        return data;
+      })
+      .catch((error) => {
+        pendingFetch = null;
+        throw error;
+      });
+  }
+  return pendingFetch;
+}
+
+function revalidateInBackground() {
+  // If the initial load had no cache it already fetched live data — skip.
+  if (pendingFetch) return;
+  startBackgroundFetch()
+    .then(() => updateStatus("Updated rankings available — tap Refresh."))
+    .catch(() => {});
 }
 
 async function fetchAllRankingsData() {
@@ -605,17 +637,3 @@ function pickFirstServeRankingRows(firstServeData) {
   }
   return [];
 }
-
-// ─── PRELOAD ─────────────────────────────────────────────────────────────────
-
-(async function preload() {
-  try {
-    const cached = readCache();
-    if (!cached) {
-      const data = await fetchAllRankingsData();
-      writeCache(data);
-    }
-  } catch (e) {
-    // silent fail
-  }
-})();
