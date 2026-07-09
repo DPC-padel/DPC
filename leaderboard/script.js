@@ -35,6 +35,17 @@ const API_URLS = {
   noida: "https://script.google.com/macros/s/AKfycbyum4imblCdj5mFLbr-zDFthSM8Am0f-1DrEVgdF7jioZueooMguFDgy5GX7V_3yRNH/exec"
 };
 
+// Fast path: read the JSON cache from Supabase (~100ms, CDN-cached)
+// instead of the 4 slow Apps Script endpoints. Paste your project
+// URL + anon key to activate; until then the site uses API_URLS as
+// before. The Apps Script endpoints remain the automatic fallback
+// if Supabase is unreachable, so the board never goes dark.
+const SUPABASE = {
+  url: "https://zruqzybdpniofxbcwuat.supabase.co",
+  anonKey: "sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy"
+};
+const SUPABASE_READY = !SUPABASE.url.startsWith("YOUR_");
+
 const page = document.body.dataset.page;
 const config = PAGE_CONFIG[page];
 
@@ -240,6 +251,52 @@ function revalidateInBackground() {
 }
 
 async function fetchAllRankingsData() {
+  // { firstServe, breakPoint, matchPoint, noida } — each the raw JSON
+  // its endpoint returns, whether it came from Supabase or Apps Script.
+  const raw = await fetchRawSources();
+
+  return {
+    firstServe:           raw.firstServe.firstServe || [],
+    firstServePersonal:   raw.firstServe.pmMatchScores || [],
+    firstServeRanking:    pickFirstServeRankingRows(raw.firstServe),
+    firstServeTournament: raw.firstServe.tournamentScores || [],
+    breakPointOverall:    raw.breakPoint.breakPointOverall || [],
+    breakPointTournament: raw.breakPoint.breakPointTournament || [],
+    breakPointAmericano:  raw.breakPoint.breakPointAmericano || [],
+    matchPointPlayers:    raw.matchPoint.players || [],
+    noida:                Array.isArray(raw.noida.data) ? raw.noida.data : []
+  };
+}
+
+// Fast path (Supabase) with automatic fallback to the Apps Script
+// endpoints, so a Supabase outage never takes the board down.
+async function fetchRawSources() {
+  if (SUPABASE_READY) {
+    try {
+      return await fetchFromSupabase();
+    } catch (error) {
+      console.warn("Supabase read failed, falling back to Apps Script:", error);
+    }
+  }
+  return fetchFromAppsScript();
+}
+
+async function fetchFromSupabase() {
+  const res = await fetch(
+    `${SUPABASE.url}/rest/v1/leaderboard_cache?select=source,payload`,
+    { headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` } }
+  );
+  if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+  const rows = await res.json();
+  const bySource = {};
+  for (const row of rows) bySource[row.source] = row.payload;
+  for (const key of ["firstServe", "breakPoint", "matchPoint", "noida"]) {
+    if (!bySource[key]) throw new Error(`Missing "${key}" in Supabase cache`);
+  }
+  return bySource;
+}
+
+async function fetchFromAppsScript() {
   const [firstServeRes, breakPointRes, matchPointRes, noidaRes] = await Promise.all([
     fetch(API_URLS.firstServe),
     fetch(API_URLS.breakPoint),
@@ -252,24 +309,14 @@ async function fetchAllRankingsData() {
   if (!matchPointRes.ok) throw new Error("Failed to fetch Match Point data");
   if (!noidaRes.ok) throw new Error("Failed to fetch Noida data");
 
-  const [firstServeData, breakPointData, matchPointData, noidaData] = await Promise.all([
+  const [firstServe, breakPoint, matchPoint, noida] = await Promise.all([
     firstServeRes.json(),
     breakPointRes.json(),
     matchPointRes.json(),
     noidaRes.json()
   ]);
 
-  return {
-    firstServe:           firstServeData.firstServe || [],
-    firstServePersonal:   firstServeData.pmMatchScores || [],
-    firstServeRanking:    pickFirstServeRankingRows(firstServeData),
-    firstServeTournament: firstServeData.tournamentScores || [],   // ← NEW
-    breakPointOverall:    breakPointData.breakPointOverall || [],
-    breakPointTournament: breakPointData.breakPointTournament || [],
-    breakPointAmericano:  breakPointData.breakPointAmericano || [],
-    matchPointPlayers:    matchPointData.players || [],
-    noida:                Array.isArray(noidaData.data) ? noidaData.data : []
-  };
+  return { firstServe, breakPoint, matchPoint, noida };
 }
 
 // ─── CACHE ───────────────────────────────────────────────────────────────────
