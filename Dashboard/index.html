@@ -340,6 +340,16 @@ nav{
 const PLAYERS_API = 'https://script.google.com/macros/s/AKfycbyRmqF7c8OU7YxeSYG_EgwH4xR4ir_m6fL6M9Ds8XG7GpPZfB19op-qIDv_1YwLFkmw/exec';
 const MATCHES_API = 'https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec';
 
+// Fast path: read this player's cached stats+matches from Supabase in
+// one query (~100ms) instead of two slow Apps Script calls. The Apps
+// Script endpoints stay as the automatic fallback if Supabase is
+// unreachable or the player isn't cached yet.
+const SUPABASE = {
+  url: 'https://zruqzybdpniofxbcwuat.supabase.co',
+  anonKey: 'sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy'
+};
+const SUPABASE_READY = !SUPABASE.url.startsWith('YOUR_');
+
 // ── Cache keys & TTL ──────────────────────────────────────────
 const CACHE_PLAYER_KEY  = 'dpcCache_player';
 const CACHE_MATCHES_KEY = 'dpcCache_matches';
@@ -439,7 +449,31 @@ function updateCacheLabel(cachedAt) {
 }
 
 // ── Fetch from APIs ───────────────────────────────────────────
+// Try the Supabase cache first (one fast query), fall back to the
+// Apps Script endpoints if it's unconfigured, errors, or this player
+// isn't cached yet — so the dashboard never breaks.
 async function fetchFromAPI(phone) {
+  if (SUPABASE_READY) {
+    try {
+      const res = await fetch(
+        `${SUPABASE.url}/rest/v1/dashboard_cache?phone=eq.${encodeURIComponent(phone)}&select=player,matches`,
+        { headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` } }
+      );
+      if (res.ok) {
+        const rows = await res.json();
+        if (rows.length && rows[0].player) {
+          return {
+            player: { ...(currentPlayer || {}), ...rows[0].player },
+            matches: rows[0].matches || []
+          };
+        }
+      }
+    } catch(e) { /* fall through to Apps Script */ }
+  }
+  return fetchFromAppsScript(phone);
+}
+
+async function fetchFromAppsScript(phone) {
   // Fetch player stats
   let player = currentPlayer || {};
   try {
