@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How It Works | Delhi Padel Collective</title>
+  <meta name="description" content="How ratings and rankings work at Delhi Padel Collective — transparent, in plain terms.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    @font-face{font-family:'Berling';src:url('/Berling Bold.otf') format('opentype');font-weight:700;font-display:swap}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f4f1eb; --surface:#fbfaf7; --surface-2:#efece6;
+      --border:rgba(23,21,19,.12); --border-strong:rgba(23,21,19,.2);
+      --text:#171513; --muted:rgba(23,21,19,.58); --dim:rgba(23,21,19,.4);
+      --fs:#2e4e8e;      /* First Serve  */
+      --bp:#c8752d;      /* Break Point  */
+      --mp:#7a3b57;      /* Match Point  */
+      --gold:#b58a2e; --silver:#8f8f97; --bronze:#b07d4f;
+      --serif:'Berling',Georgia,serif;
+      --sans:'DM Sans',-apple-system,sans-serif;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+    .topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:#050505}
+    .brand-logo{height:22px;width:auto;filter:brightness(0) invert(1)}
+    .back-link{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .2s}
+    .back-link:hover{color:#fff}
+    .back-link::before{content:'←'}
+
+    .wrap{max-width:820px;margin:0 auto;padding:0 22px}
+
+    .hero{padding:56px 0 40px}
+    .kicker{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+    .hero-title{font-family:var(--serif);font-size:clamp(40px,9vw,66px);line-height:.95;letter-spacing:-.5px}
+    .hero-desc{font-size:16px;color:var(--muted);max-width:500px;margin-top:18px;line-height:1.7}
+
+    .rule{border:none;border-top:1px solid var(--border)}
+
+    .section{padding:48px 0}
+    .section-kicker{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .section-title{font-family:var(--serif);font-size:clamp(28px,6vw,40px);line-height:1;letter-spacing:-.3px;margin-bottom:28px}
+
+    /* League cards */
+    .leagues{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    .lc{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--acc);border-radius:14px;padding:22px 20px}
+    .lc.fs{--acc:var(--fs)} .lc.bp{--acc:var(--bp)} .lc.mp{--acc:var(--mp)}
+    .lc-name{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--acc)}
+    .lc-title{font-family:var(--serif);font-size:26px;margin:8px 0 2px}
+    .lc-range{font-family:var(--serif);font-size:15px;color:var(--muted)}
+    .lc-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-top:12px}
+
+    /* Steps */
+    .step{display:grid;grid-template-columns:38px 1fr;gap:14px;padding:22px 0;border-top:1px solid var(--border)}
+    .step:last-of-type{border-bottom:1px solid var(--border)}
+    .step-n{font-family:var(--serif);font-size:22px;color:var(--dim);line-height:1.1}
+    .step-t{font-size:16px;font-weight:600;margin-bottom:6px}
+    .step-b{font-size:14px;color:var(--muted);line-height:1.7}
+    .step-b b{color:var(--text);font-weight:600}
+
+    .formula{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:14px;font-size:13px;font-weight:500}
+    .formula .eq{font-family:var(--serif);font-size:16px}
+    .formula .op{color:var(--dim)}
+    .formula .w{color:var(--fs);font-weight:600}
+
+    details.math{margin-top:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);overflow:hidden}
+    details.math summary{cursor:pointer;list-style:none;padding:12px 16px;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--muted);display:flex;justify-content:space-between}
+    details.math summary::-webkit-details-marker{display:none}
+    details.math summary::after{content:'+';font-family:var(--serif);font-size:18px;color:var(--text)}
+    details.math[open] summary::after{content:'–'}
+    details.math .mbody{padding:0 16px 16px;font-size:12.5px;color:var(--muted);line-height:1.8}
+    details.math .mbody code{font-family:'DM Sans',monospace;color:var(--text);font-weight:500}
+
+    .bonuses{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:20px}
+    .bonus{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+    .bonus-t{font-size:13px;font-weight:600;margin-bottom:6px}
+    .bonus-t::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--fs);margin-right:8px;vertical-align:middle}
+    .bonus-d{font-size:12.5px;color:var(--muted);line-height:1.65}
+
+    /* Interactive step tiles */
+    .tap-hint{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--dim);margin:0 0 14px}
+    .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .fn{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 14px;position:relative;text-align:left;font-family:inherit;cursor:pointer;transition:border-color .15s,background .15s;appearance:none}
+    .fn:hover{border-color:var(--border-strong)}
+    .fn.active{border-color:var(--fs);background:rgba(46,78,142,.05)}
+    .fn-n{width:24px;height:24px;border-radius:50%;background:var(--fs);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+    .fn-t{font-family:var(--serif);font-size:22px;margin:12px 0 4px;line-height:1}
+    .fn-d{font-size:12px;color:var(--muted);line-height:1.5}
+    .fn-more{position:absolute;top:13px;right:14px;font-size:17px;color:var(--dim);line-height:1;transition:transform .2s,color .2s}
+    .fn.active .fn-more{transform:rotate(45deg);color:var(--fs)}
+    @media(max-width:560px){.flow{grid-template-columns:1fr 1fr}}
+
+    /* Tile detail */
+    .tile-detail{margin-top:12px}
+    .td{display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+    .td.on{display:block;animation:fadein .2s ease}
+    @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+    .td-lead{font-size:14px;color:var(--text);line-height:1.6}
+    .td-lead b{font-weight:600}
+    .td-note{font-size:12.5px;color:var(--muted);line-height:1.6}
+    .pts-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 6px}
+    .pts-grid.three{grid-template-columns:repeat(3,1fr)}
+    .pt{background:var(--surface-2);border-radius:8px;padding:10px 6px;text-align:center}
+    .pt b{font-family:var(--serif);font-size:20px;display:block;line-height:1}
+    .pt span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px;display:block}
+    .formula-big{font-family:var(--serif);font-size:clamp(19px,5.5vw,26px);color:var(--text);line-height:1.3}
+    .formula-big .w{color:var(--fs)}
+
+    /* Rating scale bands */
+    .bands{margin-top:2px}
+    .band{border-bottom:1px solid var(--border)}
+    .band:first-child{border-top:1px solid var(--border)}
+    .band>summary{display:flex;align-items:center;gap:12px;padding:15px 2px;cursor:pointer;list-style:none;user-select:none}
+    .band>summary::-webkit-details-marker{display:none}
+    .band-dot{width:9px;height:9px;border-radius:50%;background:var(--bc);flex-shrink:0}
+    .band-range{font-family:var(--serif);font-size:16px;color:var(--text);min-width:74px}
+    .band-name{font-size:14px;font-weight:600;color:var(--bc);flex:1}
+    .band-tag{font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);border-radius:99px;padding:2px 8px;white-space:nowrap}
+    .band>summary::after{content:'+';font-family:var(--serif);font-size:20px;color:var(--dim);margin-left:8px}
+    .band[open]>summary::after{content:'–'}
+    .band-body{padding:0 2px 18px 21px;font-size:13px;color:var(--muted);line-height:1.7;max-width:640px}
+    .band-body>p{margin-bottom:6px}
+    .subband{margin-top:8px}
+    .subband b{color:var(--text);font-weight:600}
+
+    .mini-label{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}
+
+    /* Helper callout */
+    .callout{margin-top:22px;background:rgba(46,78,142,.06);border:1px solid rgba(46,78,142,.16);border-left:3px solid var(--fs);border-radius:0 10px 10px 0;padding:15px 18px;font-size:14.5px;line-height:1.55}
+    .callout b{font-weight:600}
+
+    /* Example table */
+    .ex{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:6px;background:var(--surface)}
+    .ex-row{display:grid;grid-template-columns:44px 1fr 68px 62px;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);font-size:14px}
+    .ex-row:last-child{border-bottom:none}
+    .ex-row.head{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding-top:11px;padding-bottom:11px}
+    .ex-row .r{text-align:right}
+    .medal{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:700;color:#fff}
+    .medal.g{background:var(--gold)} .medal.s{background:var(--silver)} .medal.b{background:var(--bronze)}
+    .ex-name{font-weight:500}
+    .ex-score{color:var(--muted)}
+    .ex-rating{font-family:var(--serif);font-size:18px;text-align:right}
+    .caption{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.7}
+    .caption b{color:var(--text);font-weight:600}
+
+    .tabs-note{font-size:13px;color:var(--muted);line-height:1.7;margin-top:20px}
+    .tabs-note b{color:var(--text);font-weight:600}
+
+    /* FAQ */
+    details.faq{border-bottom:1px solid var(--border)}
+    details.faq:first-of-type{border-top:1px solid var(--border)}
+    details.faq summary{display:flex;align-items:center;justify-content:space-between;padding:18px 0;cursor:pointer;list-style:none;font-size:15px;font-weight:500;user-select:none}
+    details.faq summary::-webkit-details-marker{display:none}
+    details.faq summary::after{content:'+';font-family:var(--serif);font-size:20px;transition:transform .2s;margin-left:16px}
+    details.faq[open] summary::after{transform:rotate(45deg)}
+    details.faq .a{font-size:14px;color:var(--muted);line-height:1.75;padding:0 0 18px;max-width:640px}
+    details.faq .a b{color:var(--text);font-weight:600}
+
+    .footer{border-top:1px solid var(--border);padding:26px 0;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px}
+    .footer span{font-family:var(--serif);font-size:15px}
+    .footer a{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-decoration:none}
+    .footer a:hover{color:var(--text)}
+
+    @media(max-width:560px){
+      .hero{padding:40px 0 32px}
+      .section{padding:38px 0}
+      .step{grid-template-columns:30px 1fr;gap:10px}
+      .ex-row{grid-template-columns:40px 1fr 56px 54px;padding-left:12px;padding-right:12px}
+    }
+    @page{margin:15mm}
+    @media print{
+      .topbar{position:static}
+      .back-link{display:none}
+      details>*:not(summary){display:block !important}
+      details.math summary::after,details.faq summary::after{display:none}
+      details.math,details.faq{border:1px solid var(--border)}
+      .lc,.fn,.bonus,.ex,.callout,details.faq,.step{break-inside:avoid}
+      .section{padding:24px 0}
+      a[href]{color:inherit;text-decoration:none}
+      body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="https://www.padelcollectiveindia.com/"><img class="brand-logo" src="dpc-logo.svg" alt="Delhi Padel Collective"></a>
+    <a class="back-link" href="index.html">Leaderboard</a>
+  </header>
+
+  <div class="wrap">
+    <div class="hero">
+      <p class="kicker">Delhi // PadelCollective</p>
+      <h1 class="hero-title">How rating<br>&amp; ranking work</h1>
+      <p class="hero-desc">Every match feeds one number — your rating. Here's how it's built, and how it sets your place on the board.</p>
+    </div>
+  </div>
+  <hr class="rule">
+
+  <!-- LEAGUES -->
+  <div class="wrap">
+    <section class="section">
+      <p class="section-kicker">The Scale</p>
+      <h2 class="section-title">Seven levels, one scale</h2>
+      <p class="tap-hint">Ratings run 0 to 7. Tap a level to see what it takes.</p>
+      <div class="bands">
+        <details class="band" style="--bc:#9c968b">
+          <summary><span class="band-dot"></span><span class="band-range">0.0–0.9</span><span class="band-name">Rookie</span></summary>
+          <div class="band-body"><p>Complete beginner. Needs basic instruction to play. Typically 1–5 matches, or no racquet-sport background. Learning grip, ready position, and where to stand.</p></div>
+        </details>
+        <details class="band" style="--bc:#6f9a7a">
+          <summary><span class="band-dot"></span><span class="band-range">1.0–1.9</span><span class="band-name">Warm-Up</span></summary>
+          <div class="band-body"><p>Can hit normal forehands and backhands. Some racquet-sport background, typically 5–10 padel matches. Ball goes over, rallies are short, glass is still an obstacle rather than a tool.</p></div>
+        </details>
+        <details class="band" style="--bc:#2e4e8e">
+          <summary><span class="band-dot"></span><span class="band-range">2.0–2.9</span><span class="band-name">First Serve</span><span class="band-tag">Leaderboard</span></summary>
+          <div class="band-body">
+            <p>Typically 20+ matches. Sustains rallies, understands positioning, uses the back glass.</p>
+            <div class="subband"><b>2.0–2.5 · First Serve</b> — rallies are survival. Returns the ball but doesn't choose where it goes. Back glass works when the bounce is friendly. Volleys are blocked, not directed.</div>
+            <div class="subband"><b>2.6–2.9 · First Serve+</b> — rallies with intent. Starts constructing points, plays the back glass off both wings, controls the volley. Knows they should be at the net but can't always hold it.</div>
+          </div>
+        </details>
+        <details class="band" style="--bc:#c8752d">
+          <summary><span class="band-dot"></span><span class="band-range">3.0–4.0</span><span class="band-name">Break Point</span><span class="band-tag">Leaderboard</span></summary>
+          <div class="band-body">
+            <p>Typically 50+ matches, a year or more of play, or inter-level competition in another racquet sport. Net play, communication, long rallies, smashes.</p>
+            <div class="subband"><b>3.0–3.5 · Break Point</b> — attempts the bandeja, lands it in easy situations. Holds the net when the lob is short. Calls "mine" and "yours." Backhand off the wall is functional.</div>
+            <div class="subband"><b>3.6–4.0 · Break Point+</b> — bandeja is repeatable, not lucky. First víbora appears. Reads the lob early and moves back without panicking. Wins the net and keeps it for more than one shot.</div>
+          </div>
+        </details>
+        <details class="band" style="--bc:#7a3b57">
+          <summary><span class="band-dot"></span><span class="band-range">4.1–4.9</span><span class="band-name">Match Point</span><span class="band-tag">Leaderboard</span></summary>
+          <div class="band-body"><p>Typically 100+ matches, two-plus years of consistent play, or a competitive background in another racquet sport. Bandeja is a genuine holding shot, used to keep the net rather than survive at it. Víbora with direction and spin, played on purpose. Chiquita used deliberately to force a weak volley. Comfortable playing out of the corner off double glass. Understands the transition zone. Wins and loses the net as a pair by design. Competitive in local tournaments.</p></div>
+        </details>
+        <details class="band" style="--bc:#b58a2e">
+          <summary><span class="band-dot"></span><span class="band-range">5.0–5.9</span><span class="band-name">Golden Point</span></summary>
+          <div class="band-body"><p>Competes at state or national level. Full smash arsenal — bandeja, víbora, rulo, por tres off the side wall, por cuatro attempted. Defends from the back using the glass as a weapon rather than a bailout. Reads the weaker opponent and weaker wing within a few games and targets it. Runs pre-agreed patterns with a regular partner, including serve signals. Trains under a coach. Padel-specific physical preparation. Error rate stays low under pressure.</p></div>
+        </details>
+        <details class="band" style="--bc:#9d2e2e">
+          <summary><span class="band-dot"></span><span class="band-range">6.0–7.0</span><span class="band-name">Championship</span></summary>
+          <div class="band-body">
+            <p>National champion, international circuit, or FIP-ranked. Complete arsenal at full pressure, with tempo as a tactical choice rather than a reaction. Periodised professional preparation. Padel is the occupation.</p>
+            <div class="subband"><b>6.0–6.5 · Championship</b></div>
+            <div class="subband"><b>6.6–7.0 · Championship+</b></div>
+          </div>
+        </details>
+      </div>
+    </section>
+  </div>
+  <hr class="rule">
+
+  <!-- RATING -->
+  <div class="wrap">
+    <section class="section">
+      <p class="section-kicker">How It Works</p>
+      <h2 class="section-title">From points to rank</h2>
+      <p class="tap-hint">Tap any step to see how it's worked out.</p>
+
+      <div class="flow" id="flow">
+        <button class="fn active" data-t="points"><span class="fn-more">+</span><div class="fn-n">1</div><div class="fn-t">Points</div><div class="fn-d">Earned by where you finish each match.</div></button>
+        <button class="fn" data-t="score"><span class="fn-more">+</span><div class="fn-n">2</div><div class="fn-t">Score</div><div class="fn-d">Your points total, weighted by format.</div></button>
+        <button class="fn" data-t="rating"><span class="fn-more">+</span><div class="fn-n">3</div><div class="fn-t">Rating</div><div class="fn-d">Your level — Score plus bonuses.</div></button>
+        <button class="fn" data-t="rank"><span class="fn-more">+</span><div class="fn-n">4</div><div class="fn-t">Rank</div><div class="fn-d">Your place on the board, by rating.</div></button>
+      </div>
+
+      <div class="tile-detail">
+        <div class="td on" data-t="points">
+          <p class="td-lead"><b>Americano</b> — points come from where you finish:</p>
+          <div class="pts-grid">
+            <div class="pt"><b>12</b><span>1st</span></div>
+            <div class="pt"><b>10</b><span>2nd</span></div>
+            <div class="pt"><b>8</b><span>3rd</span></div>
+            <div class="pt"><b>6</b><span>4th</span></div>
+            <div class="pt"><b>5</b><span>5th</span></div>
+            <div class="pt"><b>3</b><span>6th</span></div>
+            <div class="pt"><b>2</b><span>7th</span></div>
+            <div class="pt"><b>1</b><span>8th+</span></div>
+          </div>
+          <p class="td-note">Never below 1 · a no-show is −2.</p>
+          <p class="td-lead" style="margin-top:16px"><b>Tournament</b> — points come from the round you win:</p>
+          <div class="pts-grid three">
+            <div class="pt"><b>1</b><span>Group win</span></div>
+            <div class="pt"><b>3</b><span>Semi win</span></div>
+            <div class="pt"><b>5</b><span>Final win</span></div>
+          </div>
+          <p class="td-note">A loss earns 0.</p>
+        </div>
+
+        <div class="td" data-t="score">
+          <div class="formula-big">Score = Tournament <span class="w">× 3</span> + Americano <span class="w">× 1.5</span></div>
+          <p class="td-note" style="margin-top:12px">Your total match points, weighted so tournaments count most.</p>
+        </div>
+
+        <div class="td" data-t="rating">
+          <p class="td-lead">Rating = your <b>base</b> + three bonuses, capped at your league and rounded to one decimal.</p>
+          <p class="td-note" style="margin:6px 0 14px">Base blends your <b>self rating</b> (your score standing) with your <b>match rating</b> (how you rank vs others) — 60/40 in First Serve, 70/30 in Break Point.</p>
+          <div class="bonuses">
+            <div class="bonus"><div class="bonus-t">Play more</div><div class="bonus-d">A steady bonus per match played.</div></div>
+            <div class="bonus"><div class="bonus-t">Finish high</div><div class="bonus-d">Average a top-3 Americano finish — grows the more you play.</div></div>
+            <div class="bonus"><div class="bonus-t">Win tournaments</div><div class="bonus-d">Wins add on top; finals count most.</div></div>
+          </div>
+          <p class="td-note" style="margin-top:14px">Cross into the next band on the scale and you move up a level.</p>
+        </div>
+
+        <div class="td" data-t="rank">
+          <p class="td-lead">Ranked by <b>rating</b>, highest first. Same rating? <b>Higher score</b> breaks the tie.</p>
+          <div class="ex" style="margin-top:14px">
+            <div class="ex-row head"><span></span><span>Player</span><span class="r">Score</span><span class="r">Rating</span></div>
+            <div class="ex-row"><span><span class="medal g">1</span></span><span class="ex-name">Arjun S.</span><span class="r ex-score">88</span><span class="ex-rating">2.6</span></div>
+            <div class="ex-row"><span><span class="medal s">2</span></span><span class="ex-name">Priya K.</span><span class="r ex-score">76</span><span class="ex-rating">2.4</span></div>
+            <div class="ex-row"><span><span class="medal b">3</span></span><span class="ex-name">Rahul M.</span><span class="r ex-score">61</span><span class="ex-rating">2.4</span></div>
+          </div>
+          <p class="td-note" style="margin-top:12px">Priya and Rahul both sit at 2.4 — Priya wins the tie-break on score (76 vs 61). The <b>Ranking</b> tab shows this overall standing; other tabs rank by points within that format.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+  <hr class="rule">
+
+  <!-- FAQ -->
+  <div class="wrap">
+    <section class="section">
+      <p class="section-kicker">FAQ</p>
+      <h2 class="section-title">Common questions</h2>
+
+      <details class="faq">
+        <summary>How often does it update?</summary>
+        <p class="a">After every session. Your new rating and rank appear within 24 hours of your match.</p>
+      </details>
+      <details class="faq">
+        <summary>What's the difference between Score and Rating?</summary>
+        <p class="a"><b>Score</b> is your raw total match points. <b>Rating</b> turns that into your level (the decimal) — and rating is what your rank and league are based on.</p>
+      </details>
+      <details class="faq">
+        <summary>Two players have the same rating — who ranks higher?</summary>
+        <p class="a">The one with the higher <b>Score</b>. If score is also equal, they share the same rank.</p>
+      </details>
+      <details class="faq">
+        <summary>Can I move up a league?</summary>
+        <p class="a">Yes. When your rating crosses into the next band, you move up. It's based on sustained performance and reviewed by the DPC team.</p>
+      </details>
+    </section>
+  </div>
+
+  <div class="wrap">
+    <footer class="footer">
+      <span>Delhi // PadelCollective</span>
+      <a href="index.html">← Back to leaderboard</a>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll('.fn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.t;
+        document.querySelectorAll('.fn').forEach(f => f.classList.toggle('active', f === btn));
+        document.querySelectorAll('.td').forEach(d => d.classList.toggle('on', d.dataset.t === t));
+      });
+    });
+    if (new URLSearchParams(location.search).has('print')) {
+      document.querySelectorAll('.td').forEach(d => d.classList.add('on'));
+      document.querySelectorAll('details').forEach(d => d.open = true);
+    }
+  </script>
+</body>
+</html>
