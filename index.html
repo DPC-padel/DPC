@@ -80,7 +80,8 @@
     display: none;
   }
   .nav-login,
-  .nav-dashboard {
+  .nav-dashboard,
+  .nav-guide {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -103,7 +104,8 @@
     transition: background .22s ease, transform .22s ease;
   }
   .nav-login:hover,
-  .nav-dashboard:hover {
+  .nav-dashboard:hover,
+  .nav-guide:hover {
     background: rgba(255,255,255,.08);
     transform: translateY(-1px);
   }
@@ -445,6 +447,7 @@
 /* ── MOBILE ── */
 @media (max-width: 768px) {
   #navbar { padding: 0 24px; }
+  .nav-guide { display: none; }
 
   .scroll-hint {
     left: 50% !important;
@@ -560,6 +563,7 @@ video::-webkit-media-controls-fullscreen-button {
     <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
   </a>
   <div class="nav-actions" id="navActions">
+  <a class="nav-guide" href="/leaderboard/explainer.html">How It Works</a>
   <a class="nav-login" href="/login/">Login</a>
   <a class="nav-dashboard" href="/Dashboard/">Dashboard</a>
     <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -578,6 +582,7 @@ video::-webkit-media-controls-fullscreen-button {
    <!-- <a class="drawer-link" href="#lifestyle" onclick="closeDrawer()">Journal</a> -->
 <a class="drawer-link" href="/calender/">Calendar</a>
 <a class="drawer-link" href="/leaderboard/">Leaderboard</a>
+<a class="drawer-link" href="/leaderboard/explainer.html">How It Works</a>
 <a class="drawer-link cta-link" href="/Application/" onclick="closeDrawer()">Apply to Join →</a>
 <a class="drawer-link utility-link login-link" href="/login/" onclick="closeDrawer()">Login</a>
 <a class="drawer-link utility-link dashboard-link" href="/Dashboard/" onclick="closeDrawer()">Dashboard</a>
@@ -772,7 +777,7 @@ video::-webkit-media-controls-fullscreen-button {
   const SESSION_KEY = "dpcPlayerSession";
   const SESSION_PHONE_KEY = "dpcPlayerPhone";
   const SESSION_SAVED_AT_KEY = "dpcPlayerSessionSavedAt";
-  const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
+  const SESSION_TTL = 90 * 24 * 60 * 60 * 1000; // 90 days of inactivity (rolling)
   const hamburger = document.getElementById("hamburger");
   const drawer    = document.getElementById("drawer");
   const overlay   = document.getElementById("drawerOverlay");
@@ -798,6 +803,8 @@ video::-webkit-media-controls-fullscreen-button {
       return false;
     }
 
+    // Rolling: refresh so it only expires after inactivity, not a fixed window.
+    localStorage.setItem(SESSION_SAVED_AT_KEY, String(Date.now()));
     return true;
   }
 
@@ -875,10 +882,13 @@ video::-webkit-media-controls-fullscreen-button {
    window.location.href = "/Application/";
   }
 
-  document.getElementById("applyBtn").addEventListener("click", e => {
-    e.preventDefault(); 
-    applyAlert();
-  });
+  const applyBtnEl = document.getElementById("applyBtn");
+  if (applyBtnEl) {
+    applyBtnEl.addEventListener("click", e => {
+      e.preventDefault();
+      applyAlert();
+    });
+  }
  if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
