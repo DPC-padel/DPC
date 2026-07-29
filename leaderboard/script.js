@@ -79,7 +79,7 @@ const elements = {
   americanoPanel: document.getElementById("americanoPanel")
 };
 
-const DEFAULT_VISIBLE_RANKINGS = 10;
+const DEFAULT_VISIBLE_RANKINGS = 50;
 const tableSearchState = new Map();
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -93,6 +93,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     pendingFetch = null;
   });
   await config?.loader(false);
+  await applyDeepLinkSearch();
+  injectInfoButton();
   revalidateInBackground();
 });
 
@@ -215,16 +217,80 @@ async function loadNoidaPage(isManualRefresh) {
 // ─── DATA FETCHING ───────────────────────────────────────────────────────────
 
 let pendingFetch = null;
+let allData = null; // last-loaded data for every board — powers cross-board search
 
 async function getAllRankingsData(useFresh = false) {
   if (useFresh) {
     // Refresh click: reuse the background fetch started on page open —
     // already resolved (instant) or still in flight (await it).
-    return startBackgroundFetch();
+    return (allData = await startBackgroundFetch());
   }
   const cached = readCache();
-  if (cached) return cached.data;
-  return startBackgroundFetch();
+  if (cached) return (allData = cached.data);
+  return (allData = await startBackgroundFetch());
+}
+
+// Each board's overall ranking, reusing the existing normalizers.
+const BOARDS = [
+  { page: "index.html",      label: "First Serve", rows: (d) => normalizeFlexibleOverallRankings(d.firstServeRanking || []) },
+  { page: "breakpoint.html", label: "Break Point", rows: (d) => normalizeOverallRankings(d.breakPointOverall || []) },
+  { page: "matchpoint.html", label: "Match Point", rows: (d) => normalizeMatchPointRankings(d.matchPointPlayers || []) },
+  { page: "noida.html",      label: "Noida",       rows: (d) => normalizeNoidaRankings(d.noida || []) }
+];
+
+// Show matches from OTHER boards as tappable options below the list;
+// clicking opens that board with the player pre-searched.
+function renderCrossBoard(query) {
+  const sub = document.querySelector(".subsection:not(.panel-hidden)");
+  if (!sub || !config) return;
+  let box = sub.querySelector(".cross-board");
+  const here = config.selectorValue;
+  const results = [];
+  if (query.length >= 2 && allData) {
+    for (const b of BOARDS) {
+      if (b.page === here) continue;
+      for (const p of b.rows(allData)) {
+        if (p.name.toLowerCase().includes(query)) results.push({ p, page: b.page, label: b.label });
+      }
+    }
+  }
+  if (!results.length) { box?.remove(); return; }
+  if (!box) { box = document.createElement("div"); box.className = "cross-board"; sub.appendChild(box); }
+  box.innerHTML = `<p class="cross-board-title">On other boards</p>` +
+    results.slice(0, 10).map((r) =>
+      `<a class="cross-row" href="${r.page}?q=${encodeURIComponent(query)}">
+        ${playerCell(r.p, null, r.p.matches != null ? `${r.p.matches} matches` : "")}
+        <span class="cross-board-tag">${r.label} →</span>
+      </a>`).join("");
+}
+
+// Landing here from a cross-board jump (?q=name): pre-fill the search and filter.
+async function applyDeepLinkSearch() {
+  const q = new URLSearchParams(location.search).get("q");
+  if (!q) return;
+  const input = document.querySelector(".subsection:not(.panel-hidden) .leaderboard-search-input");
+  if (!input) return;
+  input.value = q;
+  tableSearchState.set(input.dataset.searchTarget, q.trim().toLowerCase());
+  await config?.loader(false);
+}
+
+// One "i" button by the standings header explaining rank / rating / score.
+function injectInfoButton() {
+  const head = document.querySelector(".standings-head > div");
+  if (!head || head.querySelector(".info")) return;
+  const el = document.createElement("details");
+  el.className = "info";
+  el.innerHTML = `
+    <summary class="info-btn" title="What do these mean?">i</summary>
+    <div class="info-pop">
+      <p><b>Rank</b> — your spot on the board, set by rating (score breaks ties).</p>
+      <p><b>Rating</b> — your level on the 0–7 skill scale.</p>
+      <p><b>Score</b> — total match points, which feed your rating.</p>
+      <a href="explainer.html">Full guide →</a>
+    </div>`;
+  head.appendChild(el);
+  document.addEventListener("click", (e) => { if (!el.contains(e.target)) el.open = false; });
 }
 
 function startBackgroundFetch() {
@@ -400,6 +466,11 @@ function normalizeTournamentRankings(rows) {
   return addClusterRanks(sorted);
 }
 
+function isVerified(row) {
+  const v = row.Verified ?? row.verified ?? row.VERIFIED;
+  return String(v).trim().toUpperCase() === "TRUE";
+}
+
 function normalizeOverallRankings(rows) {
   return rows
     .map((row) => ({
@@ -407,7 +478,9 @@ function normalizeOverallRankings(rows) {
       name:   String(row.Name || "").trim(),
       score:  toNumber(row.Score),
       rating: toDecimal(row.Rating),
-      rank:   toNumber(row.Ranking || row.ranking || row.Rank)
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank),
+      matches: toNumber(row["Matches played"] ?? row.matches ?? row.MP),
+      verified: isVerified(row)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((a, b) => a.rank - b.rank);
@@ -420,7 +493,9 @@ function normalizeMatchPointRankings(rows) {
       name:   String(row.name || "").trim(),
       score:  toNumber(row.score),
       rating: toDecimal(row.rating),
-      rank:   toNumber(row.Ranking || row.ranking || row.Rank)
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank),
+      matches: toNumber(row.matches ?? row["Matches played"] ?? row.MP ?? row.mp),
+      verified: isVerified(row)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((a, b) => a.rank - b.rank);
@@ -433,7 +508,9 @@ function normalizeFlexibleOverallRankings(rows) {
       name:   String(row.Name || row["Player Name"] || row.playerName || "").trim(),
       score:  toNumber(row.Score || row.score),
       rating: toDecimal(row.Rating ?? row.rating ?? 0),
-      rank:   toNumber(row.Ranking || row.ranking || row.Rank)
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank),
+      matches: toNumber(row["Matches played"] ?? row.matches ?? row.MP ?? row.mp),
+      verified: isVerified(row)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
     .sort((a, b) => a.rank - b.rank);
@@ -471,18 +548,140 @@ function compareByScore(a, b) {
 
 // ─── RENDERERS ───────────────────────────────────────────────────────────────
 
+function getViewerName() {
+  try {
+    if (sessionStorage.getItem("dpcDemo") === "1") return "Nik S";
+    const raw = localStorage.getItem("dpcPlayerSession");
+    if (raw) { const p = JSON.parse(raw); return p && p.name ? p.name : null; }
+  } catch (e) {}
+  return null;
+}
+
+function initials(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function isViewer(player, viewer) {
+  return !!(viewer && player.name && player.name.toLowerCase() === viewer.toLowerCase());
+}
+
+const AV_COLORS = ["#9d7bc9","#5b6472","#2f8f83","#c1614f","#3f9d7f","#7c6fc9","#b1793f","#4f7cc1","#a85a86","#3d8f8f"];
+function avColor(name) {
+  let h = 0; const s = String(name || "");
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return AV_COLORS[h % AV_COLORS.length];
+}
+function verifiedBadge(p) {
+  return p && p.verified ? '<span class="vbadge" title="Verified ranking">✓</span>' : "";
+}
+function ensureVerifiedLegend(target, anyVerified) {
+  const sub = target.closest(".subsection"); if (!sub) return;
+  let leg = sub.querySelector(".verified-legend");
+  if (anyVerified && !leg) {
+    leg = document.createElement("div");
+    leg.className = "verified-legend";
+    leg.innerHTML = '<span class="vbadge">✓</span> Verified ranking';
+    const podium = sub.querySelector(".podium");
+    if (podium) podium.after(leg); else sub.prepend(leg);
+  } else if (!anyVerified && leg) { leg.remove(); }
+}
+
+function podiumMarkup(top3, opts) {
+  const order = [top3[1], top3[0], top3[2]];
+  const slot  = ["second", "first", "third"];
+  return order.map((p, i) => {
+    if (!p) return `<div class="podium-item ${slot[i]}"></div>`;
+    const sub = opts.sub ? opts.sub(p) : "";
+    return `<div class="podium-item ${slot[i]}">
+      <div class="podium-avwrap">
+        <div class="podium-avatar" style="background:${avColor(p.name)}">${escapeHtml(initials(p.name))}</div>
+        <div class="podium-badge">${p.rank}</div>
+      </div>
+      <div class="podium-name"><span>${escapeHtml(p.name)}</span>${verifiedBadge(p)}</div>
+      <div class="podium-value">${opts.value(p)}</div>
+      <div class="podium-label">${opts.label}</div>
+      ${sub ? `<div class="podium-sub">${sub}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function yourRankMarkup(me, opts) {
+  return `<div class="your-rank-num">${me.rank}</div>
+    <div class="your-rank-mid">
+      <div class="your-rank-kicker">Your rank</div>
+      <div class="your-rank-name">${escapeHtml(me.name)}</div>
+    </div>
+    <div class="your-rank-val">${opts.value(me)}</div>`;
+}
+
+// Inject/update the podium + "your rank" card for a panel, and return the
+// list of players the table below should show (ranks 4+ when the podium is
+// visible; the full list while searching).
+function enhancePanel(target, rankings, opts) {
+  const subsection = target.closest(".subsection");
+  if (!subsection) return rankings;
+  const query  = tableSearchState.get(target.id) || "";
+  const search = subsection.querySelector(".leaderboard-search");
+
+  let podium = subsection.querySelector(".podium");
+  if (!podium) {
+    podium = document.createElement("div");
+    podium.className = "podium";
+    subsection.insertBefore(podium, search || subsection.querySelector(".table-wrap"));
+  }
+  let yr = subsection.querySelector(".your-rank");
+  if (!yr) {
+    yr = document.createElement("div");
+    yr.className = "your-rank";
+    subsection.appendChild(yr);
+  }
+
+  if (query || rankings.length < 3) {
+    podium.hidden = true;
+    yr.hidden = true;
+    return rankings;
+  }
+
+  podium.hidden = false;
+  podium.innerHTML = podiumMarkup(rankings.slice(0, 3), opts);
+
+  const viewer = getViewerName();
+  const me = viewer ? rankings.find((p) => isViewer(p, viewer)) : null;
+  if (me) { yr.hidden = false; yr.innerHTML = yourRankMarkup(me, opts); }
+  else { yr.hidden = true; }
+
+  return rankings.slice(3);
+}
+
+function playerCell(player, viewer, sub) {
+  const subhtml = sub ? `<div class="player-sub">${escapeHtml(sub)}</div>` : "";
+  return `<div class="player-cell">
+    <span class="avatar" style="background:${avColor(player.name)}">${escapeHtml(initials(player.name))}</span>
+    <span class="player-info"><span class="nmrow"><span class="player-name">${escapeHtml(player.name)}</span>${verifiedBadge(player)}</span>${subhtml}</span>
+  </div>`;
+}
+
 function renderBasicTable(target, rankings, colspan, emptyMessage = "No ranking entries yet.") {
   if (!target) return;
   ensureSearchUi(target);
   if (!rankings.length) { renderMessageRow(target, emptyMessage, colspan); return; }
-  const visibleRankings = getVisibleRankings(target, rankings);
+  const viewer = getViewerName();
+  const listRankings = enhancePanel(target, rankings, {
+    value: (p) => p.score,
+    label: "Points",
+    sub: (p) => (p.matches != null ? `${p.matches} matches` : "")
+  });
+  const visibleRankings = getVisibleRankings(target, listRankings);
   if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
-  target.innerHTML = visibleRankings.map((player, index) => {
+  target.innerHTML = visibleRankings.map((player) => {
     const badge = renderBadge(player.rank);
     return `
-      <tr class="${index === 0 ? "highlight" : ""}">
+      <tr class="${isViewer(player, viewer) ? "highlight" : ""}">
         <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
-        <td><div class="player-name">${escapeHtml(player.name)}</div></td>
+        <td>${playerCell(player, viewer)}</td>
         <td class="stat-cell">${player.matches}</td>
         <td class="stat-cell points-cell">${player.score}</td>
       </tr>`;
@@ -493,14 +692,20 @@ function renderTournamentTable(target, rankings, colspan, emptyMessage = "No tou
   if (!target) return;
   ensureSearchUi(target);
   if (!rankings.length) { renderMessageRow(target, emptyMessage, colspan); return; }
-  const visibleRankings = getVisibleRankings(target, rankings);
+  const viewer = getViewerName();
+  const listRankings = enhancePanel(target, rankings, {
+    value: (p) => p.score,
+    label: "Points",
+    sub: (p) => `${p.wins || 0}W · ${p.losses || 0}L`
+  });
+  const visibleRankings = getVisibleRankings(target, listRankings);
   if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
-  target.innerHTML = visibleRankings.map((player, index) => {
+  target.innerHTML = visibleRankings.map((player) => {
     const badge = renderBadge(player.rank);
     return `
-      <tr class="${index === 0 ? "highlight" : ""}">
+      <tr class="${isViewer(player, viewer) ? "highlight" : ""}">
         <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
-        <td><div class="player-name">${escapeHtml(player.name)}</div></td>
+        <td>${playerCell(player, viewer)}</td>
         <td class="stat-cell">${player.matches}</td>
         <td class="stat-cell">${player.wins}</td>
         <td class="stat-cell">${player.losses}</td>
@@ -513,15 +718,23 @@ function renderOverallTable(target, rankings, colspan) {
   if (!target) return;
   ensureSearchUi(target);
   if (!rankings.length) { renderMessageRow(target, "No overall entries yet.", colspan); return; }
-  const visibleRankings = getVisibleRankings(target, rankings);
+  const viewer = getViewerName();
+  const listRankings = enhancePanel(target, rankings, {
+    value: (p) => p.rating.toFixed(1),
+    label: "Rating",
+    sub: (p) => [p.matches != null ? `${p.matches} matches` : "", `${p.score} score`].filter(Boolean).join(" · ")
+  });
+  ensureVerifiedLegend(target, rankings.some((p) => p.verified));
+  const visibleRankings = getVisibleRankings(target, listRankings);
   if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
-  target.innerHTML = visibleRankings.map((player, index) => {
+  target.innerHTML = visibleRankings.map((player) => {
     const badge = renderBadge(player.rank);
+    const sub = player.matches != null ? `${player.matches} matches` : "";
     return `
-      <tr class="${index === 0 ? "highlight" : ""}">
+      <tr class="${isViewer(player, viewer) ? "highlight" : ""}">
         <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
-        <td><div class="player-name">${escapeHtml(player.name)}</div></td>
-        <td class="stat-cell">${player.score}</td>
+        <td>${playerCell(player, viewer, sub)}</td>
+        <td class="stat-cell">${player.score}<small>score</small></td>
         <td class="stat-cell points-cell">${player.rating.toFixed(1)}</td>
       </tr>`;
   }).join("");
@@ -554,14 +767,16 @@ function ensureSearchUi(target) {
         aria-label="Search player name"
         data-search-target="${target.id}"
       />
-      <p class="leaderboard-search-note">Showing top 10 by default. Search any player by name.</p>
+      <p class="leaderboard-search-note">Showing top 50 by default. Search any player by name.</p>
     </div>
   `);
   const input = tableWrap.previousElementSibling?.querySelector(".leaderboard-search-input");
   if (!input) return;
   input.addEventListener("input", (event) => {
-    tableSearchState.set(target.id, event.target.value.trim().toLowerCase());
+    const q = event.target.value.trim().toLowerCase();
+    tableSearchState.set(target.id, q);
     config?.loader(false);
+    renderCrossBoard(q);
   });
 }
 
