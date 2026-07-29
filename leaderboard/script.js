@@ -311,9 +311,7 @@ function startBackgroundFetch() {
 function revalidateInBackground() {
   // If the initial load had no cache it already fetched live data — skip.
   if (pendingFetch) return;
-  startBackgroundFetch()
-    .then(() => updateStatus("Updated rankings available — tap Refresh."))
-    .catch(() => {});
+  startBackgroundFetch().catch(() => {});
 }
 
 async function fetchAllRankingsData() {
@@ -602,7 +600,6 @@ function podiumMarkup(top3, opts) {
       </div>
       <div class="podium-name"><span>${escapeHtml(p.name)}</span>${verifiedBadge(p)}</div>
       <div class="podium-value">${opts.value(p)}</div>
-      <div class="podium-label">${opts.label}</div>
       ${sub ? `<div class="podium-sub">${sub}</div>` : ""}
     </div>`;
   }).join("");
@@ -734,7 +731,7 @@ function renderOverallTable(target, rankings, colspan) {
       <tr class="${isViewer(player, viewer) ? "highlight" : ""}">
         <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
         <td>${playerCell(player, viewer, sub)}</td>
-        <td class="stat-cell">${player.score}<small>score</small></td>
+        <td class="stat-cell">${player.score}</td>
         <td class="stat-cell points-cell">${player.rating.toFixed(1)}</td>
       </tr>`;
   }).join("");
@@ -767,7 +764,6 @@ function ensureSearchUi(target) {
         aria-label="Search player name"
         data-search-target="${target.id}"
       />
-      <p class="leaderboard-search-note">Showing top 50 by default. Search any player by name.</p>
     </div>
   `);
   const input = tableWrap.previousElementSibling?.querySelector(".leaderboard-search-input");
