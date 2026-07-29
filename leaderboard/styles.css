@@ -88,14 +88,15 @@ h1, h2, h3, p, table { margin: 0; }
 .topbar-meta { display: none; }
 
 /* ── Hero ── */
-.hero-banner { display: block; padding: 22px 20px 0; background: transparent; }
-.slash { font-family: var(--serif); font-size: 1rem; line-height: 1; color: var(--accent); font-weight: 600; }
+.hero-banner { display: flex; align-items: flex-start; gap: 8px; padding: 10px 20px 0; background: transparent; }
+.slash { font-family: var(--serif); font-size: clamp(2.6rem, 11vw, 3.3rem); line-height: 0.92; color: var(--accent); font-weight: 400; margin-top: 6px; }
 .hero-copy { text-align: left; }
 .hero-copy h1 {
   font-family: var(--serif); font-size: clamp(2.6rem, 11vw, 3.3rem);
   line-height: 0.92; letter-spacing: -0.5px; font-weight: 400; margin-top: 6px; color: var(--ink);
 }
 .hero-copy p {
+  display: none;
   margin-top: 8px; font-family: var(--serif); font-style: italic;
   color: var(--muted2); font-size: 1rem; letter-spacing: 0; text-transform: none;
 }
@@ -103,7 +104,7 @@ h1, h2, h3, p, table { margin: 0; }
 /* ── Standings ── */
 .standings-section { padding: 0 20px 20px; }
 .stacked-sections { display: grid; gap: 0; }
-.standings-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 24px; }
+.standings-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 14px; }
 .section-kicker { font-size: 0.62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em; }
 .refresh-button {
   appearance: none; border: 1px solid var(--line); background: transparent; color: var(--muted2);
