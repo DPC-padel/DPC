@@ -69,7 +69,7 @@ nav{
 .page{max-width:none;margin-left:var(--sidebar-w);padding:112px 56px 60px;}
 .dashboard-main{min-width:0}
 
-.hero{padding:0;margin-bottom:0;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.hero{padding:0;margin-bottom:0;display:flex;align-items:center;justify-content:space-between;gap:16px;position:relative;z-index:10;}
 .hero-left{display:flex;align-items:center;gap:13px;min-width:0}
 .hero-avatar{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--body);font-weight:600;font-size:15px;background:#7c6fc9}
 .hero-name-row{display:flex;align-items:center;gap:7px}
@@ -82,6 +82,18 @@ nav{
 .icon-btn svg{width:18px;height:18px}
 .icon-btn:hover{color:var(--accent);border-color:var(--accent)}
 .icon-btn:disabled{opacity:.45;cursor:not-allowed}
+.info{position:relative}
+.info-btn{list-style:none;font-family:var(--heading);font-style:italic;font-size:15px;color:var(--muted2)}
+.info-btn::-webkit-details-marker{display:none}
+.info-pop{position:absolute;top:48px;right:0;z-index:30;width:min(280px,calc(100vw - 40px));background:#fff;border:1px solid var(--border2);border-radius:12px;padding:14px 16px;box-shadow:0 12px 30px rgba(23,21,19,.15)}
+.info-pop p{font-size:13px;color:var(--muted2);line-height:1.5;margin:0 0 8px}
+.info-pop p b{color:var(--text);font-weight:600}
+.info-pop a{font-size:12px;font-weight:600;color:var(--accent);text-decoration:none}
+.stat-card.clickable{cursor:pointer}
+.stat-card.clickable:hover{background:#fbfbfc}
+.stat-link-arrow{color:var(--accent);font-weight:600}
+.signout-btn{display:block;margin:28px auto 0;background:none;border:1px solid var(--border2);color:var(--muted2);font-family:var(--body);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:11px 22px;border-radius:99px;cursor:pointer;transition:color .2s,border-color .2s}
+.signout-btn:hover{color:var(--text);border-color:var(--text)}
 
 /* ── Refresh button ── */
 .refresh-btn {
@@ -344,6 +356,15 @@ nav{
           </div>
         </div>
         <div class="hero-actions">
+          <details class="info" id="infoWrap">
+            <summary class="icon-btn info-btn" title="What do these mean?">i</summary>
+            <div class="info-pop">
+              <p><b>Rank</b> — your spot on the board, set by rating (score breaks ties).</p>
+              <p><b>Rating</b> — your level on the 0–7 skill scale.</p>
+              <p><b>Score</b> — total match points, which feed your rating.</p>
+              <a href="/leaderboard/explainer.html">Full guide →</a>
+            </div>
+          </details>
           <button class="icon-btn" id="refreshBtn" onclick="handleRefresh()" aria-label="Refresh" title="Refresh">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -354,12 +375,12 @@ nav{
 
       <div class="stats-rule"></div>
       <div class="stats-row fade-in">
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="goToRanking()" title="View on leaderboard">
           <div class="stat-top">
             <span class="stat-icon"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span>
             <div class="stat-num"><span id="statRank">—</span><span class="stat-trend" id="rankTrend"></span></div>
           </div>
-          <div class="stat-label">Ranking</div>
+          <div class="stat-label">Ranking <span class="stat-link-arrow">→</span></div>
         </div>
         <div class="stat-card">
           <div class="stat-top">
@@ -411,8 +432,8 @@ nav{
         <div class="chart-header">
           <div class="chart-title">Performance Over Time</div>
           <div class="chart-toggle">
-            <button class="chart-toggle-btn active" id="chartBtnPoints" onclick="switchChart('points')">Score</button>
-            <button class="chart-toggle-btn" id="chartBtnRating" onclick="switchChart('rating')">Rating</button>
+            <button class="chart-toggle-btn" id="chartBtnPoints" onclick="switchChart('points')">Score</button>
+            <button class="chart-toggle-btn active" id="chartBtnRating" onclick="switchChart('rating')">Rating</button>
             <button class="chart-toggle-btn" id="chartBtnRanking" onclick="switchChart('ranking')">Ranking</button>
           </div>
         </div>
@@ -421,6 +442,8 @@ nav{
           <div class="chart-empty" id="chartEmpty" style="display:none">Not enough match data yet.</div>
         </div>
       </div>
+
+      <button class="signout-btn" onclick="handleLogout()">Sign out</button>
 
     </main>
   </div>
@@ -457,7 +480,7 @@ let allMatches    = [];
 let currentPlayer = null;
 let activeFilters = { date: '30', type: 'all' };
 let perfChart     = null;
-let chartMode     = 'points';
+let chartMode     = 'rating';
 
 // ── Helpers ───────────────────────────────────────────────────
 function formatDate(dateStr) {
@@ -648,13 +671,16 @@ async function bootstrapDashboard() {
 
   // 2. No valid cache → fetch from API (first visit or expired)
   setRefreshState(true);
-  const { player, matches } = await fetchFromAPI(savedPhone);
-  currentPlayer = player;
-  allMatches    = matches;
-  saveCache(savedPhone, player, matches);
-  showDashboard();
-  updateCacheLabel(Date.now());
-  setRefreshState(false);
+  try {
+    const { player, matches } = await fetchFromAPI(savedPhone);
+    currentPlayer = player;
+    allMatches    = matches;
+    saveCache(savedPhone, player, matches);
+    showDashboard();
+    updateCacheLabel(Date.now());
+  } finally {
+    setRefreshState(false);
+  }
 
   // Also update session with fresh player data
   localStorage.setItem(SESSION_KEY, JSON.stringify(currentPlayer));
@@ -667,14 +693,17 @@ async function handleRefresh() {
   if (!session) { window.location.href = '/login/'; return; }
 
   setRefreshState(true);
-  const { player, matches } = await fetchFromAPI(session.savedPhone);
-  currentPlayer = player;
-  allMatches    = matches;
-  clearDataCache();
-  saveCache(session.savedPhone, player, matches);
-  showDashboard();
-  updateCacheLabel(Date.now());
-  setRefreshState(false);
+  try {
+    const { player, matches } = await fetchFromAPI(session.savedPhone);
+    currentPlayer = player;
+    allMatches    = matches;
+    clearDataCache();
+    saveCache(session.savedPhone, player, matches);
+    showDashboard();
+    updateCacheLabel(Date.now());
+  } finally {
+    setRefreshState(false);
+  }
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(currentPlayer));
   localStorage.setItem(SESSION_SAVED_AT_KEY, String(Date.now()));
@@ -713,7 +742,7 @@ function showDashboard() {
   renderForm();
   renderStats();
   renderMatches();
-  renderChart('points');
+  renderChart(chartMode);
 }
 
 function renderRatingTrend() {
@@ -766,13 +795,7 @@ function renderForm() {
 }
 
 function renderStats() {
-  const all   = getFiltered('all', 'all');
-  const total = all.length;
-  document.getElementById('statMatches').textContent    = total;
-  document.getElementById('statMatchesSub').textContent =
-    `${all.filter(m=>String(m.matchId).toUpperCase().includes('AM')).length} americano · ` +
-    `${all.filter(m=>String(m.matchId).toUpperCase().includes('TM')).length} tournament · ` +
-    `${all.filter(m=>String(m.matchId).toUpperCase().includes('PS')).length} personal`;
+  document.getElementById('statMatches').textContent = getFiltered('all', 'all').length;
 }
 
 function switchChart(mode) {
@@ -946,6 +969,18 @@ function toggleExpand(idx) {
     if (card) card.classList.toggle('expanded', el.classList.contains('open'));
   }
 }
+
+function goToRanking() {
+  const venue = String(currentPlayer?.venue || '').toLowerCase().replace(/\s+/g, '');
+  const page = { firstserve:'index.html', breakpoint:'breakpoint.html', matchpoint:'matchpoint.html', noida:'noida.html' }[venue] || 'index.html';
+  const q = currentPlayer?.name ? '?q=' + encodeURIComponent(currentPlayer.name) : '';
+  window.location.href = '/leaderboard/' + page + q;
+}
+
+document.addEventListener('click', e => {
+  const info = document.getElementById('infoWrap');
+  if (info && !info.contains(e.target)) info.open = false;
+});
 
 function handleLogout() {
   sessionStorage.removeItem('dpcDemo');
