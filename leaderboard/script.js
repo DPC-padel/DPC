@@ -587,20 +587,23 @@ function ensureVerifiedLegend(target, anyVerified) {
   } else if (!anyVerified && leg) { leg.remove(); }
 }
 
+const CROWN_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8l3.5 3L12 5l5.5 6L21 8l-1.5 10h-15L3 8z"/></svg>';
 function podiumMarkup(top3, opts) {
   const order = [top3[1], top3[0], top3[2]];
   const slot  = ["second", "first", "third"];
+  const label = { first: "1st", second: "2nd", third: "3rd" };
   return order.map((p, i) => {
-    if (!p) return `<div class="podium-item ${slot[i]}"></div>`;
-    const sub = opts.sub ? opts.sub(p) : "";
-    return `<div class="podium-item ${slot[i]}">
+    const s = slot[i];
+    if (!p) return `<div class="podium-item ${s}"><div class="podium-block">${label[s]}</div></div>`;
+    return `<div class="podium-item ${s}">
+      ${s === "first" ? `<div class="podium-crown">${CROWN_SVG}</div>` : ""}
       <div class="podium-avwrap">
         <div class="podium-avatar" style="background:${avColor(p.name)}">${escapeHtml(initials(p.name))}</div>
         <div class="podium-badge">${p.rank}</div>
       </div>
       <div class="podium-name"><span>${escapeHtml(p.name)}</span>${verifiedBadge(p)}</div>
       <div class="podium-value">${opts.value(p)}</div>
-      ${sub ? `<div class="podium-sub">${sub}</div>` : ""}
+      <div class="podium-block">${label[s]}</div>
     </div>`;
   }).join("");
 }
