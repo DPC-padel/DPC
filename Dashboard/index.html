@@ -12,15 +12,15 @@
 html{scroll-behavior:smooth}
 @font-face{font-family:'Berling';src:url('Berling Bold.otf') format('opentype');font-weight:700}
 :root{
-  --bg:#f4f1eb;
+  --bg:#eceef2;
   --surface:#ffffff;
   --text:#171513;
   --muted:rgba(23,21,19,.38);
   --muted2:rgba(23,21,19,.55);
-  --border:rgba(23,21,19,.08);
-  --border2:rgba(23,21,19,.14);
-  --accent:#CB5957;
-  --accent-light:rgba(203,89,87,.1);
+  --border:rgba(23,21,19,.06);
+  --border2:rgba(23,21,19,.10);
+  --accent:#2e4e8e;
+  --accent-light:rgba(46,78,142,.10);
   --heading:'Berling',Georgia,serif;
   --body:'DM Sans',-apple-system,sans-serif;
   --green:#3a7d44;
@@ -69,9 +69,19 @@ nav{
 .page{max-width:none;margin-left:var(--sidebar-w);padding:112px 56px 60px;}
 .dashboard-main{min-width:0}
 
-.hero{padding:0;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;}
-.hero-heading{font-family:var(--heading);font-size:50px;font-weight:400;line-height:1;letter-spacing:-.8px;margin-bottom:8px}
-.hero-subcopy{font-size:15px;color:#8a857f}
+.hero{padding:0;margin-bottom:0;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.hero-left{display:flex;align-items:center;gap:13px;min-width:0}
+.hero-avatar{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--body);font-weight:600;font-size:15px;background:#7c6fc9}
+.hero-name-row{display:flex;align-items:center;gap:7px}
+.hero-heading{font-family:var(--heading);font-size:24px;font-weight:400;line-height:1;letter-spacing:-.3px;margin:0}
+.hero-badge{width:17px;height:17px;border-radius:50%;background:#2ecb82;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hero-badge[hidden]{display:none}
+.hero-subcopy{font-family:var(--body);font-style:normal;font-size:13px;color:var(--muted2);margin-top:3px}
+.hero-actions{display:flex;gap:8px;flex-shrink:0}
+.icon-btn{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:color .2s,border-color .2s;}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn:hover{color:var(--accent);border-color:var(--accent)}
+.icon-btn:disabled{opacity:.45;cursor:not-allowed}
 
 /* ── Refresh button ── */
 .refresh-btn {
@@ -96,7 +106,7 @@ nav{
 .refresh-btn:hover { color: var(--text); border-color: var(--text); }
 .refresh-btn:disabled { opacity: .45; cursor: not-allowed; }
 .refresh-btn svg { width: 13px; height: 13px; stroke: currentColor; transition: transform .6s; flex-shrink: 0; }
-.refresh-btn.spinning svg { animation: spin .7s linear infinite; }
+.refresh-btn.spinning svg, .icon-btn.spinning svg { animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .cache-label {
@@ -105,51 +115,79 @@ nav{
   margin-top: 6px;
 }
 
-.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-bottom:40px}
-.stat-card{background:var(--surface);border:1px solid rgba(23,21,19,.12);border-radius:0;padding:24px 28px 22px;transition:border-color .2s;}
-.stat-card:hover{border-color:var(--border2)}
-.stat-num{font-family:var(--heading);font-size:44px;font-weight:400;letter-spacing:-.8px;line-height:1;margin-bottom:14px}
-.stat-label{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#8c8781}
-.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.stats-rule{display:none}
+.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0 0}
+.stat-card{background:#fff;border:none;border-radius:16px;padding:15px 16px;margin:0;}
+.stat-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.stat-icon{width:34px;height:34px;border-radius:10px;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.stat-num{font-family:var(--heading);font-size:26px;font-weight:400;letter-spacing:-.5px;line-height:1;text-align:right}
+.stat-trend{font-family:var(--body);font-size:11px;font-weight:600;letter-spacing:0;margin-left:5px;vertical-align:middle}
+.stat-trend.up{color:var(--green)}
+.stat-trend.down{color:var(--red)}
+.stat-trend.flat{color:var(--muted)}
+.stat-label{font-size:13px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted2);margin-top:9px}
+.stat-sub{display:none}
 
-.chart-section{background:var(--surface);border:1px solid rgba(23,21,19,.12);border-radius:0;padding:28px 30px;margin-bottom:36px;}
-.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.chart-title{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#8c8781}
-.chart-toggle{display:flex;gap:6px}
-.chart-toggle-btn{font-size:11px;font-weight:500;padding:5px 14px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;font-family:var(--body);}
-.chart-toggle-btn:hover{border-color:var(--text);color:var(--text)}
-.chart-toggle-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.form-strip{display:flex;align-items:center;gap:12px;border-top:1px solid var(--border2);padding:20px 0 0;margin:24px 0 0}
+.form-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.form-dots{display:flex;gap:6px}
+.form-dot{width:10px;height:10px;border-radius:50%;background:var(--border2)}
+.form-dot.podium{background:var(--amber)}
+.form-dot.mid{background:var(--border2)}
+.form-dot.low{background:var(--accent)}
+.form-caption{margin-left:auto;font-family:var(--heading);font-style:italic;font-size:14px;color:var(--muted2)}
+
+.chart-section{background:#fff;border:none;border-radius:16px;padding:18px 18px 12px;margin-bottom:0;}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:12px}
+.chart-title{font-family:var(--heading);font-size:19px;font-weight:400;letter-spacing:-.3px;color:var(--text)}
+.chart-toggle{display:flex;gap:4px;background:#f1f0ee;border-radius:99px;padding:3px}
+.chart-toggle-btn{font-size:11px;font-weight:600;padding:6px 13px;border-radius:99px;border:none;background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;font-family:var(--body);}
+.chart-toggle-btn:hover{color:var(--text)}
+.chart-toggle-btn.active{background:#fff;color:var(--accent)}
 .chart-wrap{position:relative;height:200px}
 .chart-empty{display:flex;align-items:center;justify-content:center;height:200px;font-size:13px;color:var(--muted);}
 
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.section-title{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#8c8781}
-.filters{display:flex;gap:6px;flex-wrap:wrap}
-.filter-btn{font-size:11px;font-weight:500;padding:6px 13px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all .15s;font-family:var(--body);}
-.filter-btn:hover{border-color:var(--text);color:var(--text)}
-.filter-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.section-header{display:flex;align-items:baseline;justify-content:space-between;margin:44px 0 0;flex-wrap:wrap;gap:10px}
+.section-title{font-family:var(--heading);font-size:24px;font-weight:400;letter-spacing:-.3px;color:var(--text)}
+.section-title #matchCount{font-family:var(--body);font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px;width:100%}
+.filter-btn{font-size:12px;font-weight:600;padding:7px 14px;border:none;border-radius:99px;background:#fff;color:var(--muted2);cursor:pointer;transition:color .15s,background .15s;font-family:var(--body);}
+.filter-btn:hover{color:var(--text)}
+.filter-btn.active{color:#fff;background:var(--accent)}
+.filter-sep{width:1px;height:16px;background:var(--border2);align-self:center}
 
-.match-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
-.match-card{background:var(--surface);border:1px solid rgba(23,21,19,.12);border-radius:0;padding:20px 22px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;transition:border-color .2s,transform .15s;cursor:pointer;}
-.match-card:hover{border-color:var(--border2);transform:translateY(-1px)}
-.match-type-badge{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:1px;flex-shrink:0;}
-.badge-am{background:var(--amber-light);color:var(--amber)}
-.badge-tm{background:var(--accent-light);color:var(--accent)}
-.badge-ps{background:var(--green-light);color:var(--green)}
+.match-scroll{margin-top:12px;background:#fff;border-radius:16px;padding:2px 14px}
+.match-list{display:flex;flex-direction:column;gap:0}
+.match-card{background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:16px 2px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;transition:background .15s;cursor:pointer;}
+.match-sub{font-size:12px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:7px}
+.jump{font-size:11px;font-weight:600}
+.jump.up{color:var(--green)}
+.jump.down{color:var(--red)}
+.match-card:last-child{border-bottom:none}
+.match-card:hover{background:rgba(23,21,19,.02)}
+.match-lead{font-family:var(--heading);font-size:40px;font-weight:400;line-height:1;color:var(--muted);width:44px;text-align:center;flex-shrink:0}
+.match-lead.podium{color:var(--amber)}
+.match-lead.low{color:var(--accent)}
 .match-id-date{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .match-id{font-size:11px;font-weight:600;letter-spacing:1px;color:var(--muted)}
 .match-dot{width:3px;height:3px;border-radius:50%;background:var(--muted);opacity:.4}
 .match-date-txt{font-size:11px;color:var(--muted)}
-.match-title{font-size:14px;font-weight:500;margin-bottom:3px}
-.match-detail{font-size:12px;color:var(--muted2)}
+.match-title{font-size:15px;font-weight:500;margin-bottom:3px}
+.match-detail{font-size:12px;color:var(--muted2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.match-card.expanded .match-detail{-webkit-line-clamp:unset;overflow:visible}
 .match-right{text-align:right;flex-shrink:0}
-.match-score-big{font-family:var(--heading);font-size:20px;font-weight:400;letter-spacing:-.3px}
-.match-rank-txt{font-size:11px;color:var(--muted);margin-top:2px}
+.match-score-big{font-family:var(--heading);font-size:24px;font-weight:400;letter-spacing:-.5px;line-height:1;color:var(--muted2)}
+.match-score-big.up{color:var(--green)}
+.match-rank-txt{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:4px}
 .result-pill{display:inline-block;font-size:10px;font-weight:700;letter-spacing:1.5px;padding:3px 9px;border-radius:99px;margin-top:4px}
 .pill-w{background:var(--green-light);color:var(--green)}
 .pill-l{background:var(--red-light);color:var(--red)}
 .rounds-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 .round-chip{font-size:11px;font-weight:500;padding:2px 7px;border-radius:4px;background:rgba(23,21,19,.05);color:var(--muted2)}
+.round-chip-hi{background:var(--amber-light);color:var(--amber);font-weight:600}
+.match-tap-hint{font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:8px;opacity:.7}
+.match-card.expanded .match-tap-hint{display:none}
 .match-expand{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);grid-column:1/-1}
 .match-expand.open{display:block}
 .expand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
@@ -170,9 +208,25 @@ nav{
   .left-sidebar{display:none}
   nav{left:0;padding:0 20px;height:72px}
   .page{margin-left:0;padding:92px 20px 48px}
-  .hero{flex-direction:column;align-items:flex-start}
-  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .hero{flex-direction:row;align-items:center}
+  .hero-heading{font-size:28px}
+  /* Clean 2x2 stat cards */
+  .stats-row{grid-template-columns:1fr 1fr;gap:12px}
+  .stat-card{padding:15px 16px}
+  .stat-num{font-size:24px}
   .expand-grid{grid-template-columns:1fr 1fr}
+  /* Match history becomes a self-contained, internally-scrolling list */
+  .match-scroll{max-height:360px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-right:4px;margin-right:-4px}
+  .match-scroll::-webkit-scrollbar{width:3px}
+  .match-scroll::-webkit-scrollbar-thumb{background:rgba(23,21,19,.16);border-radius:4px}
+  .match-card{padding:16px 2px;gap:14px}
+  .match-lead{font-size:34px;width:38px}
+  /* Filters stay on one line and scroll sideways */
+  .filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;width:100%;gap:18px}
+  .filters::-webkit-scrollbar{display:none}
+  .filter-btn{flex:0 0 auto;white-space:nowrap}
+  .filter-sep{flex:0 0 auto}
+  .section-header{flex-direction:column;align-items:flex-start}
 }
 .mobile-nav{
   display:none;position:fixed;top:0;left:0;right:0;z-index:300;
@@ -182,16 +236,21 @@ nav{
   border-bottom:1px solid var(--sidebar-border);
 }
 .mobile-nav svg{height:14px;width:120px;color:white}
-.mobile-hamburger{width:36px;height:36px;background:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;}
-.mobile-hamburger span{display:block;width:20px;height:1.5px;background:rgba(255,255,255,.7);transition:all .3s;}
-.mobile-hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
-.mobile-hamburger.open span:nth-child(2){opacity:0}
-.mobile-hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
-.mobile-drawer{display:none;position:fixed;inset:0;z-index:250;background:var(--sidebar-bg);padding:80px 28px 32px;flex-direction:column;}
-.mobile-drawer.open{display:flex}
+.mobile-signout{background:none;border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.6);font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:7px 13px;cursor:pointer;font-family:var(--body);border-radius:2px;transition:color .2s,border-color .2s;}
+.mobile-signout:hover{color:#fff;border-color:rgba(255,255,255,.4);}
+
+/* Mobile bottom tab bar */
+.bottom-nav{display:none;}
+.bnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none !important;color:var(--muted) !important;position:relative;padding-top:9px;}
+.bnav-tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.bnav-tab span{font-size:10px;font-weight:500;letter-spacing:.2px;}
+.bnav-tab.active{color:var(--text) !important;}
+.bnav-tab.active svg{stroke:var(--accent);}
+.bnav-tab.active::before{content:"";position:absolute;top:0;width:26px;height:2px;background:var(--accent);border-radius:2px;}
+
 @media(max-width:768px){
-  .mobile-nav{display:flex}
-  .page{padding-top:72px}
+  .page{padding-top:20px;padding-bottom:96px}
+  .bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:300;background:var(--bg);border-top:1px solid var(--border2);padding:6px 6px calc(10px + env(safe-area-inset-bottom,0px));}
 }
 </style>
 </head>
@@ -205,17 +264,26 @@ nav{
 
 <div class="mobile-nav">
   <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
-  <button class="mobile-hamburger" id="mobileHamburger" onclick="toggleMobileMenu()">
-    <span></span><span></span><span></span>
-  </button>
+  <button class="mobile-signout" onclick="handleLogout()">Sign Out</button>
 </div>
 
-<div class="mobile-drawer" id="mobileDrawer">
-  <a href="/" style="color:rgba(255,255,255,.6);text-decoration:none;font-size:22px;padding:12px 0;border-bottom:1px solid var(--sidebar-border);font-family:var(--body)">Home</a>
-  <a href="#" style="color:#fff;text-decoration:none;font-size:22px;padding:12px 0;border-bottom:1px solid var(--sidebar-border);font-family:var(--body)">Overview</a>
-  <a href="/leaderboard/" style="color:rgba(255,255,255,.6);text-decoration:none;font-size:22px;padding:12px 0;border-bottom:1px solid var(--sidebar-border);font-family:var(--body)">Leaderboard</a>
-  <a href="/calender/" style="color:rgba(255,255,255,.6);text-decoration:none;font-size:22px;padding:12px 0;border-bottom:1px solid var(--sidebar-border);font-family:var(--body)">Calendar</a>
-  <button onclick="handleLogout();toggleMobileMenu()" style="margin-top:auto;background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);padding:12px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;font-family:var(--body)">Sign Out</button>
+<div class="bottom-nav" role="navigation" aria-label="Primary">
+  <a class="bnav-tab" href="/">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+    <span>Home</span>
+  </a>
+  <a class="bnav-tab active" href="#">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>Dashboard</span>
+  </a>
+  <a class="bnav-tab" href="/leaderboard/">
+    <svg viewBox="0 0 24 24"><rect x="18" y="3" width="3" height="18"/><rect x="11" y="8" width="3" height="13"/><rect x="4" y="13" width="3" height="8"/></svg>
+    <span>Leaderboard</span>
+  </a>
+  <a class="bnav-tab" href="/calender/">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+    <span>Games</span>
+  </a>
 </div>
 
 <aside class="left-sidebar">
@@ -238,7 +306,7 @@ nav{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
       </svg>
-      <span>Overview</span>
+      <span>Dashboard</span>
     </a>
     <a class="sidebar-link" href='/leaderboard/'>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
@@ -267,48 +335,67 @@ nav{
     <main class="dashboard-main">
 
       <div class="hero fade-in">
-        <div>
-          <div class="hero-heading" id="heroName">—</div>
-          <div class="hero-subcopy" id="heroSub">—</div>
-          <div class="cache-label" id="cacheLabel"></div>
+        <div class="hero-left">
+          <span class="hero-avatar" id="heroAvatar">—</span>
+          <div>
+            <div class="hero-name-row"><span class="hero-heading" id="heroName">—</span><span class="hero-badge" id="heroBadge">✓</span></div>
+            <div class="hero-subcopy" id="heroSub">—</div>
+            <div class="cache-label" id="cacheLabel"></div>
+          </div>
         </div>
-        <button class="refresh-btn" id="refreshBtn" onclick="handleRefresh()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="23 4 23 10 17 10"/>
-            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-          </svg>
-          Refresh
-        </button>
+        <div class="hero-actions">
+          <button class="icon-btn" id="refreshBtn" onclick="handleRefresh()" aria-label="Refresh" title="Refresh">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
+      <div class="stats-rule"></div>
       <div class="stats-row fade-in">
         <div class="stat-card">
-          <div class="stat-num" id="statRank">—</div>
+          <div class="stat-top">
+            <span class="stat-icon"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span>
+            <div class="stat-num"><span id="statRank">—</span><span class="stat-trend" id="rankTrend"></span></div>
+          </div>
           <div class="stat-label">Ranking</div>
-          <div class="stat-sub">within your level</div>
         </div>
         <div class="stat-card">
-          <div class="stat-num" id="statMatches">0</div>
-          <div class="stat-label">Matches Played</div>
-          <div class="stat-sub" id="statMatchesSub">all time</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="statPoints">—</div>
-          <div class="stat-label">Total Points</div>
-          <div class="stat-sub">accumulated</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="heroRating">—</div>
+          <div class="stat-top">
+            <span class="stat-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg></span>
+            <div class="stat-num"><span id="heroRating">—</span><span class="stat-trend" id="ratingTrend"></span></div>
+          </div>
           <div class="stat-label">Rating</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4 .5M12 7v10"/></svg></span>
+            <div class="stat-num" id="statPoints">—</div>
+          </div>
+          <div class="stat-label">Total points</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top">
+            <span class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5 5c4 3 4 11 0 14M19 5c-4 3-4 11 0 14"/></svg></span>
+            <div class="stat-num" id="statMatches">0</div>
+          </div>
+          <div class="stat-label">Matches</div>
+        </div>
+      </div>
+
+      <div class="form-strip fade-in" id="formStrip" style="display:none">
+        <span class="form-label">Form</span>
+        <div class="form-dots" id="formDots"></div>
+        <span class="form-caption" id="formCaption"></span>
       </div>
 
       <div class="section-header">
-        <div class="section-title">Match History</div>
+        <div class="section-title">Match History <span id="matchCount"></span></div>
         <div class="filters">
           <button class="filter-btn active" data-filter="date" data-val="30" onclick="setFilter('date',this)">Last 30 days</button>
           <button class="filter-btn" data-filter="date" data-val="all" onclick="setFilter('date',this)">All time</button>
-          <div style="width:1px;background:var(--border2);margin:0 2px"></div>
+          <div class="filter-sep"></div>
           <button class="filter-btn active" data-filter="type" data-val="all" onclick="setFilter('type',this)">All</button>
           <button class="filter-btn" data-filter="type" data-val="AM" onclick="setFilter('type',this)">Americano</button>
           <button class="filter-btn" data-filter="type" data-val="TM" onclick="setFilter('type',this)">Tournament</button>
@@ -316,14 +403,17 @@ nav{
         </div>
       </div>
 
-      <div class="match-list" id="matchList"></div>
+      <div class="match-scroll">
+        <div class="match-list" id="matchList"></div>
+      </div>
 
-      <div class="chart-section fade-in" style="margin-top:36px">
+      <div class="chart-section fade-in" style="margin-top:40px">
         <div class="chart-header">
           <div class="chart-title">Performance Over Time</div>
           <div class="chart-toggle">
-            <button class="chart-toggle-btn active" id="chartBtnPoints" onclick="switchChart('points')">Points Scored</button>
-            <button class="chart-toggle-btn" id="chartBtnRanking" onclick="switchChart('rating')">Rating</button>
+            <button class="chart-toggle-btn active" id="chartBtnPoints" onclick="switchChart('points')">Score</button>
+            <button class="chart-toggle-btn" id="chartBtnRating" onclick="switchChart('rating')">Rating</button>
+            <button class="chart-toggle-btn" id="chartBtnRanking" onclick="switchChart('ranking')">Ranking</button>
           </div>
         </div>
         <div class="chart-wrap">
@@ -496,8 +586,48 @@ async function fetchFromAppsScript(phone) {
   return { player, matches };
 }
 
+// ── Demo mode ─────────────────────────────────────────────────
+// Open Dashboard/?demo=1 to preview the layout with sample data
+// (no login). Purely for showing the design — never used in the
+// real logged-in flow.
+function getDemoData() {
+  const iso = s => new Date(s + 'T12:00:00').toISOString();
+  const opp = names => names.map(n => ({ playerName:n, total:80+((n.length*7)%60), rank:1+((n.length*3)%11), rating:(2.6+((n.length%18)/10)).toFixed(1) }));
+  const AM = (id,date,total,rank,rounds,names) => ({ matchId:id, date:iso(date), total, rank, roundScores:rounds, opponents:opp(names) });
+  const gp = ['Rohan','Kabir','Dev','Arjun','Ishan','Neel','Veer','Aditya','Manav','Kunal','Sahil'];
+  const matches = [
+    AM('BPAM004','2026-04-05',105,3,'12,15,14,16,12,18,18', gp.slice(0,7)),
+    AM('BPAM005','2026-04-26',0,10,'0,0,0,0,0,0,0', gp.slice(0,8)),
+    AM('BPAM006','2026-05-14',108,3,'14,16,15,16,15,16,16', gp.slice(1,8)),
+    AM('BPAM007','2026-05-21',90,7,'11,13,12,14,13,13,14', gp.slice(2,9)),
+    AM('BPAM008','2026-05-28',90,7,'12,12,13,13,14,12,14', gp.slice(0,7)),
+    AM('BPAM009','2026-06-03',122,2,'16,18,17,18,17,18,18', gp.slice(3,10)),
+    AM('BPAM010','2026-06-10',131,1,'18,19,19,18,19,19,19', gp.slice(1,9)),
+    AM('BPAM011','2026-06-17',119,6,'20,15,7,20,15,22,20', ['Yuvraj','Ayush J','Avish','Aryaman','Harshal','Apoorav','Pradyun V','Roshan P','Sachin','Tanish K','Raghav']),
+    AM('BPAM013','2026-06-26',120,4,'12,20,20,16,20,12,20', ['Apoorav','Harshal','Sheru','Karan C','Rudraksha','Akshay','Mueed A','Aman','Abhav','Karan','Tansheer']),
+    AM('BPAM014','2026-07-04',130,1,'13,16,16,16,17,14,18,11,9', ['Yuvraj','Mayank','Tanish K','Siddhant B','Tansheer','Aman','Ayaan','Anshuman','Aryaman G','Vedansh','Chandraditya R']),
+    AM('BPAM015','2026-07-10',112,1,'8,11,11,11,11,6,12,12,9,11,10', ['Viraj','Vaibhav R','Yuvraj','Tansheer','Eshdeep B','Madhav D','Amaya'])
+  ];
+  const player = { name:'Nik S', rating:3.5, ranking:1, venue:'Break Point', verified:true, joiningDate:'05 Apr 2026', totalPoints:1127, ratingHistory:'05.04.2026,3.2;14.05.2026,3.3;17.06.2026,3.4;10.07.2026,3.5', rankingHistory:'05.04.2026,4;17.06.2026,3;10.07.2026,1' };
+  return { player, matches };
+}
+
 // ── Bootstrap ─────────────────────────────────────────────────
 async function bootstrapDashboard() {
+  // Demo mode stays active for the whole browser session once entered
+  // (via ?demo=1 or demo.html), so navigating around never loses the data.
+  const isDemo = new URLSearchParams(location.search).has('demo')
+              || sessionStorage.getItem('dpcDemo') === '1';
+  if (isDemo) {
+    sessionStorage.setItem('dpcDemo', '1');
+    const demo = getDemoData();
+    currentPlayer = demo.player;
+    allMatches    = demo.matches;
+    showDashboard();
+    updateCacheLabel(Date.now());
+    return;
+  }
+
   const session = getValidSessionPhone();
   if (!session) { window.location.href = '/login/'; return; }
 
@@ -555,30 +685,84 @@ function setRefreshState(loading) {
   if (!btn) return;
   btn.disabled = loading;
   btn.classList.toggle('spinning', loading);
-  btn.querySelector('span') && (btn.querySelector('span').textContent = loading ? 'Updating…' : 'Refresh');
-  // Update text node directly since button has SVG + text
-  const textNodes = [...btn.childNodes].filter(n => n.nodeType === 3);
-  if (textNodes.length) textNodes[textNodes.length - 1].textContent = loading ? ' Updating…' : ' Refresh';
 }
 
 // ── Render ────────────────────────────────────────────────────
+const AV_COLORS = ["#7c6fc9","#5b6472","#2f8f83","#c1614f","#3f9d7f","#4f7cc1","#a85a86","#b1793f"];
+function initialsOf(name){const parts=String(name||'').trim().split(/\s+/).filter(Boolean);if(!parts.length)return'?';return parts.length===1?parts[0].slice(0,2).toUpperCase():(parts[0][0]+parts[parts.length-1][0]).toUpperCase();}
+function avColorOf(name){let h=0;const s=String(name||'');for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return AV_COLORS[h%AV_COLORS.length];}
 function showDashboard() {
   const p = currentPlayer;
   document.getElementById('heroName').textContent   = p.name   || '—';
+  const av = document.getElementById('heroAvatar');
+  av.textContent = initialsOf(p.name); av.style.background = avColorOf(p.name);
+  document.getElementById('heroBadge').hidden = !(p.verified === true || String(p.verified).toUpperCase() === 'TRUE');
   document.getElementById('heroRating').textContent = p.rating ?? '—';
   const firstMatchDate = allMatches.length
     ? allMatches.slice().sort((a,b) => new Date(a.date)-new Date(b.date))[0].date
     : null;
   const memberSince = firstMatchDate ? formatDate(firstMatchDate) : (p.joiningDate || '—');
-  document.getElementById('heroSub').textContent = `${p.venue || 'Delhi'} · Member since ${memberSince}`;
+  document.getElementById('heroSub').textContent = `${p.venue || 'Delhi'} · Member`;
   document.getElementById('statRank').textContent = p.ranking ? '#' + p.ranking : '—';
   const totalPts = allMatches
     .filter(m => String(m.matchId).toUpperCase().includes('AM'))
     .reduce((sum, m) => sum + (Number(m.total) || 0), 0);
   document.getElementById('statPoints').textContent = totalPts || (p.totalPoints ?? '—');
+  renderRatingTrend();
+  renderRankTrend();
+  renderForm();
   renderStats();
   renderMatches();
   renderChart('points');
+}
+
+function renderRatingTrend() {
+  const el = document.getElementById('ratingTrend');
+  if (!el) return;
+  const history = parseHistory(currentPlayer?.ratingHistory || '')
+    .filter(h => h.value != null);
+  if (history.length < 2) { el.textContent = ''; el.className = 'stat-trend'; return; }
+  const delta = history[history.length - 1].value - history[history.length - 2].value;
+  const rounded = Math.round(delta * 10) / 10;
+  if (rounded > 0)      { el.textContent = '▲ ' + rounded.toFixed(1);        el.className = 'stat-trend up'; }
+  else if (rounded < 0) { el.textContent = '▼ ' + Math.abs(rounded).toFixed(1); el.className = 'stat-trend down'; }
+  else                  { el.textContent = '– 0.0';                          el.className = 'stat-trend flat'; }
+}
+
+function renderRankTrend() {
+  const el = document.getElementById('rankTrend');
+  if (!el) return;
+  const history = parseHistory(currentPlayer?.rankingHistory || '').filter(h => h.value != null);
+  if (history.length < 2) { el.textContent = ''; el.className = 'stat-trend'; return; }
+  // lower rank number is better, so improvement = previous - current
+  const delta = history[history.length - 2].value - history[history.length - 1].value;
+  if (delta > 0)      { el.textContent = '▲ ' + delta;        el.className = 'stat-trend up'; }
+  else if (delta < 0) { el.textContent = '▼ ' + Math.abs(delta); el.className = 'stat-trend down'; }
+  else                { el.textContent = ''; el.className = 'stat-trend'; }
+}
+
+function renderForm() {
+  const strip   = document.getElementById('formStrip');
+  const dotsEl  = document.getElementById('formDots');
+  const capEl   = document.getElementById('formCaption');
+  if (!strip) return;
+  const recent = [...allMatches]
+    .filter(m => m.date)
+    .sort((a,b) => new Date(a.date) - new Date(b.date))
+    .slice(-6);
+  if (!recent.length) { strip.style.display = 'none'; return; }
+  let wins = 0;
+  dotsEl.innerHTML = recent.map(m => {
+    const isAm = String(m.matchId||'').toUpperCase().includes('AM');
+    const rank = Number(m.rank);
+    let cls;
+    if (isAm) { cls = (rank>=1&&rank<=3)?'podium':(rank>=5?'low':'mid'); if (rank===1) wins++; }
+    else      { cls = m.result==='W'?'podium':(m.result==='L'?'low':'mid'); if (m.result==='W') wins++; }
+    const label = isAm ? ('rank #'+(m.rank??'—')) : (m.result||'');
+    return `<span class="form-dot ${cls}" title="${label}"></span>`;
+  }).join('');
+  capEl.textContent = `${wins} ${wins===1?'win':'wins'} in last ${recent.length}`;
+  strip.style.display = 'flex';
 }
 
 function renderStats() {
@@ -594,7 +778,8 @@ function renderStats() {
 function switchChart(mode) {
   chartMode = mode;
   document.getElementById('chartBtnPoints').classList.toggle('active', mode === 'points');
-  document.getElementById('chartBtnRanking').classList.toggle('active', mode === 'rating');
+  document.getElementById('chartBtnRating').classList.toggle('active', mode === 'rating');
+  document.getElementById('chartBtnRanking').classList.toggle('active', mode === 'ranking');
   renderChart(mode);
 }
 
@@ -620,20 +805,23 @@ function parseHistory(historyStr) {
 function renderChart(mode) {
   const canvas = document.getElementById('perfChart');
   const empty  = document.getElementById('chartEmpty');
-  let labels, data, label, color, yReverse;
+  let labels, data, label, color='#2e4e8e', yReverse=false;
+  const monthLbl = d => { const dt = new Date(d); return isNaN(dt) ? String(d) : dt.toLocaleDateString('en-IN',{month:'short'}); };
+  const dedupe = arr => { let last=''; return arr.map(x => { const l = x===last ? '' : x; last=x; return l; }); };
 
   if (mode === 'rating') {
     const history = parseHistory(currentPlayer?.ratingHistory || '');
     if (history.length < 1) { canvas.style.display='none'; empty.style.display='flex'; return; }
-    labels=history.map(h=>h.date); data=history.map(h=>h.value);
-    label='Rating'; color='#CB5957'; yReverse=false;
+    labels=dedupe(history.map(h=>monthLbl(h.date))); data=history.map(h=>h.value);
+    label='Rating';
   } else {
     const sorted = [...allMatches]
       .filter(m => m.date && String(m.matchId).toUpperCase().includes('AM'))
       .sort((a,b) => new Date(a.date)-new Date(b.date));
     if (sorted.length < 1) { canvas.style.display='none'; empty.style.display='flex'; return; }
-    labels=sorted.map(m=>formatDate(m.date)); data=sorted.map(m=>Number(m.total)||0);
-    label='Points Scored'; color='#CB5957'; yReverse=false;
+    labels=dedupe(sorted.map(m=>monthLbl(m.date)));
+    if (mode === 'ranking') { data=sorted.map(m=>Number(m.rank)||null); label='Ranking'; yReverse=true; }
+    else { data=sorted.map(m=>Number(m.total)||0); label='Points Scored'; }
   }
 
   canvas.style.display='block'; empty.style.display='none';
@@ -645,8 +833,8 @@ function renderChart(mode) {
       responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#171513',titleColor:'rgba(255,255,255,.5)',bodyColor:'#fff',padding:10,cornerRadius:8,titleFont:{size:10,family:'DM Sans'},bodyFont:{size:13,family:'DM Sans',weight:'600'}} },
       scales:{
-        x:{grid:{color:'rgba(23,21,19,.05)'},ticks:{font:{size:10,family:'DM Sans'},color:'rgba(23,21,19,.4)',maxTicksLimit:8}},
-        y:{reverse:yReverse,grid:{color:'rgba(23,21,19,.05)'},ticks:{font:{size:10,family:'DM Sans'},color:'rgba(23,21,19,.4)',maxTicksLimit:6}}
+        x:{grid:{display:false},border:{display:false},ticks:{font:{size:10,family:'DM Sans'},color:'rgba(23,21,19,.4)',autoSkip:false}},
+        y:{reverse:yReverse,grid:{display:false},border:{display:false},ticks:{font:{size:10,family:'DM Sans'},color:'rgba(23,21,19,.4)',maxTicksLimit:5}}
       }
     }
   });
@@ -668,12 +856,20 @@ function getFiltered(dateOverride, typeOverride) {
     list=list.filter(m=>{if(!m.date)return true;const d=new Date(m.date);return isNaN(d)?true:d>=cutoff;});
   }
   if (typeVal!=='all') list=list.filter(m=>String(m.matchId).toUpperCase().includes(typeVal));
+  // Newest match first (matches how results read on the profile)
+  list.sort((a,b)=>{
+    const da=new Date(a.date), db=new Date(b.date);
+    if (isNaN(da)) return 1; if (isNaN(db)) return -1;
+    return db-da;
+  });
   return list;
 }
 
 function renderMatches() {
   const list      = getFiltered();
   const container = document.getElementById('matchList');
+  const countEl   = document.getElementById('matchCount');
+  if (countEl) countEl.textContent = list.length ? `· ${list.length} match${list.length===1?'':'es'}` : '';
   if (!list.length) {
     container.innerHTML=`<div class="empty-state"><div class="empty-title">No matches found</div><div class="empty-sub">Try changing the filters or get on court!</div></div>`;
     return;
@@ -692,19 +888,30 @@ function buildMatchCard(m, idx) {
   const opponentNames = isAm
     ? (m.opponents||[]).map(o=>o.playerName).join(', ')
     : [m.partner&&`w/ ${m.partner}`,m.opp1&&`vs ${m.opp1}`,m.opp2&&`& ${m.opp2}`].filter(Boolean).join(' ');
-  const rightBlock = isAm
-    ? `<div class="match-score-big">${m.total??'—'}</div><div class="match-rank-txt">rank #${m.rank??'—'}</div>`
-    : `<div class="match-score-big">${m.score||'—'}</div><div class="result-pill ${m.result==='W'?'pill-w':'pill-l'}">${m.result||'—'}</div>`;
-  const roundsHtml  = isAm&&rounds.length ? `<div class="rounds-row">${rounds.map(r=>`<span class="round-chip">${r}</span>`).join('')}</div>` : '';
+  const rankNum   = Number(m.rank);
+  const isPodium  = isAm ? (rankNum >= 1 && rankNum <= 3) : (m.result === 'W');
+  const isLow     = isAm ? (rankNum >= 5) : (m.result === 'L');
+  const leadTxt   = isAm ? (m.rank ?? '—') : (m.result || '–');
+  const leadCls   = isPodium ? 'podium' : (isLow ? 'low' : '');
+  const shortDate = m.date ? new Date(m.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '—';
+  const codeNum = id.replace(/[^0-9]/g,'').replace(/^0+/,'');
+  const title = codeNum ? `${typeName} ${codeNum}` : typeName;
+  const subTxt = isAm ? shortDate : `${shortDate}${m.result==='W'?' · won':m.result==='L'?' · lost':''}`;
+  const scoreVal = isAm ? m.total : (m.score ?? m.total);
+  const scoreCls = isPodium ? 'up' : '';
+  const rightBlock = `<div class="match-score-big ${scoreCls}">${scoreVal ?? '—'}</div>`;
+  const maxRound    = rounds.length ? Math.max(...rounds.map(r=>Number(r)||0)) : null;
+  const roundsHtml  = isAm&&rounds.length
+    ? `<div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Rounds</div>
+       <div class="rounds-row" style="margin-top:0;margin-bottom:14px">${rounds.map(r=>`<span class="round-chip${Number(r)===maxRound?' round-chip-hi':''}">${r}</span>`).join('')}</div>`
+    : '';
   const expandHtml  = isAm ? buildAmericanoExpand(m) : buildMatchExpand(m);
   return `<div class="match-card" onclick="toggleExpand(${idx})">
-    <div class="match-type-badge badge-${typeKey}">${typeLabel}</div>
+    <div class="match-lead ${leadCls}">${leadTxt}</div>
     <div class="match-main">
-      <div class="match-id-date"><span class="match-id">${m.matchId}</span><div class="match-dot"></div><span class="match-date-txt">${formatDate(m.date)||'—'}</span></div>
-      <div class="match-title">${typeName}</div>
-      <div class="match-detail">${opponentNames||'—'}</div>
-      ${roundsHtml}
-      <div class="match-expand" id="expand-${idx}">${expandHtml}</div>
+      <div class="match-title">${title}</div>
+      <div class="match-sub">${subTxt}</div>
+      <div class="match-expand" id="expand-${idx}">${roundsHtml}${expandHtml}</div>
     </div>
     <div class="match-right">${rightBlock}</div>
   </div>`;
@@ -733,10 +940,15 @@ function buildMatchExpand(m) {
 
 function toggleExpand(idx) {
   const el = document.getElementById(`expand-${idx}`);
-  if (el) el.classList.toggle('open');
+  if (el) {
+    el.classList.toggle('open');
+    const card = el.closest('.match-card');
+    if (card) card.classList.toggle('expanded', el.classList.contains('open'));
+  }
 }
 
 function handleLogout() {
+  sessionStorage.removeItem('dpcDemo');
   clearStoredSession();
   clearDataCache();
   window.location.href = '/login/';
