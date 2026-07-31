@@ -10,7 +10,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-@font-face{font-family:'Berling';src:url('Berling Bold.otf') format('opentype');font-weight:700}
+@font-face{font-family:'Berling';src:url('/Berling Bold.otf') format('opentype');font-weight:400 700}
 :root{
   --bg:#eceef2;
   --surface:#ffffff;
@@ -22,7 +22,7 @@ html{scroll-behavior:smooth}
   --accent:#2e4e8e;
   --accent-light:rgba(46,78,142,.10);
   --heading:'Berling',Georgia,serif;
-  --body:'DM Sans',-apple-system,sans-serif;
+  --body:'Berling',Georgia,serif;
   --green:#3a7d44;
   --green-light:rgba(58,125,68,.1);
   --red:#b84d4c;
@@ -228,7 +228,7 @@ nav{
   .stat-num{font-size:24px}
   .expand-grid{grid-template-columns:1fr 1fr}
   /* Match history becomes a self-contained, internally-scrolling list */
-  .match-scroll{max-height:360px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-right:4px;margin-right:-4px}
+  .match-scroll{max-height:172px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
   .match-scroll::-webkit-scrollbar{width:3px}
   .match-scroll::-webkit-scrollbar-thumb{background:rgba(23,21,19,.16);border-radius:4px}
   .match-card{padding:16px 2px;gap:14px}
@@ -352,7 +352,6 @@ nav{
           <div>
             <div class="hero-name-row"><span class="hero-heading" id="heroName">—</span><span class="hero-badge" id="heroBadge">✓</span></div>
             <div class="hero-subcopy" id="heroSub">—</div>
-            <div class="cache-label" id="cacheLabel"></div>
           </div>
         </div>
         <div class="hero-actions">
@@ -403,12 +402,6 @@ nav{
           </div>
           <div class="stat-label">Matches</div>
         </div>
-      </div>
-
-      <div class="form-strip fade-in" id="formStrip" style="display:none">
-        <span class="form-label">Form</span>
-        <div class="form-dots" id="formDots"></div>
-        <span class="form-caption" id="formCaption"></span>
       </div>
 
       <div class="section-header">
@@ -854,10 +847,10 @@ function renderChart(mode) {
     data: { labels, datasets: [{ label, data, borderColor: color, backgroundColor: color+'18', borderWidth:2, pointBackgroundColor:color, pointRadius:4, pointHoverRadius:6, fill:true, tension:.35, spanGaps:true }] },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#171513',titleColor:'rgba(255,255,255,.5)',bodyColor:'#fff',padding:10,cornerRadius:8,titleFont:{size:10,family:'DM Sans'},bodyFont:{size:13,family:'DM Sans',weight:'600'}} },
+      plugins:{ legend:{display:false}, tooltip:{backgroundColor:'#171513',titleColor:'rgba(255,255,255,.5)',bodyColor:'#fff',padding:10,cornerRadius:8,titleFont:{size:10,family:'Berling'},bodyFont:{size:13,family:'Berling',weight:'600'}} },
       scales:{
-        x:{grid:{display:false},border:{display:false},ticks:{font:{size:10,family:'DM Sans'},color:'rgba(23,21,19,.4)',autoSkip:false}},
-        y:{reverse:yReverse,grid:{display:false},border:{display:false},ticks:{font:{size:10,family:'DM Sans'},color:'rgba(23,21,19,.4)',maxTicksLimit:5}}
+        x:{grid:{display:false},border:{display:false},ticks:{font:{size:10,family:'Berling'},color:'rgba(23,21,19,.4)',autoSkip:false}},
+        y:{reverse:yReverse,grid:{display:false},border:{display:false},ticks:{font:{size:10,family:'Berling'},color:'rgba(23,21,19,.4)',maxTicksLimit:5}}
       }
     }
   });
