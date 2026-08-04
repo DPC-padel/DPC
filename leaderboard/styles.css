@@ -34,6 +34,12 @@
   --radius-sm: 14px;
 }
 
+/* Per-board accent identity */
+body[data-page="first-serve"] { --accent: #2e4e8e; --accent-soft: rgba(46,78,142,0.10); --accent-glow: rgba(46,78,142,0.16); }
+body[data-page="break-point"] { --accent: #c8752d; --accent-soft: rgba(200,117,45,0.10); --accent-glow: rgba(200,117,45,0.16); }
+body[data-page="noida"]       { --accent: #1a7d5a; --accent-soft: rgba(26,125,90,0.10); --accent-glow: rgba(26,125,90,0.16); }
+body[data-page="match-point"] { --accent: #7a3b57; --accent-soft: rgba(122,59,87,0.12); --accent-glow: rgba(122,59,87,0.16); }
+
 * { box-sizing: border-box; }
 
 body {
@@ -93,7 +99,7 @@ h1, h2, h3, p, table { margin: 0; }
 /* ── Standings ── */
 .standings-section { padding: 0 20px 20px; }
 .stacked-sections { display: grid; gap: 0; }
-.standings-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 8px; position: relative; }
+.standings-head { display: flex; justify-content: flex-start; align-items: center; gap: 10px; margin-top: 8px; position: relative; }
 .section-kicker { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.14em; }
 
 .refresh-button {
@@ -307,7 +313,11 @@ tbody tr:has(td[colspan]) td { text-align: center; }
   .left-sidebar { display: flex; }
   .leaderboard-card { padding-left: 248px; padding-bottom: 40px; }
   .bottom-nav { display: none; }
-  .hero-banner, .standings-section, .card-footer { max-width: 860px; margin-left: 0; margin-right: auto; padding-left: 48px; padding-right: 48px; }
+  .hero-banner, .standings-section, .card-footer { max-width: 1280px; margin: 0; padding-left: 48px; padding-right: 48px; }
   .hero-banner { padding-top: 30px; }
   .topbar { position: absolute; top: 34px; right: 48px; padding: 0; }
+  /* Podium a touch larger, list in two columns to fill the width */
+  .podium { max-width: 720px; }
+  .subsection .table-wrap tbody { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+  .subsection .table-wrap thead { display: none; }
 }
