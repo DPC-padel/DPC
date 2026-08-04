@@ -113,7 +113,7 @@ function initAdminMode() {
     window.localStorage.setItem(ADMIN_STORAGE_KEY, "true");
   }
   elements.refreshButton.hidden = false;
-  elements.refreshButton.textContent = config.refreshText;
+  elements.refreshButton.title = config.refreshText;
 }
 
 // ─── PAGE LOADERS ────────────────────────────────────────────────────────────
@@ -203,7 +203,7 @@ async function loadNoidaPage(isManualRefresh) {
     const data = await getAllRankingsData(isManualRefresh);
     const rankings = normalizeNoidaRankings(data.noida);
     if (!rankings.length) throw new Error("No Noida ranking entries were found.");
-    renderBasicTable(elements.rankingBody, rankings, 4);
+    renderOverallTable(elements.rankingBody, rankings, 4);
     updateStatus("");
   } catch (error) {
     console.error("Failed to load Noida rankings:", error);
@@ -515,16 +515,18 @@ function normalizeFlexibleOverallRankings(rows) {
 }
 
 function normalizeNoidaRankings(rows) {
-  const sorted = rows
+  return rows
     .map((row) => ({
-      id:      String(row.playerId || "").trim(),
-      name:    String(row.playerName || "").trim(),
-      matches: toNumber(row.mp),
-      score:   toNumber(row.score)
+      id:      String(row.playerId || row.ID || "").trim(),
+      name:    String(row.playerName || row.Name || "").trim(),
+      matches: toNumber(row.mp ?? row.MP ?? row["Matches played"] ?? row.matches),
+      score:   toNumber(row.score ?? row.Score),
+      rating:  toDecimal(row.rating ?? row.Rating),
+      rank:    toNumber(row.ranking ?? row.Ranking ?? row.rank ?? row.Rank),
+      verified: isVerified(row)
     }))
     .filter((player) => player.name && !player.name.startsWith("#"))
-    .sort((a, b) => compareByScore(a, b));
-  return addClusterRanks(sorted);
+    .sort((a, b) => (a.rank && b.rank) ? a.rank - b.rank : compareByScore(a, b));
 }
 
 function addClusterRanks(players) {
@@ -762,21 +764,27 @@ function ensureSearchUi(target) {
     <div class="leaderboard-search">
       <input
         class="leaderboard-search-input"
-        type="search"
+        type="text"
         placeholder="Search player name"
         aria-label="Search player name"
         data-search-target="${target.id}"
       />
+      <button class="search-clear" type="button" aria-label="Clear search" hidden>×</button>
     </div>
   `);
-  const input = tableWrap.previousElementSibling?.querySelector(".leaderboard-search-input");
+  const wrap = tableWrap.previousElementSibling;
+  const input = wrap?.querySelector(".leaderboard-search-input");
+  const clearBtn = wrap?.querySelector(".search-clear");
   if (!input) return;
-  input.addEventListener("input", (event) => {
-    const q = event.target.value.trim().toLowerCase();
+  const applyQuery = (raw) => {
+    const q = raw.trim().toLowerCase();
+    if (clearBtn) clearBtn.hidden = !raw;
     tableSearchState.set(target.id, q);
     config?.loader(false);
     renderCrossBoard(q);
-  });
+  };
+  input.addEventListener("input", (event) => applyQuery(event.target.value));
+  clearBtn?.addEventListener("click", () => { input.value = ""; applyQuery(""); input.focus(); });
 }
 
 function getVisibleRankings(target, rankings) {
@@ -796,7 +804,7 @@ function updateStatus(message, isError = false) {
 function setLoadingState(isLoading) {
   if (!elements.refreshButton || !config) return;
   elements.refreshButton.disabled = isLoading;
-  elements.refreshButton.textContent = isLoading ? "Refreshing" : config.refreshText;
+  elements.refreshButton.classList.toggle("spinning", isLoading);
 }
 
 // ─── TAB INIT ────────────────────────────────────────────────────────────────
