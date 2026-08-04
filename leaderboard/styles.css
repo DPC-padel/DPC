@@ -110,10 +110,10 @@ h1, h2, h3, p, table { margin: 0; }
 /* Info button + popover */
 .standings-head > div { display: flex; align-items: center; gap: 8px; }
 .info { position: relative; }
-.info-btn { list-style: none; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--muted2); font-family: var(--display); font-style: italic; font-size: 17px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
+.info-btn { list-style: none; cursor: pointer; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--muted2); font-family: var(--title); font-style: italic; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
 .info-btn::-webkit-details-marker { display: none; }
 .info-btn:hover { color: var(--ink); }
-.info-pop { position: absolute; top: 48px; right: 0; left: auto; z-index: 20; width: min(280px, calc(100vw - 40px)); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px; box-shadow: 0 12px 30px rgba(15,23,42,0.14); }
+.info-pop { position: absolute; top: 34px; left: 0; right: auto; z-index: 20; width: min(280px, calc(100vw - 40px)); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px; box-shadow: 0 12px 30px rgba(15,23,42,0.14); }
 .info-pop p { font-size: 0.8rem; color: var(--muted2); line-height: 1.6; margin: 0 0 10px; }
 .info-pop p b { color: var(--ink); font-weight: 600; }
 .info-pop a { font-size: 0.75rem; font-weight: 600; color: var(--accent); text-decoration: none; }
@@ -168,11 +168,17 @@ h1, h2, h3, p, table { margin: 0; }
 /* ── List rows (tables → cards) ── */
 .table-wrap { overflow: visible; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; }
-thead { display: none; }
-.rank-col { width: 30px; }
+.rank-col { width: 28px; }
+
+/* Column headings (# / Player / Score / Rating) */
+thead tr { display: grid; grid-template-columns: 28px 1fr 56px 60px; gap: 10px; padding: 0 14px 8px; }
+thead th { padding: 0; border: none; background: none; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: right; }
+thead th:first-child { text-align: center; }
+thead th:nth-child(2) { text-align: left; }
+#firstServeTournamentPanel thead tr, #tournamentPanel thead tr { grid-template-columns: 28px 1fr 42px 36px 36px 56px; }
 
 tbody tr {
-  display: grid; grid-template-columns: 30px 1fr auto auto; align-items: center; gap: 10px;
+  display: grid; grid-template-columns: 28px 1fr 56px 60px; align-items: center; gap: 10px;
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sm);
   padding: 11px 14px; margin-bottom: 8px; box-shadow: var(--shadow);
 }
@@ -186,7 +192,7 @@ tbody tr:has(td[colspan]) { display: block; padding: 16px; text-align: center; c
 tbody tr:has(td[colspan]) td { text-align: center; }
 /* Tournament rows carry two extra columns */
 #firstServeTournamentBody tr:not(:has(td[colspan])),
-#tournamentRankingBody tr:not(:has(td[colspan])) { grid-template-columns: 30px 1fr auto auto auto auto; }
+#tournamentRankingBody tr:not(:has(td[colspan])) { grid-template-columns: 28px 1fr 42px 36px 36px 56px; }
 
 .rank-text { font-family: var(--display); color: var(--muted2); font-size: 1rem; font-weight: 700; }
 
@@ -241,6 +247,7 @@ tbody tr:has(td[colspan]) td { text-align: center; }
 .podium-item.first .podium-value { font-size: 1.35rem; color: var(--gold); }
 .podium-item.second .podium-value { color: var(--silver); }
 .podium-item.third .podium-value { color: var(--bronze); }
+.podium-score { font-size: 0.62rem; color: var(--muted2); margin-top: 2px; }
 .podium-block { display: none; }
 
 /* ── Your rank card ── */
@@ -278,8 +285,8 @@ tbody tr:has(td[colspan]) td { text-align: center; }
 
 /* ── Left sidebar (desktop nav) ── */
 .left-sidebar {
-  display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 240px; z-index: 200;
-  background: #0f172a; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.08);
+  display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 248px; z-index: 200;
+  background: #0b0f17; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.08);
 }
 .sidebar-brand { padding: 28px 24px 22px; border-bottom: 1px solid rgba(255,255,255,0.08); }
 .sidebar-logo { display: none; }
@@ -288,7 +295,7 @@ tbody tr:has(td[colspan]) td { text-align: center; }
 .sidebar-nav { padding: 14px 0; }
 .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 13px 24px; color: rgba(255,255,255,0.6); text-decoration: none; font-family: var(--body); font-size: 0.88rem; font-weight: 500; transition: background 0.2s, color 0.2s; }
 .sidebar-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
-.sidebar-link.active { color: #fff; background: var(--accent-glow); }
+.sidebar-link.active { color: #fff; background: rgba(255,255,255,0.05); box-shadow: inset 3px 0 0 var(--accent); }
 .sidebar-link.active svg { stroke: var(--accent); }
 .sidebar-link svg { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .sidebar-foot { margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); }
@@ -298,9 +305,9 @@ tbody tr:has(td[colspan]) td { text-align: center; }
 /* ── Desktop ── */
 @media (min-width: 769px) {
   .left-sidebar { display: flex; }
-  .leaderboard-card { padding-left: 240px; padding-bottom: 40px; }
+  .leaderboard-card { padding-left: 248px; padding-bottom: 40px; }
   .bottom-nav { display: none; }
-  .topbar { position: absolute; top: 24px; right: max(40px, calc((100% - 240px - 600px) / 2 + 40px)); padding: 0; }
-  .hero-banner, .standings-section, .card-footer { max-width: 600px; margin-left: auto; margin-right: auto; }
-  .hero-banner { padding-top: 26px; }
+  .hero-banner, .standings-section, .card-footer { max-width: 860px; margin-left: 0; margin-right: auto; padding-left: 48px; padding-right: 48px; }
+  .hero-banner { padding-top: 30px; }
+  .topbar { position: absolute; top: 34px; right: 48px; padding: 0; }
 }
