@@ -485,6 +485,7 @@ let allMatches = [];
 let activeFilters = {date:'30', type:'all'};
 let perfChart = null;
 let chartMode = 'ranking'; // DEFAULT: ranking
+let lastFetchOk = true; // false = last fetch failed (network), not "player missing"
 const MAX_RATING = 7.0;
 
 // ── Real data layer (session + Supabase/Apps Script cache) ──
@@ -497,7 +498,8 @@ const SESSION_KEY='dpcPlayerSession', SESSION_PHONE_KEY='dpcPlayerPhone', SESSIO
 function clearStoredSession(){localStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_PHONE_KEY);localStorage.removeItem(SESSION_SAVED_AT_KEY);}
 function getValidSessionPhone(){const s=localStorage.getItem(SESSION_KEY),p=localStorage.getItem(SESSION_PHONE_KEY),a=Number(localStorage.getItem(SESSION_SAVED_AT_KEY)||0);if(!s||!p||!a){clearStoredSession();return null;}if(Date.now()-a>SESSION_TTL){clearStoredSession();return null;}localStorage.setItem(SESSION_SAVED_AT_KEY,String(Date.now()));return{savedSession:s,savedPhone:p};}
 function saveCache(phone,player,matches){try{localStorage.setItem(CACHE_PLAYER_KEY,JSON.stringify(player));localStorage.setItem(CACHE_MATCHES_KEY,JSON.stringify(matches));localStorage.setItem(CACHE_AT_KEY,String(Date.now()));localStorage.setItem(CACHE_PHONE_KEY,phone);}catch(e){}}
-function loadCache(phone){try{const cp=localStorage.getItem(CACHE_PHONE_KEY),ca=Number(localStorage.getItem(CACHE_AT_KEY)||0),pr=localStorage.getItem(CACHE_PLAYER_KEY),mr=localStorage.getItem(CACHE_MATCHES_KEY);if(!pr||!mr||!ca)return null;if(cp!==phone)return null;if(Date.now()-ca>CACHE_TTL)return null;return{player:JSON.parse(pr),matches:JSON.parse(mr)};}catch(e){return null;}}
+function loadCache(phone){try{const cp=localStorage.getItem(CACHE_PHONE_KEY),ca=Number(localStorage.getItem(CACHE_AT_KEY)||0),pr=localStorage.getItem(CACHE_PLAYER_KEY),mr=localStorage.getItem(CACHE_MATCHES_KEY);if(!pr||!mr||!ca)return null;if(cp!==phone)return null;if(Date.now()-ca>CACHE_TTL)return null;const player=JSON.parse(pr),matches=JSON.parse(mr);if(!hasPlayerData(player,matches))return null;/* ignore a poisoned empty cache */return{player,matches};}catch(e){return null;}}
+function hasPlayerData(p,m){return !!(p&&(p.rating!=null||p.ranking!=null||p.rank!=null||p.totalPoints!=null||p.points!=null||(m&&m.length)));}
 function clearDataCache(){[CACHE_PLAYER_KEY,CACHE_MATCHES_KEY,CACHE_AT_KEY,CACHE_PHONE_KEY].forEach(k=>localStorage.removeItem(k));}
 // venue string (from matches DB) → leaderboard_cache source key
 const BOARD_SOURCES={firstserve:'firstServe',breakpoint:'breakPoint',matchpoint:'matchPoint',noida:'noida'};
@@ -517,8 +519,9 @@ async function fetchLeaderboardStats(name,venue){
 async function fetchFromAPI(phone){
   let player=currentPlayer||{},matches=[],gotSupabase=false;
   if(SUPABASE_READY){try{const res=await fetch(`${SUPABASE.url}/rest/v1/dashboard_cache?phone=eq.${encodeURIComponent(phone)}&select=player,matches`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});if(res.ok){const rows=await res.json();if(rows.length&&rows[0].player){player={...player,...rows[0].player};matches=rows[0].matches||[];gotSupabase=true;}}}catch(e){}}
+  let ok=gotSupabase; // did we reach a source and get a definitive answer?
   if(!gotSupabase){
-    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(phone)}`);const d=await r.json();matches=d.success?d.matches:[];}catch(e){matches=allMatches;}
+    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(phone)}`);const d=await r.json();ok=true;/* reached the server = definitive */if(d&&d.success)matches=d.matches||[];}catch(e){matches=allMatches;}
   }
   // phone→canonical name+board come from the matches DB; rating/ranking live only in leaderboard_cache (keyed by that name)
   const canonName=matches?.[0]?.playerName||player.name;
@@ -527,9 +530,9 @@ async function fetchFromAPI(phone){
   if(board)player.venue=player.venue||board;
   if(player.rating==null||player.ranking==null){
     const st=await fetchLeaderboardStats(canonName,board);
-    if(st){if(player.rating==null&&st.rating!=null)player.rating=st.rating;if(player.ranking==null&&st.ranking!=null)player.ranking=st.ranking;}
+    if(st){ok=true;if(player.rating==null&&st.rating!=null)player.rating=st.rating;if(player.ranking==null&&st.ranking!=null)player.ranking=st.ranking;}
   }
-  return{player,matches};
+  return{player,matches,ok};
 }
 async function bootstrapDashboard(){
   const session=getValidSessionPhone();
@@ -538,14 +541,14 @@ async function bootstrapDashboard(){
   const cached=loadCache(session.savedPhone);
   if(cached){currentPlayer=cached.player;allMatches=cached.matches;render();return;}
   setRefreshState(true);
-  try{const{player,matches}=await fetchFromAPI(session.savedPhone);currentPlayer=player;allMatches=matches;saveCache(session.savedPhone,player,matches);render();}finally{setRefreshState(false);}
+  try{const{player,matches,ok}=await fetchFromAPI(session.savedPhone);lastFetchOk=ok;currentPlayer=player;allMatches=matches;if(ok&&hasPlayerData(player,matches))saveCache(session.savedPhone,player,matches);render();}finally{setRefreshState(false);}
   localStorage.setItem(SESSION_KEY,JSON.stringify(currentPlayer));localStorage.setItem(SESSION_SAVED_AT_KEY,String(Date.now()));
 }
 async function handleRefresh(){
   const session=getValidSessionPhone();
   if(!session){window.location.href='/login/';return;}
   setRefreshState(true);
-  try{const{player,matches}=await fetchFromAPI(session.savedPhone);currentPlayer=player;allMatches=matches;clearDataCache();saveCache(session.savedPhone,player,matches);render();}finally{setRefreshState(false);}
+  try{const{player,matches,ok}=await fetchFromAPI(session.savedPhone);lastFetchOk=ok;currentPlayer=player;allMatches=matches;clearDataCache();if(ok&&hasPlayerData(player,matches))saveCache(session.savedPhone,player,matches);render();}finally{setRefreshState(false);}
   localStorage.setItem(SESSION_KEY,JSON.stringify(currentPlayer));localStorage.setItem(SESSION_SAVED_AT_KEY,String(Date.now()));
 }
 function setRefreshState(loading){const b=document.getElementById('refreshBtn');if(!b)return;b.disabled=loading;b.classList.toggle('spinning',loading);}
@@ -799,13 +802,22 @@ function renderNotFound(){
     </div>`;
 }
 
-function playerInRecords(){
-  const p = currentPlayer;
-  return !!(p && (p.rating != null || p.ranking != null || p.rank != null || p.totalPoints != null || p.points != null || (allMatches && allMatches.length)));
+function playerInRecords(){ return hasPlayerData(currentPlayer, allMatches); }
+
+function renderLoadError(){
+  document.querySelector('.app').innerHTML = `
+    <div style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 30px;gap:16px">
+      <div style="width:66px;height:66px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary)">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </div>
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:700">Couldn't load your data</div>
+      <div style="font-size:14px;color:var(--text-secondary);line-height:1.6;max-width:290px">Check your connection and try again.</div>
+      <button onclick="location.reload()" style="margin-top:10px;padding:12px 26px;border-radius:14px;border:1px solid var(--border);background:var(--accent);color:#fff;font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer">Retry</button>
+    </div>`;
 }
 
 function render(){
-  if(!playerInRecords()){ renderNotFound(); return; }
+  if(!playerInRecords()){ lastFetchOk ? renderNotFound() : renderLoadError(); return; }
   document.getElementById('heroName').textContent=currentPlayer.name||'—';
   document.getElementById('heroAvatar').textContent=initialsOf(currentPlayer.name);
   document.getElementById('heroAvatar').style.background=`linear-gradient(135deg,${avColorOf(currentPlayer.name)},var(--blue))`;
