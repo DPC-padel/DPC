@@ -30,11 +30,12 @@
   --border-strong:rgba(15,23,42,0.10);
   --shadow:0 1px 3px rgba(0,0,0,0.04),0 4px 12px rgba(0,0,0,0.03);
   --shadow-lg:0 4px 6px rgba(0,0,0,0.02),0 12px 24px rgba(0,0,0,0.04);
-  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-display:'Berling',Georgia,serif;
   --font-body:'Inter',system-ui,sans-serif;
   --radius:20px;
   --radius-sm:14px;
 }
+@font-face{font-family:'Berling';src:url('/Berling Bold.otf') format('opentype');font-weight:700;font-display:swap}
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
@@ -102,12 +103,12 @@ body{
 /* ── Info Popover ── */
 .info-wrap{position:relative}
 .info-btn{
-  width:40px;height:40px;border-radius:50%;
+  width:30px;height:30px;border-radius:50%;
   background:var(--surface);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
   color:var(--text-secondary);cursor:pointer;transition:all .2s;
   box-shadow:var(--shadow);
-  font-family:var(--font-display);font-style:italic;font-size:18px;font-weight:600;
+  font-family:var(--font-display);font-style:italic;font-size:15px;font-weight:700;
 }
 .info-btn:hover{background:var(--surface-2);color:var(--text)}
 .info-pop{
@@ -338,29 +339,44 @@ body{
   .app{max-width:420px;box-shadow:0 0 60px rgba(0,0,0,0.06)}
 }
 
-/* ── Desktop: left sidebar, no bottom nav, centered content ── */
+/* ── Sidebar (desktop only) ── */
 .dash-sidebar{display:none}
-@media(min-width:769px){
-  .dash-sidebar{
-    display:flex;flex-direction:column;
-    position:fixed;top:0;left:0;bottom:0;width:240px;z-index:200;
-    background:#0f172a;border-right:1px solid rgba(255,255,255,.08);
-  }
-  .ds-brand{padding:28px 24px 22px;border-bottom:1px solid rgba(255,255,255,.08)}
-  .ds-brand-name{font-family:var(--font-display);font-size:18px;font-weight:700;color:#fff;text-decoration:none;display:block}
-  .ds-brand-sub{margin-top:8px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
-  .ds-nav{padding:14px 0;display:flex;flex-direction:column}
-  .ds-link{display:flex;align-items:center;gap:12px;padding:13px 24px;color:rgba(255,255,255,.6)!important;text-decoration:none!important;font-size:14px;font-weight:500;transition:background .2s,color .2s}
-  .ds-link svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  .ds-link:hover{color:#fff!important;background:rgba(255,255,255,.06)}
-  .ds-link.active{color:#fff!important;background:var(--accent-glow)}
-  .ds-link.active svg{stroke:var(--accent)}
-  .ds-foot{margin-top:auto;padding:20px}
-  .ds-signout{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(255,255,255,.55);font-family:var(--font-body);font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s}
-  .ds-signout:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+.dash-sidebar{
+  flex-direction:column;position:fixed;top:0;left:0;bottom:0;width:248px;z-index:200;
+  background:#0b0f17;border-right:1px solid rgba(255,255,255,.08);
+}
+.ds-brand{padding:30px 26px 24px;border-bottom:1px solid rgba(255,255,255,.08)}
+.ds-brand-name{font-family:var(--font-display);font-size:19px;font-weight:700;color:#fff;text-decoration:none;display:block}
+.ds-brand-sub{margin-top:8px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.ds-nav{padding:16px 0;display:flex;flex-direction:column}
+.ds-link{display:flex;align-items:center;gap:12px;padding:13px 26px;color:rgba(255,255,255,.6)!important;text-decoration:none!important;font-size:14px;font-weight:500;transition:background .2s,color .2s}
+.ds-link svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ds-link:hover{color:#fff!important;background:rgba(255,255,255,.06)}
+.ds-link.active{color:#fff!important;background:rgba(255,255,255,.05);box-shadow:inset 3px 0 0 var(--accent)}
+.ds-link.active svg{stroke:var(--accent)}
+.ds-foot{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.08)}
+.ds-signout{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(255,255,255,.55);font-family:var(--font-body);font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.ds-signout:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+
+/* ── Desktop: full-width website, 2-column layout ── */
+@media(min-width:900px){
+  .dash-sidebar{display:flex}
   .bottom-nav{display:none}
-  body{padding-left:240px}
-  .app{max-width:480px;box-shadow:none}
+  body{padding-left:248px}
+  .app{
+    max-width:1160px;margin:0;padding:34px 48px 40px;
+    display:grid;grid-template-columns:360px 1fr;column-gap:24px;row-gap:20px;align-items:start;
+  }
+  .top-bar{grid-column:1/-1;grid-row:1;position:static;padding:0 0 4px;background:none}
+  .top-name{font-size:26px}
+  .hero-score{grid-column:1;grid-row:2;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px 0}
+  .quick-stats{grid-column:1;grid-row:3;margin:0;padding:0}
+  #formSection{grid-column:1;grid-row:4;padding:0;margin:0}
+  #perfSection{grid-column:2;grid-row:2/5;padding:0;margin:0}
+  #perfSection .chart-wrap{height:300px}
+  #matchSection{grid-column:1/-1;grid-row:5;padding:0;margin:0}
+  #matchSection .match-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .signout-btn{grid-column:1/-1;grid-row:6;width:220px;margin:8px 0 0}
   .app>div[style*="height:80px"]{display:none}
 }
 </style>
@@ -468,7 +484,7 @@ body{
 </div>
 
 <!-- Chart (Default: Ranking) -->
-<div class="section animate-fade-up-d3">
+<div class="section animate-fade-up-d3" id="perfSection">
   <div class="section-header">
     <div class="section-title">Performance</div>
   </div>
@@ -488,7 +504,7 @@ body{
 </div>
 
 <!-- Form Strip -->
-<div class="section animate-fade-up-d3">
+<div class="section animate-fade-up-d3" id="formSection">
   <div class="form-strip">
     <div class="form-dots" id="formDots"></div>
     <div class="form-text"><b id="formWins">—</b> wins in last <b id="formTotal">—</b></div>
@@ -496,7 +512,7 @@ body{
 </div>
 
 <!-- Match History (Default: 30 days already set) -->
-<div class="section animate-fade-up-d3">
+<div class="section animate-fade-up-d3" id="matchSection">
   <div class="section-header">
     <div class="section-title">Match History <span style="font-size:12px;color:var(--text-secondary);font-weight:400" id="matchCount"></span></div>
   </div>
