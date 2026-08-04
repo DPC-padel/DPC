@@ -723,7 +723,6 @@ function renderOverallTable(target, rankings, colspan) {
   const listRankings = enhancePanel(target, rankings, {
     value: (p) => p.rating.toFixed(1),
     label: "Rating",
-    podSub: (p) => `${p.score} pts`,
     sub: (p) => [p.matches != null ? `${p.matches} matches` : "", `${p.score} score`].filter(Boolean).join(" · ")
   });
   ensureVerifiedLegend(target, rankings.some((p) => p.verified));
@@ -906,3 +905,4 @@ function pickFirstServeRankingRows(firstServeData) {
   }
   return [];
 }
+
