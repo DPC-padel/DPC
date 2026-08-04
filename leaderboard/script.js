@@ -552,7 +552,7 @@ function getViewerName() {
   try {
     if (sessionStorage.getItem("dpcDemo") === "1") return "Nik S";
     const raw = localStorage.getItem("dpcPlayerSession");
-    if (raw) { const p = JSON.parse(raw); return p && p.name ? p.name : null; }
+    if (raw) { const p = JSON.parse(raw); return p ? (p.boardName || p.name || null) : null; }
   } catch (e) {}
   return null;
 }
@@ -598,7 +598,6 @@ function podiumMarkup(top3, opts) {
     const s = slot[i];
     if (!p) return `<div class="podium-item ${s}"><div class="podium-block">${label[s]}</div></div>`;
     return `<div class="podium-item ${s}">
-      ${s === "first" ? `<div class="podium-crown">${CROWN_SVG}</div>` : ""}
       <div class="podium-avwrap">
         <div class="podium-avatar" style="background:${avColor(p.name)}">${escapeHtml(initials(p.name))}</div>
         <div class="podium-badge">${p.rank}</div>
@@ -638,8 +637,8 @@ function enhancePanel(target, rankings, opts) {
   if (!yr) {
     yr = document.createElement("div");
     yr.className = "your-rank";
-    subsection.appendChild(yr);
   }
+  podium.after(yr); // keep "your rank" pinned to the top, under the podium
 
   if (query || rankings.length < 3) {
     podium.hidden = true;
