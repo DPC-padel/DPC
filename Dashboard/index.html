@@ -499,12 +499,36 @@ function getValidSessionPhone(){const s=localStorage.getItem(SESSION_KEY),p=loca
 function saveCache(phone,player,matches){try{localStorage.setItem(CACHE_PLAYER_KEY,JSON.stringify(player));localStorage.setItem(CACHE_MATCHES_KEY,JSON.stringify(matches));localStorage.setItem(CACHE_AT_KEY,String(Date.now()));localStorage.setItem(CACHE_PHONE_KEY,phone);}catch(e){}}
 function loadCache(phone){try{const cp=localStorage.getItem(CACHE_PHONE_KEY),ca=Number(localStorage.getItem(CACHE_AT_KEY)||0),pr=localStorage.getItem(CACHE_PLAYER_KEY),mr=localStorage.getItem(CACHE_MATCHES_KEY);if(!pr||!mr||!ca)return null;if(cp!==phone)return null;if(Date.now()-ca>CACHE_TTL)return null;return{player:JSON.parse(pr),matches:JSON.parse(mr)};}catch(e){return null;}}
 function clearDataCache(){[CACHE_PLAYER_KEY,CACHE_MATCHES_KEY,CACHE_AT_KEY,CACHE_PHONE_KEY].forEach(k=>localStorage.removeItem(k));}
+// venue string (from matches DB) → leaderboard_cache source key
+const BOARD_SOURCES={firstserve:'firstServe',breakpoint:'breakPoint',matchpoint:'matchPoint',noida:'noida'};
+async function fetchLeaderboardStats(name,venue){
+  if(!name||!venue||!SUPABASE_READY)return null;
+  const src=BOARD_SOURCES[String(venue).toLowerCase().replace(/\s+/g,'')];
+  if(!src)return null;
+  try{
+    const res=await fetch(`${SUPABASE.url}/rest/v1/leaderboard_cache?source=eq.${src}&select=payload`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});
+    if(!res.ok)return null;
+    const list=(await res.json())?.[0]?.payload?.rankings||[];
+    const key=String(name).trim().toLowerCase();
+    const hit=list.find(r=>String(r.Name??r.name??'').trim().toLowerCase()===key);
+    return hit?{rating:hit.Rating??hit.rating,ranking:hit.Ranking??hit.ranking}:null;
+  }catch(e){return null;}
+}
 async function fetchFromAPI(phone){
-  if(SUPABASE_READY){try{const res=await fetch(`${SUPABASE.url}/rest/v1/dashboard_cache?phone=eq.${encodeURIComponent(phone)}&select=player,matches`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});if(res.ok){const rows=await res.json();if(rows.length&&rows[0].player)return{player:{...(currentPlayer||{}),...rows[0].player},matches:rows[0].matches||[]};}}catch(e){}}
-  let player=currentPlayer||{};
-  try{const r=await fetch(`${MATCHES_API}?action=getPlayer&phone=${encodeURIComponent(phone)}`);const d=await r.json();if(d.success&&d.player)player={...player,...d.player};}catch(e){}
-  let matches=[];
-  try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(phone)}`);const d=await r.json();matches=d.success?d.matches:[];}catch(e){matches=allMatches;}
+  let player=currentPlayer||{},matches=[],gotSupabase=false;
+  if(SUPABASE_READY){try{const res=await fetch(`${SUPABASE.url}/rest/v1/dashboard_cache?phone=eq.${encodeURIComponent(phone)}&select=player,matches`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});if(res.ok){const rows=await res.json();if(rows.length&&rows[0].player){player={...player,...rows[0].player};matches=rows[0].matches||[];gotSupabase=true;}}}catch(e){}}
+  if(!gotSupabase){
+    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(phone)}`);const d=await r.json();matches=d.success?d.matches:[];}catch(e){matches=allMatches;}
+  }
+  // phone→canonical name+board come from the matches DB; rating/ranking live only in leaderboard_cache (keyed by that name)
+  const canonName=matches?.[0]?.playerName||player.name;
+  const board=matches?.[0]?.venue||player.venue;
+  if(canonName)player.boardName=canonName;
+  if(board)player.venue=player.venue||board;
+  if(player.rating==null||player.ranking==null){
+    const st=await fetchLeaderboardStats(canonName,board);
+    if(st){if(player.rating==null&&st.rating!=null)player.rating=st.rating;if(player.ranking==null&&st.ranking!=null)player.ranking=st.ranking;}
+  }
   return{player,matches};
 }
 async function bootstrapDashboard(){
@@ -746,7 +770,8 @@ function renderTrends(){
 function goToRanking(){
   const venue = String(currentPlayer?.venue || '').toLowerCase().replace(/\s+/g, '');
   const page = { firstserve:'index.html', breakpoint:'breakpoint.html', matchpoint:'matchpoint.html', noida:'noida.html' }[venue] || 'index.html';
-  const q = currentPlayer?.name ? '?q=' + encodeURIComponent(currentPlayer.name) : '';
+  const nm = currentPlayer?.boardName || currentPlayer?.name;
+  const q = nm ? '?q=' + encodeURIComponent(nm) : '';
   window.location.href = '/leaderboard/' + page + q;
 }
 
