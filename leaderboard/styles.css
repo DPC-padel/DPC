@@ -24,7 +24,7 @@
   --silver: #9aa0a8;
   --bronze: #b47b48;
   --serif: 'Berling', Georgia, serif;
-  --sans: 'DM Sans', -apple-system, sans-serif;
+  --sans: 'Berling', Georgia, serif;
 }
 
 body[data-page="break-point"] { --accent: #c8752d; --accent-soft: rgba(200,117,45,0.10); --accent-ink: #c8752d; }
@@ -107,12 +107,24 @@ h1, h2, h3, p, table { margin: 0; }
 .standings-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 14px; position: relative; }
 .section-kicker { font-size: 0.62rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2em; }
 .refresh-button {
-  appearance: none; border: 1px solid var(--line); background: transparent; color: var(--muted2);
-  padding: 8px 16px; font: inherit; font-size: 0.62rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer; border-radius: 99px;
+  appearance: none; width: 38px; height: 38px; border-radius: 50%; padding: 0;
+  border: 1px solid var(--line); background: var(--card); color: var(--muted2);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
 }
-.refresh-button:hover { color: var(--ink); border-color: var(--muted); }
+.refresh-button svg { width: 17px; height: 17px; }
+.refresh-button:hover { color: var(--accent); border-color: var(--accent); }
 .refresh-button:disabled { opacity: 0.5; cursor: progress; }
+.refresh-button.spinning svg { animation: lb-spin .7s linear infinite; }
+@keyframes lb-spin { to { transform: rotate(360deg); } }
+.leaderboard-search { position: relative; }
+.search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--line);
+  color: var(--ink); font-size: 17px; line-height: 1; cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.search-clear[hidden] { display: none; }
+.leaderboard-search-input { padding-right: 40px; }
 
 /* Info button + popover (rank/rating/score) */
 .standings-head > div { display: flex; align-items: center; gap: 8px; }
