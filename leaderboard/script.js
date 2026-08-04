@@ -589,7 +589,6 @@ function ensureVerifiedLegend(target, anyVerified) {
   } else if (!anyVerified && leg) { leg.remove(); }
 }
 
-const CROWN_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8l3.5 3L12 5l5.5 6L21 8l-1.5 10h-15L3 8z"/></svg>';
 function podiumMarkup(top3, opts) {
   const order = [top3[1], top3[0], top3[2]];
   const slot  = ["second", "first", "third"];
@@ -604,6 +603,7 @@ function podiumMarkup(top3, opts) {
       </div>
       <div class="podium-name"><span>${escapeHtml(p.name)}</span>${verifiedBadge(p)}</div>
       <div class="podium-value">${opts.value(p)}</div>
+      ${opts.podSub ? `<div class="podium-score">${escapeHtml(String(opts.podSub(p)))}</div>` : ""}
       <div class="podium-block">${label[s]}</div>
     </div>`;
   }).join("");
@@ -723,6 +723,7 @@ function renderOverallTable(target, rankings, colspan) {
   const listRankings = enhancePanel(target, rankings, {
     value: (p) => p.rating.toFixed(1),
     label: "Rating",
+    podSub: (p) => `${p.score} pts`,
     sub: (p) => [p.matches != null ? `${p.matches} matches` : "", `${p.score} score`].filter(Boolean).join(" · ")
   });
   ensureVerifiedLegend(target, rankings.some((p) => p.verified));
