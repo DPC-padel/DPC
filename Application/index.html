@@ -716,14 +716,37 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
   const doubles = document.querySelector('input[name="doubles"]:checked')?.value || "";
   const ret     = document.querySelector('input[name="ret"]:checked')?.value || "";
 
-  // Validation
-  const missingBasic = !name || !phone || locations.length === 0 || !exp || !level || values.length === 0 || !instagram;
-  const missingAdv   = isAdv && (!wall || !serve || !smash || !doubles || !ret);
+  // Validation — name exactly what's missing and jump to it
+  const checks = [
+    { ok: !!name,               label: "your name",             el: document.getElementById("q_name") },
+    { ok: !!phone,              label: "your WhatsApp number",  el: document.getElementById("q_phone") },
+    { ok: locations.length > 0, label: "at least one location", el: document.querySelector('input[name="location"]') },
+    { ok: !!exp,                label: "your experience",       el: document.querySelector('input[name="experience"]') },
+    { ok: !!level,              label: "your level",            el: document.querySelector('input[name="level"]') },
+    { ok: values.length > 0,    label: "what you value",        el: document.querySelector('input[name="value"]') },
+    { ok: !!instagram,          label: "your Instagram handle", el: document.getElementById("q_instagram") },
+  ];
+  if (isAdv) {
+    checks.push(
+      { ok: !!wall,    label: "wall play",            el: document.querySelector('input[name="wall"]') },
+      { ok: !!serve,   label: "serve quality",        el: document.querySelector('input[name="serve"]') },
+      { ok: !!smash,   label: "smash ability",        el: document.querySelector('input[name="smash"]') },
+      { ok: !!doubles, label: "doubles coordination", el: document.querySelector('input[name="doubles"]') },
+      { ok: !!ret,     label: "return of serve",      el: document.querySelector('input[name="ret"]') }
+    );
+  }
 
-  if (missingBasic || missingAdv) {
-    errEl.textContent = "Please fill in all required fields before submitting.";
+  const missing = checks.filter(c => !c.ok);
+  if (missing.length) {
+    const labels = missing.map(m => m.label);
+    errEl.textContent = labels.length === 1
+      ? `Please fill in ${labels[0]}.`
+      : `Please fill in: ${labels.join(", ")}.`;
     errEl.classList.add("show");
-    errEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    const first  = missing[0].el;
+    const target = first ? (first.closest(".q-block") || first) : errEl;
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (first && (first.type === "text" || first.type === "tel")) setTimeout(() => first.focus(), 350);
     return;
   }
 
@@ -776,6 +799,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
   try {
     await fetch(SCRIPT_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(payload),
     });
