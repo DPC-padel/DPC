@@ -1,322 +1,907 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+const MASTER_CACHE_KEY = "dpcRankingCache:all-pages";
+const CACHE_SCHEMA_VERSION = 8; // bumped to bust old cache after tournament addition
+const ADMIN_STORAGE_KEY = "dpcRankingAdmin";
+const ADMIN_QUERY_KEY = "admin";
+const ADMIN_QUERY_VALUE = "1";
 
-@font-face {
-  font-family: 'Berling';
-  src: url('/Berling Bold.otf') format('opentype');
-  font-weight: 700;
-  font-display: swap;
+const PAGE_CONFIG = {
+  "first-serve": {
+    selectorValue: "index.html",
+    refreshText: "Refresh",
+    loader: loadFirstServePage
+  },
+  "break-point": {
+    selectorValue: "breakpoint.html",
+    refreshText: "Refresh All",
+    loader: loadBreakPointPage
+  },
+  "match-point": {
+    selectorValue: "matchpoint.html",
+    refreshText: "Refresh All",
+    loader: loadMatchPointPage
+  },
+  "noida": {
+    selectorValue: "noida.html",
+    refreshText: "Refresh",
+    loader: loadNoidaPage
+  }
+};
+
+const API_URLS = {
+  firstServe: "https://script.google.com/macros/s/AKfycbyUACkr6V5Kn4yla7Wv6vIJ6cNXoxtHR4yFYrXS66uHfhumDjgIJVzOFpuMZK3o5uGa/exec",
+  breakPoint: "https://script.google.com/macros/s/AKfycbxz0ee4RK4niCcg0lVwmktJKoCmy6lP3q9O5c6Md41m6AElQcxRN-wU810bkCbYVsk8/exec",
+  matchPoint: "https://script.google.com/macros/s/AKfycbz0EuOkKQvC7F2BAjymJQEoGF1qmglQRnP07eqMrLmECTXSZrXj-PpvDZ18cBeLrRHF6A/exec",
+  noida: "https://script.google.com/macros/s/AKfycbyum4imblCdj5mFLbr-zDFthSM8Am0f-1DrEVgdF7jioZueooMguFDgy5GX7V_3yRNH/exec"
+};
+
+// Fast path: read the JSON cache from Supabase (~100ms, CDN-cached)
+// instead of the 4 slow Apps Script endpoints. Paste your project
+// URL + anon key to activate; until then the site uses API_URLS as
+// before. The Apps Script endpoints remain the automatic fallback
+// if Supabase is unreachable, so the board never goes dark.
+const SUPABASE = {
+  url: "https://zruqzybdpniofxbcwuat.supabase.co",
+  anonKey: "sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy"
+};
+const SUPABASE_READY = !SUPABASE.url.startsWith("YOUR_");
+
+const page = document.body.dataset.page;
+const config = PAGE_CONFIG[page];
+
+const elements = {
+  statusMessage:              document.getElementById("statusMessage"),
+  refreshButton:              document.getElementById("refreshButton"),
+  pageSelector:               document.getElementById("pageSelector"),
+  rankingBody:                document.getElementById("rankingBody"),
+  firstServeRankingBody:      document.getElementById("firstServeRankingBody"),
+  personalRankingBody:        document.getElementById("personalRankingBody"),
+  firstServeTournamentBody:   document.getElementById("firstServeTournamentBody"),
+  overallRankingBody:         document.getElementById("overallRankingBody"),
+  tournamentRankingBody:      document.getElementById("tournamentRankingBody"),
+  americanoRankingBody:       document.getElementById("americanoRankingBody"),
+  // First Serve tabs
+  firstServeRankingTab:       document.getElementById("firstServeRankingTab"),
+  firstServeOverallTab:       document.getElementById("firstServeOverallTab"),
+  firstServePersonalTab:      document.getElementById("firstServePersonalTab"),
+  firstServeTournamentTab:    document.getElementById("firstServeTournamentTab"),
+  // First Serve panels
+  firstServeRankingPanel:     document.getElementById("firstServeRankingPanel"),
+  firstServeOverallPanel:     document.getElementById("firstServeOverallPanel"),
+  firstServePersonalPanel:    document.getElementById("firstServePersonalPanel"),
+  firstServeTournamentPanel:  document.getElementById("firstServeTournamentPanel"),
+  // Break Point tabs/panels
+  overallTab:     document.getElementById("overallTab"),
+  tournamentTab:  document.getElementById("tournamentTab"),
+  americanoTab:   document.getElementById("americanoTab"),
+  overallPanel:   document.getElementById("overallPanel"),
+  tournamentPanel: document.getElementById("tournamentPanel"),
+  americanoPanel: document.getElementById("americanoPanel")
+};
+
+const DEFAULT_VISIBLE_RANKINGS = 50;
+const tableSearchState = new Map();
+
+document.addEventListener("DOMContentLoaded", async () => {
+  initPageSelector();
+  initAdminMode();
+  initFirstServeTabs();
+  initBreakPointTabs();
+  elements.refreshButton?.addEventListener("click", async () => {
+    await config?.loader(true);
+    // Consume this fetch; a later Refresh click pulls live data again.
+    pendingFetch = null;
+  });
+  await config?.loader(false);
+  await applyDeepLinkSearch();
+  injectInfoButton();
+  revalidateInBackground();
+});
+
+function initPageSelector() {
+  if (!elements.pageSelector || !config) return;
+  elements.pageSelector.value = config.selectorValue;
+  elements.pageSelector.addEventListener("change", (event) => {
+    window.location.href = event.target.value;
+  });
 }
 
-:root {
-  --bg: #f2f4f8;
-  --card: #ffffff;
-  --surface-2: #f7f8fb;
-  --surface-3: #eef0f5;
-  --ink: #0f172a;
-  --muted: #94a3b8;
-  --muted2: #64748b;
-  --line: rgba(15, 23, 42, 0.06);
-  --line2: rgba(15, 23, 42, 0.10);
-  --accent: #0d9488;
-  --accent-soft: rgba(13, 148, 136, 0.10);
-  --accent-glow: rgba(13, 148, 136, 0.18);
-  --gold: #d4a72c;
-  --gold-soft: rgba(212, 167, 44, 0.12);
-  --silver: #8a94a6;
-  --bronze: #b06a3a;
-  --display: 'Space Grotesk', system-ui, sans-serif;
-  --body: 'Inter', system-ui, sans-serif;
-  --title: 'Berling', Georgia, serif;
-  --serif: 'Berling', Georgia, serif;
-  --sans: 'Inter', system-ui, sans-serif;
-  --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
-  --radius: 16px;
-  --radius-sm: 14px;
+function initAdminMode() {
+  if (!elements.refreshButton || !config) return;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get(ADMIN_QUERY_KEY) === ADMIN_QUERY_VALUE) {
+    window.localStorage.setItem(ADMIN_STORAGE_KEY, "true");
+  }
+  elements.refreshButton.hidden = false;
+  elements.refreshButton.title = config.refreshText;
 }
 
-/* Per-board accent identity */
-body[data-page="first-serve"] { --accent: #2e4e8e; --accent-soft: rgba(46,78,142,0.10); --accent-glow: rgba(46,78,142,0.16); }
-body[data-page="break-point"] { --accent: #c8752d; --accent-soft: rgba(200,117,45,0.10); --accent-glow: rgba(200,117,45,0.16); }
-body[data-page="noida"]       { --accent: #1a7d5a; --accent-soft: rgba(26,125,90,0.10); --accent-glow: rgba(26,125,90,0.16); }
-body[data-page="match-point"] { --accent: #7a3b57; --accent-soft: rgba(122,59,87,0.12); --accent-glow: rgba(122,59,87,0.16); }
+// ─── PAGE LOADERS ────────────────────────────────────────────────────────────
 
-* { box-sizing: border-box; }
+async function loadFirstServePage(isManualRefresh) {
+  setLoadingState(true);
+  updateStatus(isManualRefresh ? "Refreshing leaderboard..." : "");
+  try {
+    const data = await getAllRankingsData(isManualRefresh);
+    const overallRankings     = normalizeFlexibleOverallRankings(data.firstServeRanking);
+    const americanoRankings   = normalizeAmericanoRankings(data.firstServe);
+    const personalGamesRankings = normalizeBasicRankings(data.firstServePersonal);
+    const tournamentRankings  = normalizeTournamentRankings(data.firstServeTournament);
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: var(--body);
-  color: var(--ink);
-  background: var(--bg);
-  padding-bottom: 92px;
-  -webkit-font-smoothing: antialiased;
+    if (!overallRankings.length && !americanoRankings.length && !personalGamesRankings.length) {
+      throw new Error("No ranking entries were found.");
+    }
+
+    renderOverallTable(elements.firstServeRankingBody, overallRankings, 4);
+    renderBasicTable(elements.rankingBody, americanoRankings, 4, "No Americano entries yet.");
+    renderBasicTable(elements.personalRankingBody, personalGamesRankings, 4, "No personal matches entries yet.");
+    renderTournamentTable(elements.firstServeTournamentBody, tournamentRankings, 6, "No tournament entries yet.");
+
+    updateStatus("");
+  } catch (error) {
+    console.error("Failed to load First Serve rankings:", error);
+    renderMessageRow(elements.firstServeRankingBody, "Ranking data is not available right now.", 4);
+    renderMessageRow(elements.rankingBody, "Americano leaderboard is not available right now.", 4);
+    renderMessageRow(elements.personalRankingBody, "Personal matches leaderboard is not available right now.", 4);
+    renderMessageRow(elements.firstServeTournamentBody, "Tournament leaderboard is not available right now.", 6);
+    updateStatus("Could not load the live leaderboard right now.", true);
+  } finally {
+    setLoadingState(false);
+  }
 }
 
-h1, h2, h3, p, table { margin: 0; }
+async function loadBreakPointPage(isManualRefresh) {
+  setLoadingState(true);
+  updateStatus(isManualRefresh ? "Refreshing rankings..." : "");
+  try {
+    const data = await getAllRankingsData(isManualRefresh);
+    const overallRankings     = normalizeOverallRankings(data.breakPointOverall);
+    const tournamentRankings  = normalizeTournamentRankings(data.breakPointTournament);
+    const americanoRankings   = normalizeAmericanoRankings(data.breakPointAmericano);
 
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    if (!overallRankings.length && !tournamentRankings.length && !americanoRankings.length) {
+      throw new Error("No Break Point rankings were found.");
+    }
+
+    renderOverallTable(elements.overallRankingBody, overallRankings, 4);
+    renderTournamentTable(elements.tournamentRankingBody, tournamentRankings, 6);
+    renderBasicTable(elements.americanoRankingBody, americanoRankings, 4, "No Americano entries yet.");
+    updateStatus("");
+  } catch (error) {
+    console.error("Failed to load Break Point rankings:", error);
+    renderMessageRow(elements.overallRankingBody, "Overall leaderboard is not available right now.", 4);
+    renderMessageRow(elements.tournamentRankingBody, "Tournament leaderboard is not available right now.", 6);
+    renderMessageRow(elements.americanoRankingBody, "Americano leaderboard is not available right now.", 4);
+    updateStatus("Could not load the live rankings right now.", true);
+  } finally {
+    setLoadingState(false);
+  }
 }
 
-.page-wrap { min-height: 100vh; }
-.leaderboard-card { width: 100%; max-width: none; margin: 0; position: relative; background: transparent; border: none; box-shadow: none; }
-
-.hero-banner, .standings-section, .card-footer {
-  max-width: 600px; margin-left: auto; margin-right: auto;
+async function loadMatchPointPage(isManualRefresh) {
+  setLoadingState(true);
+  updateStatus(isManualRefresh ? "Refreshing rankings..." : "");
+  try {
+    const data = await getAllRankingsData(isManualRefresh);
+    const overallRankings = normalizeMatchPointRankings(data.matchPointPlayers);
+    if (!overallRankings.length) throw new Error("No Match Point rankings were found.");
+    renderOverallTable(elements.overallRankingBody, overallRankings, 4);
+    updateStatus("");
+  } catch (error) {
+    console.error("Failed to load Match Point rankings:", error);
+    renderMessageRow(elements.overallRankingBody, "Overall leaderboard is not available right now.", 4);
+    updateStatus("Could not load the live rankings right now.", true);
+  } finally {
+    setLoadingState(false);
+  }
 }
 
-/* ── Top bar (board selector, top-right) ── */
-.topbar {
-  display: flex; justify-content: flex-end; align-items: center; gap: 12px;
-  padding: 0; background: transparent;
-  position: absolute; top: 18px; right: max(20px, calc((100% - 600px) / 2)); z-index: 50;
+async function loadNoidaPage(isManualRefresh) {
+  setLoadingState(true);
+  updateStatus(isManualRefresh ? "Refreshing leaderboard..." : "");
+  try {
+    const data = await getAllRankingsData(isManualRefresh);
+    const rankings = normalizeNoidaRankings(data.noida);
+    if (!rankings.length) throw new Error("No Noida ranking entries were found.");
+    renderOverallTable(elements.rankingBody, rankings, 4);
+    updateStatus("");
+  } catch (error) {
+    console.error("Failed to load Noida rankings:", error);
+    renderMessageRow(elements.rankingBody, "Leaderboard data is not available right now.", 4);
+    updateStatus("Could not load the live leaderboard right now.", true);
+  } finally {
+    setLoadingState(false);
+  }
 }
-.brand-lockup { display: none; }
-.brand-link { display: inline-flex; align-items: center; }
-.brand-logo { display: none; }
-.topbar-tools { display: flex; align-items: center; gap: 10px; }
-.page-switcher select {
-  appearance: none;
-  padding: 10px 38px 10px 15px;
-  border: 1px solid var(--line); border-radius: var(--radius-sm);
-  background: var(--card);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 13px center;
-  color: var(--ink); font-family: var(--body); font-size: 0.8rem; font-weight: 600;
-  cursor: pointer; box-shadow: var(--shadow);
+
+// ─── DATA FETCHING ───────────────────────────────────────────────────────────
+
+let pendingFetch = null;
+let allData = null; // last-loaded data for every board — powers cross-board search
+
+async function getAllRankingsData(useFresh = false) {
+  if (useFresh) {
+    // Refresh click: reuse the background fetch started on page open —
+    // already resolved (instant) or still in flight (await it).
+    return (allData = await startBackgroundFetch());
+  }
+  const cached = readCache();
+  if (cached) return (allData = cached.data);
+  return (allData = await startBackgroundFetch());
 }
-.page-switcher select option { background: #fff; color: var(--ink); }
-.topbar-meta { display: none; }
 
-/* ── Hero title (// Board — Berling) ── */
-.hero-banner { display: flex; align-items: baseline; gap: 8px; padding: 20px 20px 6px; background: transparent; }
-.slash { font-family: var(--title); font-size: 1.9rem; line-height: 1; color: var(--accent); font-weight: 700; }
-.hero-copy { text-align: left; }
-.hero-copy h1 { font-family: var(--title); font-size: 1.9rem; line-height: 1; letter-spacing: -0.5px; font-weight: 700; color: var(--ink); }
-.hero-copy p { display: none; }
+// Each board's overall ranking, reusing the existing normalizers.
+const BOARDS = [
+  { page: "index.html",      label: "First Serve", rows: (d) => normalizeFlexibleOverallRankings(d.firstServeRanking || []) },
+  { page: "breakpoint.html", label: "Break Point", rows: (d) => normalizeOverallRankings(d.breakPointOverall || []) },
+  { page: "matchpoint.html", label: "Match Point", rows: (d) => normalizeMatchPointRankings(d.matchPointPlayers || []) },
+  { page: "noida.html",      label: "Noida",       rows: (d) => normalizeNoidaRankings(d.noida || []) }
+];
 
-/* ── Standings ── */
-.standings-section { padding: 0 20px 20px; }
-.stacked-sections { display: grid; gap: 0; }
-.standings-head { display: flex; justify-content: flex-start; align-items: center; gap: 10px; margin-top: 8px; position: relative; }
-.section-kicker { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.14em; }
-
-.refresh-button {
-  appearance: none; width: 38px; height: 38px; border-radius: 50%; padding: 0;
-  border: 1px solid var(--line); background: var(--card); color: var(--muted2);
-  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow);
+// Show matches from OTHER boards as tappable options below the list;
+// clicking opens that board with the player pre-searched.
+function renderCrossBoard(query) {
+  const sub = document.querySelector(".subsection:not(.panel-hidden)");
+  if (!sub || !config) return;
+  let box = sub.querySelector(".cross-board");
+  const here = config.selectorValue;
+  const results = [];
+  if (query.length >= 2 && allData) {
+    for (const b of BOARDS) {
+      if (b.page === here) continue;
+      for (const p of b.rows(allData)) {
+        if (p.name.toLowerCase().includes(query)) results.push({ p, page: b.page, label: b.label });
+      }
+    }
+  }
+  if (!results.length) { box?.remove(); return; }
+  if (!box) { box = document.createElement("div"); box.className = "cross-board"; sub.appendChild(box); }
+  box.innerHTML = `<p class="cross-board-title">On other boards</p>` +
+    results.slice(0, 10).map((r) =>
+      `<a class="cross-row" href="${r.page}?q=${encodeURIComponent(query)}">
+        ${playerCell(r.p, null, r.p.matches != null ? `${r.p.matches} matches` : "")}
+        <span class="cross-board-tag">${r.label} →</span>
+      </a>`).join("");
 }
-.refresh-button svg { width: 17px; height: 17px; }
-.refresh-button:hover { color: var(--accent); border-color: var(--accent); }
-.refresh-button:disabled { opacity: 0.5; cursor: progress; }
-.refresh-button.spinning svg { animation: lb-spin .7s linear infinite; }
-@keyframes lb-spin { to { transform: rotate(360deg); } }
 
-/* Info button + popover */
-.standings-head > div { display: flex; align-items: center; gap: 8px; }
-.info { position: relative; }
-.info-btn { list-style: none; cursor: pointer; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--muted2); font-family: var(--title); font-style: italic; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; box-shadow: var(--shadow); }
-.info-btn::-webkit-details-marker { display: none; }
-.info-btn:hover { color: var(--ink); }
-.info-pop { position: absolute; top: 34px; left: 0; right: auto; z-index: 20; width: min(280px, calc(100vw - 40px)); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px; box-shadow: 0 12px 30px rgba(15,23,42,0.14); }
-.info-pop p { font-size: 0.8rem; color: var(--muted2); line-height: 1.6; margin: 0 0 10px; }
-.info-pop p b { color: var(--ink); font-weight: 600; }
-.info-pop a { font-size: 0.75rem; font-weight: 600; color: var(--accent); text-decoration: none; }
-
-/* ── Tabs ── */
-.tab-switcher { display: flex; align-items: center; gap: 6px; margin-top: 16px; overflow-x: auto; scrollbar-width: none; width: 100%; }
-.tab-switcher::-webkit-scrollbar { display: none; }
-.tab-button {
-  flex: 0 0 auto; appearance: none; border: 1px solid var(--line); background: var(--card); color: var(--muted2);
-  padding: 9px 16px; font-family: var(--body); font-size: 0.78rem; font-weight: 600; cursor: pointer; border-radius: 99px;
-  white-space: nowrap; transition: color 0.15s, background 0.15s, border-color 0.15s; box-shadow: var(--shadow);
+// Landing here from a cross-board jump (?q=name): pre-fill the search and filter.
+async function applyDeepLinkSearch() {
+  const q = new URLSearchParams(location.search).get("q");
+  if (!q) return;
+  const input = document.querySelector(".subsection:not(.panel-hidden) .leaderboard-search-input");
+  if (!input) return;
+  input.value = q;
+  tableSearchState.set(input.dataset.searchTarget, q.trim().toLowerCase());
+  await config?.loader(false);
 }
-.tab-button:hover { color: var(--ink); border-color: var(--line2); }
-.tab-button.is-active { color: #fff; background: var(--accent); border-color: var(--accent); font-weight: 700; }
 
-.status-message { min-height: 0; margin: 14px 0 0; color: var(--muted2); font-size: 0.82rem; font-family: var(--body); }
-.status-message:empty { display: none; }
-.status-message.is-error { color: var(--accent); }
-
-.subsection { display: grid; gap: 0; }
-.panel-hidden { display: none !important; }
-.subsection-head { display: none; }
-
-.verified-legend { display: flex; align-items: center; gap: 7px; padding: 12px 2px 2px; font-size: 0.72rem; color: var(--muted2); }
-
-/* ── Search ── */
-.leaderboard-search { position: relative; display: block; margin: 16px 0 12px; }
-.leaderboard-search-input {
-  width: 100%; padding: 12px 40px 12px 15px; border: 1px solid var(--line); border-radius: var(--radius-sm);
-  background: var(--card); color: var(--ink); font-family: var(--body); font-size: 0.9rem; outline: none; box-shadow: var(--shadow);
+// One "i" button by the standings header explaining rank / rating / score.
+function injectInfoButton() {
+  const head = document.querySelector(".standings-head > div");
+  if (!head || head.querySelector(".info")) return;
+  const el = document.createElement("details");
+  el.className = "info";
+  el.innerHTML = `
+    <summary class="info-btn" title="What do these mean?">i</summary>
+    <div class="info-pop">
+      <p><b>Rank</b> — your spot on the board, set by rating (score breaks ties).</p>
+      <p><b>Rating</b> — your level on the 0–7 skill scale.</p>
+      <p><b>Score</b> — total match points, which feed your rating.</p>
+      <a href="explainer.html">Full guide →</a>
+    </div>`;
+  head.appendChild(el);
+  document.addEventListener("click", (e) => { if (!el.contains(e.target)) el.open = false; });
 }
-.leaderboard-search-input::placeholder { color: var(--muted); }
-.leaderboard-search-input:focus { border-color: var(--accent); }
-.search-clear {
-  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-  width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--surface-3);
-  color: var(--muted2); font-size: 17px; line-height: 1; cursor: pointer; padding: 0;
-  display: flex; align-items: center; justify-content: center;
+
+function startBackgroundFetch() {
+  if (!pendingFetch) {
+    pendingFetch = fetchAllRankingsData()
+      .then((data) => {
+        writeCache(data);
+        return data;
+      })
+      .catch((error) => {
+        pendingFetch = null;
+        throw error;
+      });
+  }
+  return pendingFetch;
 }
-.search-clear[hidden] { display: none; }
 
-/* Cross-board search results */
-.cross-board { margin-top: 8px; }
-.cross-board-title { font-size: 0.66rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 6px 2px 8px; }
-.cross-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; margin-bottom: 8px;
-  border-radius: var(--radius-sm); text-decoration: none; color: var(--ink); background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow);
+function revalidateInBackground() {
+  // If the initial load had no cache it already fetched live data — skip.
+  if (pendingFetch) return;
+  startBackgroundFetch().catch(() => {});
 }
-.cross-row:hover { border-color: var(--line2); }
-.cross-board-tag { font-size: 0.66rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 99px; padding: 4px 11px; white-space: nowrap; }
 
-/* ── List rows (tables → cards) ── */
-.table-wrap { overflow: visible; }
-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-.rank-col { width: 28px; }
+async function fetchAllRankingsData() {
+  // { firstServe, breakPoint, matchPoint, noida } — each the raw JSON
+  // its endpoint returns, whether it came from Supabase or Apps Script.
+  const raw = await fetchRawSources();
 
-/* Column headings (# / Player / Score / Rating) */
-thead tr { display: grid; grid-template-columns: 28px 1fr 56px 60px; gap: 10px; padding: 0 14px 8px; }
-thead th { padding: 0; border: none; background: none; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: right; }
-thead th:first-child { text-align: center; }
-thead th:nth-child(2) { text-align: left; }
-#firstServeTournamentPanel thead tr, #tournamentPanel thead tr { grid-template-columns: 28px 1fr 42px 36px 36px 56px; }
-
-tbody tr {
-  display: grid; grid-template-columns: 28px 1fr 56px 60px; align-items: center; gap: 10px;
-  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-sm);
-  padding: 11px 14px; margin-bottom: 8px; box-shadow: var(--shadow);
+  return {
+    firstServe:           raw.firstServe.firstServe || [],
+    firstServePersonal:   raw.firstServe.pmMatchScores || [],
+    firstServeRanking:    pickFirstServeRankingRows(raw.firstServe),
+    firstServeTournament: raw.firstServe.tournamentScores || [],
+    breakPointOverall:    raw.breakPoint.breakPointOverall || [],
+    breakPointTournament: raw.breakPoint.breakPointTournament || [],
+    breakPointAmericano:  raw.breakPoint.breakPointAmericano || [],
+    matchPointPlayers:    raw.matchPoint.players || [],
+    noida:                Array.isArray(raw.noida.data) ? raw.noida.data : []
+  };
 }
-tbody td { padding: 0; border: none; font-size: 0.95rem; text-align: right; }
-tbody td:first-child { text-align: center; }
-tbody td:nth-child(2) { text-align: left; min-width: 0; }
-tbody tr:hover { border-color: var(--line2); }
-tbody tr.highlight { border-color: var(--accent); background: var(--accent-soft); }
-/* Message rows (loading / empty) are single full-width cells */
-tbody tr:has(td[colspan]) { display: block; padding: 16px; text-align: center; color: var(--muted2); font-size: 0.85rem; }
-tbody tr:has(td[colspan]) td { text-align: center; }
-/* Tournament rows carry two extra columns */
-#firstServeTournamentBody tr:not(:has(td[colspan])),
-#tournamentRankingBody tr:not(:has(td[colspan])) { grid-template-columns: 28px 1fr 42px 36px 36px 56px; }
 
-.rank-text { font-family: var(--display); color: var(--muted2); font-size: 1rem; font-weight: 700; }
-
-.player-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.avatar {
-  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; background: #8a9099; color: #fff;
-  display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 0.72rem; font-weight: 700;
+// Fast path (Supabase) with automatic fallback to the Apps Script
+// endpoints, so a Supabase outage never takes the board down.
+async function fetchRawSources() {
+  if (SUPABASE_READY) {
+    try {
+      return await fetchFromSupabase();
+    } catch (error) {
+      console.warn("Supabase read failed, falling back to Apps Script:", error);
+    }
+  }
+  return fetchFromAppsScript();
 }
-.player-info { min-width: 0; display: flex; flex-direction: column; }
-.nmrow { display: flex; align-items: center; min-width: 0; }
-.player-name { font-size: 0.9rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.player-sub { font-size: 0.72rem; color: var(--muted2); margin-top: 1px; }
 
-.vbadge {
-  display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%;
-  flex-shrink: 0; margin-left: 6px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; line-height: 1;
+async function fetchFromSupabase() {
+  const res = await fetch(
+    `${SUPABASE.url}/rest/v1/leaderboard_cache?select=source,payload`,
+    { headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` } }
+  );
+  if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+  const rows = await res.json();
+  const bySource = {};
+  for (const row of rows) bySource[row.source] = row.payload;
+  for (const key of ["firstServe", "breakPoint", "matchPoint", "noida"]) {
+    if (!bySource[key]) throw new Error(`Missing "${key}" in Supabase cache`);
+  }
+  return bySource;
 }
-.verified-legend .vbadge { margin-left: 0; }
 
-.badge { display: inline-block; background: transparent !important; border-radius: 0; font-family: var(--display); font-size: 1rem; font-weight: 700; }
-.badge.first { color: var(--gold); } .badge.second { color: var(--silver); } .badge.third { color: var(--bronze); }
+async function fetchFromAppsScript() {
+  const [firstServeRes, breakPointRes, matchPointRes, noidaRes] = await Promise.all([
+    fetch(API_URLS.firstServe),
+    fetch(API_URLS.breakPoint),
+    fetch(API_URLS.matchPoint),
+    fetch(API_URLS.noida)
+  ]);
 
-.stat-cell { font-size: 0.82rem; font-weight: 500; text-align: right; color: var(--muted2); }
-.points-cell { font-family: var(--display); font-size: 1.15rem; font-weight: 700; color: var(--ink); }
+  if (!firstServeRes.ok) throw new Error("Failed to fetch First Serve data");
+  if (!breakPointRes.ok) throw new Error("Failed to fetch Break Point data");
+  if (!matchPointRes.ok) throw new Error("Failed to fetch Match Point data");
+  if (!noidaRes.ok) throw new Error("Failed to fetch Noida data");
 
-/* ── Podium (pedestal: 2nd · 1st · 3rd, gold/silver/bronze, no crown) ── */
-.podium { display: grid; grid-template-columns: 1fr 1.14fr 1fr; align-items: end; gap: 12px; padding: 20px 4px 0; max-width: 560px; margin: 0 auto; }
-.podium[hidden] { display: none; }
-.podium-item { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; background: none; border: none; box-shadow: none; padding: 0; }
-.podium-crown { display: none; }
-.podium-avwrap { position: relative; margin-bottom: 8px; }
-.podium-avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--title); font-weight: 700; color: #fff; }
-.podium-item.first .podium-avatar { width: 62px; height: 62px; font-size: 1.2rem; }
-.podium-item.second .podium-avatar, .podium-item.third .podium-avatar { width: 52px; height: 52px; font-size: 1rem; }
-.podium-badge { display: none; }
-.podium-name { display: flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; font-size: 0.8rem; font-weight: 600; }
-.podium-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.podium-item.first .podium-name { font-size: 0.85rem; }
-.podium-value { font-family: var(--title); font-size: 1.15rem; font-weight: 700; margin-top: 4px; line-height: 1; }
-.podium-item.first .podium-value { font-size: 1.3rem; color: var(--gold); }
-.podium-item.second .podium-value { color: var(--silver); }
-.podium-item.third .podium-value { color: var(--bronze); }
-.podium-score { display: none; }
-.podium-block { width: 100%; margin-top: 10px; border-radius: 12px 12px 0 0; display: flex; justify-content: center; align-items: flex-start; padding-top: 12px; font-family: var(--title); font-weight: 700; color: #aeb3be; background: #e2e4ea; }
-.podium-item.first .podium-block { height: 92px; font-size: 1.7rem; background: #d8dbe2; }
-.podium-item.second .podium-block { height: 64px; font-size: 1.4rem; }
-.podium-item.third .podium-block { height: 50px; font-size: 1.3rem; }
+  const [firstServe, breakPoint, matchPoint, noida] = await Promise.all([
+    firstServeRes.json(),
+    breakPointRes.json(),
+    matchPointRes.json(),
+    noidaRes.json()
+  ]);
 
-/* ── Your rank card ── */
-.your-rank { margin: 12px 0 4px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; align-items: center; gap: 14px; }
-.your-rank[hidden] { display: none; }
-.your-rank-num { font-family: var(--display); font-size: 1.7rem; font-weight: 700; line-height: 1; color: var(--accent); }
-.your-rank-mid { flex: 1; min-width: 0; }
-.your-rank-kicker { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted2); }
-.your-rank-name { font-size: 0.85rem; font-weight: 600; margin-top: 3px; }
-.your-rank-val { font-family: var(--display); font-size: 1.3rem; font-weight: 700; text-align: right; color: var(--ink); }
-
-.see-all { display: block; width: 100%; text-align: center; background: none; border: none; font-family: var(--body); font-size: 0.85rem; font-weight: 600; color: var(--accent); padding: 12px 0 2px; cursor: pointer; }
-
-/* ── Footer ── */
-.card-footer { padding: 24px 20px 22px; }
-.footer-rule { width: 48px; height: 1px; background: var(--accent); margin-bottom: 14px; }
-.footer-note { font-size: 0.78rem; color: var(--muted2); line-height: 1.6; }
-.footer-meta {
-  display: flex; justify-content: space-between; gap: 16px; margin-top: 20px; padding-top: 18px;
-  border-top: 1px solid var(--line); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  return { firstServe, breakPoint, matchPoint, noida };
 }
-.footer-meta span:first-child { color: var(--ink); text-transform: none; letter-spacing: 0; font-family: var(--display); font-size: 0.95rem; font-weight: 700; }
 
-/* ── Bottom tab bar ── */
-.bottom-nav {
-  display: flex; position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 300;
-  background: linear-gradient(to top, var(--bg) 80%, transparent);
-  padding: 8px max(16px, calc((100% - 600px) / 2)) calc(10px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line);
+// ─── CACHE ───────────────────────────────────────────────────────────────────
+
+function readCache() {
+  try {
+    const raw = window.localStorage.getItem(MASTER_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed?.savedAt || !parsed?.data || parsed.version !== CACHE_SCHEMA_VERSION) {
+      window.localStorage.removeItem(MASTER_CACHE_KEY);
+      return null;
+    }
+    if (Date.now() - parsed.savedAt > CACHE_TTL) {
+      window.localStorage.removeItem(MASTER_CACHE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    console.error("Failed to read cached rankings:", error);
+    return null;
+  }
 }
-.bnav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: var(--muted); position: relative; padding: 6px 0; }
-.bnav-tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.bnav-tab span { font-size: 0.62rem; font-weight: 500; }
-.bnav-tab.active { color: var(--accent); }
-.bnav-tab.active svg { stroke: var(--accent); }
 
-/* ── Left sidebar (desktop nav) ── */
-.left-sidebar {
-  display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 248px; z-index: 200;
-  background: #0b0f17; flex-direction: column; border-right: 1px solid rgba(255,255,255,0.08);
+function writeCache(data) {
+  try {
+    window.localStorage.setItem(
+      MASTER_CACHE_KEY,
+      JSON.stringify({ version: CACHE_SCHEMA_VERSION, savedAt: Date.now(), data })
+    );
+  } catch (error) {
+    console.error("Failed to cache rankings:", error);
+  }
 }
-.sidebar-brand { padding: 28px 24px 22px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-.sidebar-logo { display: none; }
-.sidebar-brand-name { font-family: var(--title); font-size: 1.2rem; font-weight: 700; color: #fff; display: block; }
-.sidebar-sub { margin-top: 9px; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
-.sidebar-nav { padding: 14px 0; }
-.sidebar-link { display: flex; align-items: center; gap: 12px; padding: 13px 24px; color: rgba(255,255,255,0.6); text-decoration: none; font-family: var(--body); font-size: 0.88rem; font-weight: 500; transition: background 0.2s, color 0.2s; }
-.sidebar-link:hover { color: #fff; background: rgba(255,255,255,0.06); }
-.sidebar-link.active { color: #fff; background: rgba(255,255,255,0.05); box-shadow: inset 3px 0 0 var(--accent); }
-.sidebar-link.active svg { stroke: var(--accent); }
-.sidebar-link svg { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.sidebar-foot { margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); }
-.sidebar-signout { width: 100%; height: 44px; border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; background: transparent; color: rgba(255,255,255,0.55); font-family: var(--body); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: color 0.2s, border-color 0.2s; }
-.sidebar-signout:hover { color: #fff; border-color: rgba(255,255,255,0.28); }
 
-/* ── Desktop ── */
-@media (min-width: 769px) {
-  .left-sidebar { display: flex; }
-  .leaderboard-card { padding-left: 248px; padding-bottom: 40px; }
-  .bottom-nav { display: none; }
-  .hero-banner, .standings-section, .card-footer { max-width: 1080px; margin-left: auto; margin-right: auto; padding-left: 48px; padding-right: 48px; }
-  .hero-banner { padding-top: 30px; }
-  .topbar { position: absolute; top: 34px; right: 48px; padding: 0; }
-  /* Bigger pedestal on desktop */
-  .podium { max-width: 760px; gap: 20px; padding-top: 28px; }
-  .podium-item.first .podium-avatar { width: 76px; height: 76px; font-size: 1.5rem; }
-  .podium-item.second .podium-avatar, .podium-item.third .podium-avatar { width: 64px; height: 64px; font-size: 1.25rem; }
-  .podium-name { font-size: 0.95rem; }
-  .podium-item.first .podium-name { font-size: 1.05rem; }
-  .podium-value { font-size: 1.4rem; }
-  .podium-item.first .podium-value { font-size: 1.7rem; }
-  .podium-block { padding-top: 16px; }
-  .podium-item.first .podium-block { height: 132px; font-size: 2.3rem; }
-  .podium-item.second .podium-block { height: 94px; font-size: 1.9rem; }
-  .podium-item.third .podium-block { height: 74px; font-size: 1.7rem; }
+// ─── NORMALIZERS ─────────────────────────────────────────────────────────────
+
+function normalizeBasicRankings(rows) {
+  return rows
+    .map((row) => ({
+      id:      String(row["Player ID"] || "").trim(),
+      name:    String(row["Player Name"] || "").trim(),
+      matches: toNumber(row.MP),
+      score:   toNumber(row.Score),
+      rank:    toNumber(row.Ranking || row.ranking || row.Rank || row.rank)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((a, b) => a.rank - b.rank);
+}
+
+function normalizeAmericanoRankings(rows) {
+  const sorted = rows
+    .map((row) => ({
+      id:      String(row["Player ID"] || row.playerId || "").trim(),
+      name:    String(row["Player Name"] || row.playerName || row.Name || row.name || "").trim(),
+      matches: toNumber(row.MP || row.mp),
+      score:   toNumber(row.Score || row.score)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((a, b) => compareByScore(a, b));
+  return addClusterRanks(sorted);
+}
+
+function normalizeTournamentRankings(rows) {
+  const sorted = rows
+    .map((row) => ({
+      id:      String(row["Player ID"] || "").trim(),
+      name:    String(row["Player Name"] || "").trim(),
+      matches: toNumber(row.MP),
+      wins:    toNumber(row.won),
+      losses:  toNumber(row.Loss),
+      score:   toNumber(row.Score)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.wins  !== a.wins)  return b.wins  - a.wins;
+      if (b.matches !== a.matches) return b.matches - a.matches;
+      return a.name.localeCompare(b.name);
+    });
+  return addClusterRanks(sorted);
+}
+
+function isVerified(row) {
+  const v = row.Verified ?? row.verified ?? row.VERIFIED;
+  return String(v).trim().toUpperCase() === "TRUE";
+}
+
+function normalizeOverallRankings(rows) {
+  return rows
+    .map((row) => ({
+      id:     String(row.ID || "").trim(),
+      name:   String(row.Name || "").trim(),
+      score:  toNumber(row.Score),
+      rating: toDecimal(row.Rating),
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank),
+      matches: toNumber(row["Matches played"] ?? row.matches ?? row.MP),
+      verified: isVerified(row)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((a, b) => a.rank - b.rank);
+}
+
+function normalizeMatchPointRankings(rows) {
+  return rows
+    .map((row) => ({
+      id:     String(row.id || "").trim(),
+      name:   String(row.name || "").trim(),
+      score:  toNumber(row.score),
+      rating: toDecimal(row.rating),
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank),
+      matches: toNumber(row.matches ?? row["Matches played"] ?? row.MP ?? row.mp),
+      verified: isVerified(row)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((a, b) => a.rank - b.rank);
+}
+
+function normalizeFlexibleOverallRankings(rows) {
+  return rows
+    .map((row) => ({
+      id:     String(row.ID || row["Player ID"] || row.playerId || "").trim(),
+      name:   String(row.Name || row["Player Name"] || row.playerName || "").trim(),
+      score:  toNumber(row.Score || row.score),
+      rating: toDecimal(row.Rating ?? row.rating ?? 0),
+      rank:   toNumber(row.Ranking || row.ranking || row.Rank),
+      matches: toNumber(row["Matches played"] ?? row.matches ?? row.MP ?? row.mp),
+      verified: isVerified(row)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((a, b) => a.rank - b.rank);
+}
+
+function normalizeNoidaRankings(rows) {
+  return rows
+    .map((row) => ({
+      id:      String(row.playerId || row.ID || "").trim(),
+      name:    String(row.playerName || row.Name || "").trim(),
+      matches: toNumber(row.mp ?? row.MP ?? row["Matches played"] ?? row.matches),
+      score:   toNumber(row.score ?? row.Score),
+      rating:  toDecimal(row.rating ?? row.Rating),
+      rank:    toNumber(row.ranking ?? row.Ranking ?? row.rank ?? row.Rank),
+      verified: isVerified(row)
+    }))
+    .filter((player) => player.name && !player.name.startsWith("#"))
+    .sort((a, b) => (a.rank && b.rank) ? a.rank - b.rank : compareByScore(a, b));
+}
+
+function addClusterRanks(players) {
+  let lastScore = null;
+  let lastRank  = 0;
+  return players.map((player, index) => {
+    const rank = player.score === lastScore ? lastRank : index + 1;
+    lastScore  = player.score;
+    lastRank   = rank;
+    return { ...player, rank };
+  });
+}
+
+function compareByScore(a, b) {
+  if (b.score   !== a.score)   return b.score   - a.score;
+  if (b.matches !== a.matches) return b.matches  - a.matches;
+  return a.name.localeCompare(b.name);
+}
+
+// ─── RENDERERS ───────────────────────────────────────────────────────────────
+
+function getViewerName() {
+  try {
+    if (sessionStorage.getItem("dpcDemo") === "1") return "Nik S";
+    const raw = localStorage.getItem("dpcPlayerSession");
+    if (raw) { const p = JSON.parse(raw); return p ? (p.boardName || p.name || null) : null; }
+  } catch (e) {}
+  return null;
+}
+
+function initials(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function isViewer(player, viewer) {
+  return !!(viewer && player.name && player.name.toLowerCase() === viewer.toLowerCase());
+}
+
+const AV_COLORS = ["#9d7bc9","#5b6472","#2f8f83","#c1614f","#3f9d7f","#7c6fc9","#b1793f","#4f7cc1","#a85a86","#3d8f8f"];
+function avColor(name) {
+  let h = 0; const s = String(name || "");
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return AV_COLORS[h % AV_COLORS.length];
+}
+function verifiedBadge(p) {
+  return p && p.verified ? '<span class="vbadge" title="Verified ranking">✓</span>' : "";
+}
+function ensureVerifiedLegend(target, anyVerified) {
+  const sub = target.closest(".subsection"); if (!sub) return;
+  let leg = sub.querySelector(".verified-legend");
+  if (anyVerified && !leg) {
+    leg = document.createElement("div");
+    leg.className = "verified-legend";
+    leg.innerHTML = '<span class="vbadge">✓</span> Verified ranking';
+    const podium = sub.querySelector(".podium");
+    if (podium) podium.after(leg); else sub.prepend(leg);
+  } else if (!anyVerified && leg) { leg.remove(); }
+}
+
+function podiumMarkup(top3, opts) {
+  const order = [top3[1], top3[0], top3[2]];
+  const slot  = ["second", "first", "third"];
+  const label = { first: "1st", second: "2nd", third: "3rd" };
+  return order.map((p, i) => {
+    const s = slot[i];
+    if (!p) return `<div class="podium-item ${s}"><div class="podium-block">${label[s]}</div></div>`;
+    return `<div class="podium-item ${s}">
+      <div class="podium-avwrap">
+        <div class="podium-avatar" style="background:${avColor(p.name)}">${escapeHtml(initials(p.name))}</div>
+        <div class="podium-badge">${p.rank}</div>
+      </div>
+      <div class="podium-name"><span>${escapeHtml(p.name)}</span>${verifiedBadge(p)}</div>
+      <div class="podium-value">${opts.value(p)}</div>
+      ${opts.podSub ? `<div class="podium-score">${escapeHtml(String(opts.podSub(p)))}</div>` : ""}
+      <div class="podium-block">${label[s]}</div>
+    </div>`;
+  }).join("");
+}
+
+function yourRankMarkup(me, opts) {
+  return `<div class="your-rank-num">${me.rank}</div>
+    <div class="your-rank-mid">
+      <div class="your-rank-kicker">Your rank</div>
+      <div class="your-rank-name">${escapeHtml(me.name)}</div>
+    </div>
+    <div class="your-rank-val">${opts.value(me)}</div>`;
+}
+
+// Inject/update the podium + "your rank" card for a panel, and return the
+// list of players the table below should show (ranks 4+ when the podium is
+// visible; the full list while searching).
+function enhancePanel(target, rankings, opts) {
+  const subsection = target.closest(".subsection");
+  if (!subsection) return rankings;
+  const query  = tableSearchState.get(target.id) || "";
+  const search = subsection.querySelector(".leaderboard-search");
+
+  let podium = subsection.querySelector(".podium");
+  if (!podium) {
+    podium = document.createElement("div");
+    podium.className = "podium";
+    subsection.insertBefore(podium, search || subsection.querySelector(".table-wrap"));
+  }
+  let yr = subsection.querySelector(".your-rank");
+  if (!yr) {
+    yr = document.createElement("div");
+    yr.className = "your-rank";
+  }
+  podium.after(yr); // keep "your rank" pinned to the top, under the podium
+
+  if (query || rankings.length < 3) {
+    podium.hidden = true;
+    yr.hidden = true;
+    return rankings;
+  }
+
+  podium.hidden = false;
+  podium.innerHTML = podiumMarkup(rankings.slice(0, 3), opts);
+
+  const viewer = getViewerName();
+  const me = viewer ? rankings.find((p) => isViewer(p, viewer)) : null;
+  if (me) { yr.hidden = false; yr.innerHTML = yourRankMarkup(me, opts); }
+  else { yr.hidden = true; }
+
+  return rankings.slice(3);
+}
+
+function playerCell(player, viewer, sub) {
+  const subhtml = sub ? `<div class="player-sub">${escapeHtml(sub)}</div>` : "";
+  return `<div class="player-cell">
+    <span class="avatar" style="background:${avColor(player.name)}">${escapeHtml(initials(player.name))}</span>
+    <span class="player-info"><span class="nmrow"><span class="player-name">${escapeHtml(player.name)}</span>${verifiedBadge(player)}</span>${subhtml}</span>
+  </div>`;
+}
+
+function renderBasicTable(target, rankings, colspan, emptyMessage = "No ranking entries yet.") {
+  if (!target) return;
+  ensureSearchUi(target);
+  if (!rankings.length) { renderMessageRow(target, emptyMessage, colspan); return; }
+  const viewer = getViewerName();
+  const listRankings = enhancePanel(target, rankings, {
+    value: (p) => p.score,
+    label: "Points",
+    sub: (p) => (p.matches != null ? `${p.matches} matches` : "")
+  });
+  const visibleRankings = getVisibleRankings(target, listRankings);
+  if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
+  target.innerHTML = visibleRankings.map((player) => {
+    const badge = renderBadge(player.rank);
+    return `
+      <tr class="${isViewer(player, viewer) ? "highlight" : ""}">
+        <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
+        <td>${playerCell(player, viewer)}</td>
+        <td class="stat-cell">${player.matches}</td>
+        <td class="stat-cell points-cell">${player.score}</td>
+      </tr>`;
+  }).join("");
+}
+
+function renderTournamentTable(target, rankings, colspan, emptyMessage = "No tournament entries yet.") {
+  if (!target) return;
+  ensureSearchUi(target);
+  if (!rankings.length) { renderMessageRow(target, emptyMessage, colspan); return; }
+  const viewer = getViewerName();
+  const listRankings = enhancePanel(target, rankings, {
+    value: (p) => p.score,
+    label: "Points",
+    sub: (p) => `${p.wins || 0}W · ${p.losses || 0}L`
+  });
+  const visibleRankings = getVisibleRankings(target, listRankings);
+  if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
+  target.innerHTML = visibleRankings.map((player) => {
+    const badge = renderBadge(player.rank);
+    return `
+      <tr class="${isViewer(player, viewer) ? "highlight" : ""}">
+        <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
+        <td>${playerCell(player, viewer)}</td>
+        <td class="stat-cell">${player.matches}</td>
+        <td class="stat-cell">${player.wins}</td>
+        <td class="stat-cell">${player.losses}</td>
+        <td class="stat-cell points-cell">${player.score}</td>
+      </tr>`;
+  }).join("");
+}
+
+function renderOverallTable(target, rankings, colspan) {
+  if (!target) return;
+  ensureSearchUi(target);
+  if (!rankings.length) { renderMessageRow(target, "No overall entries yet.", colspan); return; }
+  const viewer = getViewerName();
+  const listRankings = enhancePanel(target, rankings, {
+    value: (p) => p.rating.toFixed(1),
+    label: "Rating",
+    sub: (p) => [p.matches != null ? `${p.matches} matches` : "", `${p.score} score`].filter(Boolean).join(" · ")
+  });
+  ensureVerifiedLegend(target, rankings.some((p) => p.verified));
+  const visibleRankings = getVisibleRankings(target, listRankings);
+  if (!visibleRankings.length) { renderMessageRow(target, "No players found for that search.", colspan); return; }
+  target.innerHTML = visibleRankings.map((player) => {
+    const badge = renderBadge(player.rank);
+    const sub = player.matches != null ? `${player.matches} matches` : "";
+    return `
+      <tr class="${isViewer(player, viewer) ? "highlight" : ""}">
+        <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
+        <td>${playerCell(player, viewer, sub)}</td>
+        <td class="stat-cell">${player.score}</td>
+        <td class="stat-cell points-cell">${player.rating.toFixed(1)}</td>
+      </tr>`;
+  }).join("");
+}
+
+function renderMessageRow(target, message, colspan) {
+  if (!target) return;
+  target.innerHTML = `<tr><td colspan="${colspan}">${escapeHtml(message)}</td></tr>`;
+}
+
+function renderBadge(rank) {
+  if (rank === 1) return { className: "badge first",  label: "1" };
+  if (rank === 2) return { className: "badge second", label: "2" };
+  if (rank === 3) return { className: "badge third",  label: "3" };
+  return null;
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+
+function ensureSearchUi(target) {
+  if (!target?.id) return;
+  const tableWrap = target.closest(".table-wrap");
+  if (!tableWrap || tableWrap.previousElementSibling?.classList.contains("leaderboard-search")) return;
+  tableWrap.insertAdjacentHTML("beforebegin", `
+    <div class="leaderboard-search">
+      <input
+        class="leaderboard-search-input"
+        type="text"
+        placeholder="Search player name"
+        aria-label="Search player name"
+        data-search-target="${target.id}"
+      />
+      <button class="search-clear" type="button" aria-label="Clear search" hidden>×</button>
+    </div>
+  `);
+  const wrap = tableWrap.previousElementSibling;
+  const input = wrap?.querySelector(".leaderboard-search-input");
+  const clearBtn = wrap?.querySelector(".search-clear");
+  if (!input) return;
+  const applyQuery = (raw) => {
+    const q = raw.trim().toLowerCase();
+    if (clearBtn) clearBtn.hidden = !raw;
+    tableSearchState.set(target.id, q);
+    config?.loader(false);
+    renderCrossBoard(q);
+  };
+  input.addEventListener("input", (event) => applyQuery(event.target.value));
+  clearBtn?.addEventListener("click", () => { input.value = ""; applyQuery(""); input.focus(); });
+}
+
+function getVisibleRankings(target, rankings) {
+  const query = tableSearchState.get(target.id) || "";
+  if (!query) return rankings.slice(0, DEFAULT_VISIBLE_RANKINGS);
+  return rankings.filter((player) => player.name.toLowerCase().includes(query));
+}
+
+// ─── STATUS & LOADING ────────────────────────────────────────────────────────
+
+function updateStatus(message, isError = false) {
+  if (!elements.statusMessage) return;
+  elements.statusMessage.textContent = message;
+  elements.statusMessage.classList.toggle("is-error", isError);
+}
+
+function setLoadingState(isLoading) {
+  if (!elements.refreshButton || !config) return;
+  elements.refreshButton.disabled = isLoading;
+  elements.refreshButton.classList.toggle("spinning", isLoading);
+}
+
+// ─── TAB INIT ────────────────────────────────────────────────────────────────
+
+function initFirstServeTabs() {
+  if (page !== "first-serve") return;
+  if (!elements.firstServeRankingTab) return;
+  elements.firstServeRankingTab.addEventListener("click",    () => setFirstServeTab("ranking"));
+  elements.firstServeOverallTab.addEventListener("click",    () => setFirstServeTab("overall"));
+  elements.firstServePersonalTab.addEventListener("click",   () => setFirstServeTab("personal"));
+  elements.firstServeTournamentTab?.addEventListener("click", () => setFirstServeTab("tournament"));
+  setFirstServeTab("ranking");
+}
+
+function initBreakPointTabs() {
+  if (page !== "break-point" && page !== "match-point") return;
+  if (!elements.overallTab || !elements.tournamentTab || !elements.americanoTab) return;
+  elements.overallTab.addEventListener("click",    () => setBreakPointTab("overall"));
+  elements.tournamentTab.addEventListener("click", () => setBreakPointTab("tournament"));
+  elements.americanoTab.addEventListener("click",  () => setBreakPointTab("americano"));
+  setBreakPointTab("overall");
+}
+
+// ─── TAB SWITCHERS ───────────────────────────────────────────────────────────
+
+function setFirstServeTab(tabName) {
+  const tabs = {
+    ranking:    { tab: elements.firstServeRankingTab,    panel: elements.firstServeRankingPanel },
+    overall:    { tab: elements.firstServeOverallTab,    panel: elements.firstServeOverallPanel },
+    personal:   { tab: elements.firstServePersonalTab,   panel: elements.firstServePersonalPanel },
+    tournament: { tab: elements.firstServeTournamentTab, panel: elements.firstServeTournamentPanel }
+  };
+  Object.entries(tabs).forEach(([key, { tab, panel }]) => {
+    if (!tab || !panel) return;
+    const isActive = key === tabName;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+    panel.hidden = !isActive;
+    panel.classList.toggle("panel-hidden", !isActive);
+  });
+}
+
+function setBreakPointTab(tabName) {
+  if (
+    !elements.overallTab || !elements.tournamentTab || !elements.americanoTab ||
+    !elements.overallPanel || !elements.tournamentPanel || !elements.americanoPanel
+  ) return;
+  const isOverall    = tabName === "overall";
+  const isTournament = tabName === "tournament";
+  const isAmericano  = tabName === "americano";
+  elements.overallTab.classList.toggle("is-active", isOverall);
+  elements.tournamentTab.classList.toggle("is-active", isTournament);
+  elements.americanoTab.classList.toggle("is-active", isAmericano);
+  elements.overallTab.setAttribute("aria-selected", String(isOverall));
+  elements.tournamentTab.setAttribute("aria-selected", String(isTournament));
+  elements.americanoTab.setAttribute("aria-selected", String(isAmericano));
+  elements.overallPanel.hidden    = !isOverall;
+  elements.tournamentPanel.hidden = !isTournament;
+  elements.americanoPanel.hidden  = !isAmericano;
+  elements.overallPanel.classList.toggle("panel-hidden", !isOverall);
+  elements.tournamentPanel.classList.toggle("panel-hidden", !isTournament);
+  elements.americanoPanel.classList.toggle("panel-hidden", !isAmericano);
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+function toNumber(value) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function toDecimal(value) {
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function pickFirstServeRankingRows(firstServeData) {
+  const preferredKeys = ["overallRanking","overallRankings","ranking","rankings","finalScore","finalScores","scoreRating","scoreRatings"];
+  for (const key of preferredKeys) {
+    if (Array.isArray(firstServeData[key])) return firstServeData[key];
+  }
+  for (const [key, value] of Object.entries(firstServeData)) {
+    if (!Array.isArray(value) || key === "firstServe" || key === "pmMatchScores" || key === "tournamentScores") continue;
+    const firstRow = value.find((row) => row && typeof row === "object");
+    if (!firstRow) continue;
+    const hasRating = "Rating" in firstRow || "rating" in firstRow;
+    const hasScore  = "Score"  in firstRow || "score"  in firstRow;
+    const hasName   = "Name"   in firstRow || "Player Name" in firstRow || "playerName" in firstRow;
+    if (hasRating && hasScore && hasName) return value;
+  }
+  return [];
 }
