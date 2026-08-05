@@ -757,10 +757,13 @@ function buildMatchCard(m,i){
   const id=String(m.matchId||'').toUpperCase();
   const isAm=id.includes('AM');
   const rank=Number(m.rank);
-  const isPodium=isAm&&(rank>=1&&rank<=3);
-  const isLow=isAm&&rank>=5;
+  const result=String(m.result||'').toUpperCase(); // W/L for tournament/personal
+  const isPodium=isAm?(rank>=1&&rank<=3):(result==='W');
+  const isLow=isAm?(rank>=5):(result==='L');
   const cardCls=isPodium?'podium':isLow?'loss':'win';
   const rankCls=isPodium?'podium':isLow?'loss':'win';
+  const leadTxt=isAm?('#'+(m.rank??'—')):(result||'—');
+  const scoreVal=(m.total??m.score)??'—';
   const typeKey=isAm?'am':id.includes('TM')?'tm':'ps';
   const typeLabel=isAm?'AM':id.includes('TM')?'TM':'PS';
   const codeNum=id.replace(/[^0-9]/g,'').replace(/^0+/,'');
@@ -796,14 +799,14 @@ function buildMatchCard(m,i){
           <span class="match-type-badge ${typeKey}">${typeLabel}</span>
           <span class="match-date">${dateStr}</span>
         </div>
-        <div class="match-rank ${rankCls}">${isAm?'#':''}${m.rank??'—'}</div>
+        <div class="match-rank ${rankCls}">${leadTxt}</div>
       </div>
       <div class="match-card-body">
         <div>
           <div class="match-card-title">${title}</div>
           <div class="match-card-sub">${isAm?((m.opponents?.length||0)+' players'):(m.opp1?'vs '+m.opp1:'')}</div>
         </div>
-        <div class="match-card-score ${isPodium?'up':''}">${m.total??'—'}</div>
+        <div class="match-card-score ${isPodium?'up':''}">${scoreVal}</div>
       </div>
     </div>
     <div class="match-expand" id="expand-${i}">${expandHtml}</div>
@@ -866,7 +869,12 @@ function renderNotFound(){
     </div>`;
 }
 
-function playerInRecords(){ return hasPlayerData(currentPlayer, allMatches); }
+function playerInRecords(){
+  const p=currentPlayer; if(!p) return false;
+  const rating=Number(p.rating), ranking=Number(p.ranking??p.rank), points=Number(p.totalPoints??p.points);
+  const amPts=allMatches.reduce((s,m)=>s+(Number(m.total)||0),0); // Americano points; tournament rows have no .total
+  return (rating>0)||(ranking>0)||(points>0)||(amPts>0);
+}
 
 function renderLoadError(){
   document.querySelector('.app').innerHTML = `
@@ -885,7 +893,8 @@ function render(){
   document.getElementById('heroName').textContent=currentPlayer.name||'—';
   document.getElementById('heroAvatar').textContent=initialsOf(currentPlayer.name);
   document.getElementById('heroAvatar').style.background=`linear-gradient(135deg,${avColorOf(currentPlayer.name)},var(--blue))`;
-  document.getElementById('statRank').textContent='#'+(currentPlayer.ranking||currentPlayer.rank||'—');
+  const rk=Number(currentPlayer.ranking??currentPlayer.rank);
+  document.getElementById('statRank').textContent=(Number.isFinite(rk)&&rk>0)?'#'+rk:'—';
   const summed=allMatches.reduce((s,m)=>s+(Number(m.total)||0),0);
   const pts=summed||(currentPlayer.totalPoints??currentPlayer.points)||0;
   document.getElementById('statPoints').textContent=pts?pts.toLocaleString():'—';
