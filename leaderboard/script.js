@@ -905,4 +905,3 @@ function pickFirstServeRankingRows(firstServeData) {
   }
   return [];
 }
-
