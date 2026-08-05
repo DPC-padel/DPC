@@ -8,12 +8,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=28">
+  <link rel="stylesheet" href="styles.css?v=27">
 </head>
 <body data-page="break-point">
   <aside class="left-sidebar">
     <div class="sidebar-brand">
-      <img class="sidebar-logo" src="dpc-logo.svg" alt="Delhi Padel Collective">
+      <span class="sidebar-brand-name">//PadelCollective</span>
       <div class="sidebar-sub">Leaderboard</div>
     </div>
     <nav class="sidebar-nav">
@@ -23,7 +23,7 @@
       </a>
       <a class="sidebar-link" href="/Dashboard/">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        <span>Overview</span>
+        <span>Dashboard</span>
       </a>
       <a class="sidebar-link active" href="/leaderboard/">
         <svg viewBox="0 0 24 24"><rect x="18" y="3" width="3" height="18"/><rect x="11" y="8" width="3" height="13"/><rect x="4" y="13" width="3" height="8"/></svg>
@@ -67,7 +67,7 @@
       <section class="hero-banner">
         <p class="slash">//</p>
         <div class="hero-copy">
-          <h1>Break Point</h1>
+        <h1>Break Point</h1>
           <p>Leaderboard</p>
         </div>
       </section>
@@ -77,7 +77,7 @@
           <div>
             <p class="section-kicker">Break Point Rankings</p>
           </div>
-          <button id="refreshButton" class="refresh-button" type="button" hidden>Refresh</button>
+          <button id="refreshButton" class="refresh-button" type="button" aria-label="Refresh" title="Refresh" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
         </div>
 
         <div class="tab-switcher" role="tablist" aria-label="Break Point ranking types">
@@ -187,7 +187,7 @@
     </a>
     <a class="bnav-tab" href="/Dashboard/">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      <span>Overview</span>
+      <span>Dashboard</span>
     </a>
     <a class="bnav-tab active" href="/leaderboard/">
       <svg viewBox="0 0 24 24"><rect x="18" y="3" width="3" height="18"/><rect x="11" y="8" width="3" height="13"/><rect x="4" y="13" width="3" height="8"/></svg>
@@ -199,6 +199,6 @@
     </a>
   </div>
 
-  <script src="script.js?v=28"></script>
+  <script src="script.js?v=27"></script>
 </body>
 </html>
