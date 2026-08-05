@@ -1,4 +1,4 @@
-const CACHE_NAME = "dpc-v2";
+const CACHE_NAME = "dpc-v3";
 
 // Take over immediately on update so clients stop serving stale pages.
 self.addEventListener("install", () => self.skipWaiting());
@@ -15,6 +15,8 @@ self.addEventListener("activate", event => {
 // fall back to cache only when offline. Other requests: network, cache fallback.
 self.addEventListener("fetch", event => {
   const req = event.request;
+  // Never touch POST/PUT/etc (e.g. form submits to Apps Script) — let them hit the network directly.
+  if (req.method !== "GET") return;
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
