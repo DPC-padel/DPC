@@ -1,20 +1,31 @@
-const CACHE_NAME = "dpc-v1";
+const CACHE_NAME = "dpc-v2";
 
-const urlsToCache = [
-  "/",
-  "/index.html"
-];
+// Take over immediately on update so clients stop serving stale pages.
+self.addEventListener("install", () => self.skipWaiting());
 
-self.addEventListener("install", event => {
+self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
+// Network-first for page navigations so HTML is always fresh when online;
+// fall back to cache only when offline. Other requests: network, cache fallback.
 self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
-  );
+  const req = event.request;
+  if (req.mode === "navigate") {
+    event.respondWith(
+      fetch(req)
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then(r => r || caches.match("/index.html")))
+    );
+    return;
+  }
+  event.respondWith(fetch(req).catch(() => caches.match(req)));
 });
