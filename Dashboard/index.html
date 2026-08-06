@@ -569,10 +569,23 @@ async function fetchLeaderboardStats(name,venue){
   try{
     const res=await fetch(`${SUPABASE.url}/rest/v1/leaderboard_cache?source=eq.${src}&select=payload`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});
     if(!res.ok)return null;
-    const list=(await res.json())?.[0]?.payload?.rankings||[];
+    const pl=(await res.json())?.[0]?.payload||{};
+    // Each board stores its overall-ranking rows under a different key.
+    const list=pl.rankings||pl.breakPointOverall||pl.players||pl.data||[];
     const key=String(name).trim().toLowerCase();
-    const hit=list.find(r=>String(r.Name??r.name??'').trim().toLowerCase()===key);
-    return hit?{rating:hit.Rating??hit.rating,ranking:hit.Ranking??hit.ranking}:null;
+    const nameOf=r=>String(r.Name??r.name??r.playerName??'').trim().toLowerCase();
+    const matchesOf=r=>Number(r["Matches played"]??r.matches??r.MP??r.mp)||0;
+    const rankOf=r=>Number(r.Ranking??r.ranking??r.Rank??r.rank)||0;
+    const me=list.find(r=>nameOf(r)===key);
+    if(!me)return null;
+    // Ranking mirrors the board: only players with >=2 matches, renumbered by standing.
+    let ranking=null;
+    if(matchesOf(me)>=2){
+      const qualified=list.filter(r=>matchesOf(r)>=2).sort((a,b)=>rankOf(a)-rankOf(b));
+      const idx=qualified.findIndex(r=>nameOf(r)===key);
+      if(idx>=0)ranking=idx+1;
+    }
+    return {rating:me.Rating??me.rating, ranking};
   }catch(e){return null;}
 }
 async function fetchFromAPI(phone){
@@ -580,17 +593,19 @@ async function fetchFromAPI(phone){
   if(SUPABASE_READY){try{const res=await fetch(`${SUPABASE.url}/rest/v1/dashboard_cache?phone=eq.${encodeURIComponent(phone)}&select=player,matches`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});if(res.ok){const rows=await res.json();if(rows.length&&rows[0].player){player={...player,...rows[0].player};matches=rows[0].matches||[];gotSupabase=true;}}}catch(e){}}
   let ok=gotSupabase; // did we reach a source and get a definitive answer?
   if(!gotSupabase){
-    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(phone)}`);const d=await r.json();ok=true;/* reached the server = definitive */if(d&&d.success)matches=d.matches||[];}catch(e){matches=allMatches;}
+    // Master getPlayer: rating (falls back to self-rating), ranking + rating/ranking history
+    try{const r=await fetch(`${MATCHES_API}?action=getPlayer&phone=${encodeURIComponent(phone)}`);const d=await r.json();if(d&&d.success&&d.player){player={...player,...d.player};ok=true;}}catch(e){}
+    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(phone)}`);const d=await r.json();ok=true;if(d&&d.success)matches=d.matches||[];}catch(e){matches=allMatches;}
   }
   // phone→canonical name+board come from the matches DB; rating/ranking live only in leaderboard_cache (keyed by that name)
   const canonName=matches?.[0]?.playerName||player.name;
   const board=matches?.[0]?.venue||player.venue;
   if(canonName)player.boardName=canonName;
   if(board)player.venue=player.venue||board;
-  if(player.rating==null||player.ranking==null){
-    const st=await fetchLeaderboardStats(canonName,board);
-    if(st){ok=true;if(player.rating==null&&st.rating!=null)player.rating=st.rating;if(player.ranking==null&&st.ranking!=null)player.ranking=st.ranking;}
-  }
+  // Leaderboard is the source of truth for rating/ranking; it also enforces the
+  // >=2-match rule, so a player not on the board gets ranking=null (shows "—").
+  const st=await fetchLeaderboardStats(canonName,board);
+  if(st){ok=true;if(st.rating!=null)player.rating=st.rating;player.ranking=st.ranking;player.rank=st.ranking;}
   return{player,matches,ok};
 }
 async function bootstrapDashboard(){
