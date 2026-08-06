@@ -287,6 +287,11 @@
           <label><input type="checkbox" name="location" value="Noida" class="opt-label"/><span class="opt-btn">Noida</span></label>
           <label><input type="checkbox" name="location" value="Gurgaon" class="opt-label"/><span class="opt-btn">Gurgaon</span></label>
           <label><input type="checkbox" name="location" value="North Delhi" class="opt-label"/><span class="opt-btn">North Delhi</span></label>
+          <label><input type="checkbox" name="location" value="East Delhi" class="opt-label"/><span class="opt-btn">East Delhi</span></label>
+          <label><input type="checkbox" name="location" value="West Delhi" class="opt-label"/><span class="opt-btn">West Delhi</span></label>
+          <label><input type="checkbox" name="location" value="Central Delhi" class="opt-label"/><span class="opt-btn">Central Delhi</span></label>
+          <label><input type="checkbox" name="location" value="Chhatarpur" class="opt-label"/><span class="opt-btn">Chhatarpur</span></label>
+          <label><input type="checkbox" name="location" value="Dwarka" class="opt-label"/><span class="opt-btn">Dwarka</span></label>
           <label><input type="checkbox" name="location" value="Other" class="opt-label" id="locationOtherCheck"/><span class="opt-btn">Other</span></label>
         </div>
         <div class="other-input-wrap" id="locationOtherWrap">
@@ -308,9 +313,22 @@
       </div>
       <div class="q-divider"></div>
 
-      <!-- 05 Skill Level -->
+      <!-- Racquet sport -->
       <div class="q-block">
-        <div class="q-label">05 — Skill Level</div>
+        <div class="q-label">05 — Racquet sport</div>
+        <div class="q-title">Have you played any racquet sport before?</div>
+        <div class="q-sub">Tennis, badminton, squash, table tennis — it transfers to padel.</div>
+        <div class="options-grid cols-1">
+          <label><input type="radio" name="racquet" value="Competitive" class="opt-label"/><span class="opt-btn">Yes — at a competitive level</span></label>
+          <label><input type="radio" name="racquet" value="Casual" class="opt-label"/><span class="opt-btn">Yes — casually</span></label>
+          <label><input type="radio" name="racquet" value="No" class="opt-label"/><span class="opt-btn">No</span></label>
+        </div>
+      </div>
+      <div class="q-divider"></div>
+
+      <!-- 06 Skill Level -->
+      <div class="q-block">
+        <div class="q-label">06 — Skill Level</div>
         <div class="q-title">How would you describe your level?</div>
         <div class="options-grid cols-2" id="levelOptions">
           <label id="label_beginner"><input type="radio" name="level" value="Beginner" class="opt-label" id="level_beginner"/><span class="opt-btn">Beginner</span></label>
@@ -334,7 +352,7 @@
 
         <!-- Wall Play -->
         <div class="q-block">
-          <div class="q-label">06 — Wall play</div>
+          <div class="q-label">07 — Wall play</div>
           <div class="q-title">How comfortable are you playing shots off the glass?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="wall" value="0" class="opt-label"/><span class="opt-btn">Never tried</span></label>
@@ -347,7 +365,7 @@
 
         <!-- Serve -->
         <div class="q-block">
-          <div class="q-label">07 — Serve quality</div>
+          <div class="q-label">08 — Serve quality</div>
           <div class="q-title">How consistent is your serve?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="serve" value="0" class="opt-label"/><span class="opt-btn">Often faults</span></label>
@@ -360,7 +378,7 @@
 
         <!-- Smash -->
         <div class="q-block">
-          <div class="q-label">08 — Smash ability</div>
+          <div class="q-label">09 — Smash ability</div>
           <div class="q-title">Which smashes can you execute?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="smash" value="0" class="opt-label"/><span class="opt-btn">Cannot smash</span></label>
@@ -373,7 +391,7 @@
 
         <!-- Doubles -->
         <div class="q-block">
-          <div class="q-label">09 — Doubles coordination</div>
+          <div class="q-label">10 — Doubles coordination</div>
           <div class="q-title">How well do you play with a partner?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="doubles" value="0" class="opt-label"/><span class="opt-btn">No coordination</span></label>
@@ -386,7 +404,7 @@
 
         <!-- Return -->
         <div class="q-block">
-          <div class="q-label">10 — Return of serve</div>
+          <div class="q-label">11 — Return of serve</div>
           <div class="q-title">How strong is your return?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="ret" value="0" class="opt-label"/><span class="opt-btn">Weak returns</span></label>
@@ -600,6 +618,14 @@ function expBase(exp) {
   return 0.5;
 }
 
+// Racquet-sport background transfers to padel (hand-eye, footwork, tactics).
+function racquetBonus() {
+  const v = document.querySelector('input[name="racquet"]:checked')?.value || "";
+  if (v === "Competitive") return 0.5;
+  if (v === "Casual")      return 0.25;
+  return 0;
+}
+
 // Per-level ceiling — Advanced can go to 6.0
 // Scale:
 //   Never played / Beginner  → 0.0 – 2.0  (Initiation / Beginner)
@@ -646,7 +672,7 @@ function updateRating() {
   const base  = expBase(exp);
   const ceil  = levelCeiling(mode);
   const bonus = mode === "Advanced" ? 0.5 : 0;
-  const raw   = Math.min(ceil, base + normSkill + bonus);
+  const raw   = Math.min(ceil, base + normSkill + bonus + racquetBonus());
   const score = Math.round(raw * 2) / 2; // round to nearest 0.5
 
   const group = playtomicGroup(score);
@@ -657,7 +683,7 @@ function updateRating() {
   ratingCard.style.display = "block";
 }
 
-document.querySelectorAll('input[name="wall"], input[name="serve"], input[name="smash"], input[name="doubles"], input[name="ret"]')
+document.querySelectorAll('input[name="wall"], input[name="serve"], input[name="smash"], input[name="doubles"], input[name="ret"], input[name="racquet"]')
   .forEach(r => r.addEventListener("change", updateRating));
 
 // Also re-run rating when experience changes (it affects the base score)
