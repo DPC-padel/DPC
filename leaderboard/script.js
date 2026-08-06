@@ -249,7 +249,7 @@ function renderCrossBoard(query) {
   if (query.length >= 2 && allData) {
     for (const b of BOARDS) {
       if (b.page === here) continue;
-      for (const p of b.rows(allData)) {
+      for (const p of qualifyByMatches(b.rows(allData))) {
         if (p.name.toLowerCase().includes(query)) results.push({ p, page: b.page, label: b.label });
       }
     }
@@ -546,6 +546,16 @@ function compareByScore(a, b) {
   return a.name.localeCompare(b.name);
 }
 
+// Leaderboard only ranks players with at least MIN_MATCHES games played.
+// Drops everyone below the threshold, then renumbers ranks 1..N on the
+// qualifying set (assumes the input is already sorted by standing).
+const MIN_MATCHES = 2;
+function qualifyByMatches(players, min = MIN_MATCHES) {
+  return players
+    .filter((p) => (Number(p.matches) || 0) >= min)
+    .map((p, i) => ({ ...p, rank: i + 1 }));
+}
+
 // ─── RENDERERS ───────────────────────────────────────────────────────────────
 
 function getViewerName() {
@@ -718,6 +728,7 @@ function renderTournamentTable(target, rankings, colspan, emptyMessage = "No tou
 function renderOverallTable(target, rankings, colspan) {
   if (!target) return;
   ensureSearchUi(target);
+  rankings = qualifyByMatches(rankings); // ranking only counts players with >=2 matches
   if (!rankings.length) { renderMessageRow(target, "No overall entries yet.", colspan); return; }
   const viewer = getViewerName();
   const listRankings = enhancePanel(target, rankings, {
