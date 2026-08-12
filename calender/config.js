@@ -7,9 +7,26 @@ const CONFIG = {
   ADMIN_PASSWORD: "padel2024",
 };
 
-// Apps Script occasionally returns an HTML error/interstitial page instead of
-// JSON (transient). Read as text and retry a few times so one hiccup doesn't
-// crash the page with "Unexpected token '<'".
+// Reads come from a Supabase cache (reliable) that the games Apps Script keeps
+// in sync from the Sheet — same pattern as the leaderboard. Writes still POST
+// to Apps Script.
+const SUPABASE = {
+  url:     "https://zruqzybdpniofxbcwuat.supabase.co",
+  anonKey: "sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy",
+};
+
+async function readGamesCache(source) {
+  const res = await fetch(
+    `${SUPABASE.url}/rest/v1/games_cache?source=eq.${source}&select=payload`,
+    { headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` } }
+  );
+  if (!res.ok) throw new Error("cache read failed");
+  const rows = await res.json();
+  return (rows.length && rows[0].payload) ? rows[0].payload : [];
+}
+
+// Fallback: Apps Script occasionally returns an HTML error page instead of JSON.
+// Read as text and retry so one hiccup doesn't crash with "Unexpected token '<'".
 async function fetchJSON(url, tries = 4, timeoutMs = 8000) {
   let lastErr;
   for (let i = 0; i < tries; i++) {
@@ -33,15 +50,23 @@ async function fetchJSON(url, tries = 4, timeoutMs = 8000) {
 const Sheets = {
 
   async fetchEvents() {
-    const json = await fetchJSON(`${CONFIG.SCRIPT_URL}?action=events`);
-    if (!json.ok) throw new Error(json.error || "Failed to fetch events");
-    return json.data;
+    try {
+      return await readGamesCache("events");
+    } catch (e) {
+      const json = await fetchJSON(`${CONFIG.SCRIPT_URL}?action=events`);
+      if (!json.ok) throw new Error(json.error || "Failed to fetch events");
+      return json.data;
+    }
   },
 
   async fetchRSVPs() {
-    const json = await fetchJSON(`${CONFIG.SCRIPT_URL}?action=rsvps`);
-    if (!json.ok) throw new Error(json.error || "Failed to fetch RSVPs");
-    return json.data;
+    try {
+      return await readGamesCache("rsvps");
+    } catch (e) {
+      const json = await fetchJSON(`${CONFIG.SCRIPT_URL}?action=rsvps`);
+      if (!json.ok) throw new Error(json.error || "Failed to fetch RSVPs");
+      return json.data;
+    }
   },
 
   async addEvent(ev) {
