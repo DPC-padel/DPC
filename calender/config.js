@@ -7,18 +7,39 @@ const CONFIG = {
   ADMIN_PASSWORD: "padel2024",
 };
 
+// Apps Script occasionally returns an HTML error/interstitial page instead of
+// JSON (transient). Read as text and retry a few times so one hiccup doesn't
+// crash the page with "Unexpected token '<'".
+async function fetchJSON(url, tries = 4, timeoutMs = 8000) {
+  let lastErr;
+  for (let i = 0; i < tries; i++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res  = await fetch(url, { signal: ctrl.signal });
+      const text = await res.text();
+      if (!res.ok || text.trim().charAt(0) !== "{") throw new Error("Bad response");
+      return JSON.parse(text);
+    } catch (e) {
+      lastErr = e;
+      if (i < tries - 1) await new Promise(r => setTimeout(r, 350 * (i + 1)));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw lastErr;
+}
+
 const Sheets = {
 
   async fetchEvents() {
-    const res  = await fetch(`${CONFIG.SCRIPT_URL}?action=events`);
-    const json = await res.json();
+    const json = await fetchJSON(`${CONFIG.SCRIPT_URL}?action=events`);
     if (!json.ok) throw new Error(json.error || "Failed to fetch events");
     return json.data;
   },
 
   async fetchRSVPs() {
-    const res  = await fetch(`${CONFIG.SCRIPT_URL}?action=rsvps`);
-    const json = await res.json();
+    const json = await fetchJSON(`${CONFIG.SCRIPT_URL}?action=rsvps`);
     if (!json.ok) throw new Error(json.error || "Failed to fetch RSVPs");
     return json.data;
   },
