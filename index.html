@@ -81,7 +81,7 @@
   }
   .nav-login,
   .nav-dashboard,
-  .nav-guide {
+  .nav-howto {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -105,9 +105,21 @@
   }
   .nav-login:hover,
   .nav-dashboard:hover,
-  .nav-guide:hover {
+  .nav-howto:hover {
     background: rgba(255,255,255,.08);
     transform: translateY(-1px);
+  }
+  .nav-howto {
+    min-width: 0;
+    letter-spacing: 1px;
+    background: rgba(255,255,255,.12);
+  }
+  @media (max-width: 768px) {
+    .nav-logo svg { width: 118px; }
+    .nav-login, .nav-dashboard, .nav-howto {
+      min-width: 0; padding: 0 12px; height: 36px;
+      font-size: 9px; letter-spacing: .6px;
+    }
   }
 
   .hamburger {
@@ -447,7 +459,6 @@
 /* ── MOBILE ── */
 @media (max-width: 768px) {
   #navbar { padding: 0 24px; }
-  .nav-guide { display: none; }
 
   .scroll-hint {
     left: 50% !important;
@@ -563,7 +574,6 @@ video::-webkit-media-controls-fullscreen-button {
     <svg xmlns="http://www.w3.org/2000/svg"><use href="#dpc-logo"/></svg>
   </a>
   <div class="nav-actions" id="navActions">
-  <a class="nav-guide" href="/leaderboard/explainer.html">How It Works</a>
   <a class="nav-login" href="/login/">Login</a>
   <a class="nav-dashboard" href="/Dashboard/">Dashboard</a>
     <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -580,9 +590,10 @@ video::-webkit-media-controls-fullscreen-button {
     <a class="drawer-link" href="#home"      onclick="closeDrawer()">Home</a>
     <!-- <a class="drawer-link" href="#about"     onclick="closeDrawer()">Our Story</a> -->
    <!-- <a class="drawer-link" href="#lifestyle" onclick="closeDrawer()">Journal</a> -->
+<a class="drawer-link" href="/coaching/">Coaching</a>
 <a class="drawer-link" href="/calender/">Calendar</a>
 <a class="drawer-link" href="/leaderboard/">Leaderboard</a>
-<a class="drawer-link" href="/leaderboard/explainer.html">How It Works</a>
+<a class="drawer-link" href="/leaderboard/explainer.html" onclick="closeDrawer()">How ranking works</a>
 <a class="drawer-link cta-link" href="/Application/" onclick="closeDrawer()">Apply to Join →</a>
 <a class="drawer-link utility-link login-link" href="/login/" onclick="closeDrawer()">Login</a>
 <a class="drawer-link utility-link dashboard-link" href="/Dashboard/" onclick="closeDrawer()">Dashboard</a>
@@ -616,6 +627,37 @@ video::-webkit-media-controls-fullscreen-button {
   <div class="scroll-hint">
     <div class="scroll-arrow"></div>
     Scroll
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- COACHING -->
+<section id="coaching">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-eyebrow">Private Coaching</div>
+    <div class="section-title">Train with<br/>a coach.</div>
+    <p class="section-body">Book a session with Delhi's best padel coaches — pick your court, pick your slot, pay online and you're confirmed instantly. Split the session price with others: join an open group and pay only your share.</p>
+    <div class="facts-grid">
+      <div class="fact">
+        <div class="fact-num">1:1</div>
+        <div class="fact-title">Private</div>
+        <div class="fact-desc">The coach and the court all to yourself. Full session price, undivided attention.</div>
+      </div>
+      <div class="fact">
+        <div class="fact-num">1:2</div>
+        <div class="fact-title">Duo</div>
+        <div class="fact-desc">Two players split the session — each pays half. Bring a friend or join someone's open duo.</div>
+      </div>
+      <div class="fact">
+        <div class="fact-num">1:3</div>
+        <div class="fact-title">Trio</div>
+        <div class="fact-desc">Three players split the session — each pays a third. The most affordable way to train.</div>
+      </div>
+    </div>
+    <div style="margin-top:40px">
+      <a class="join-btn cta-dark" href="/coaching/" style="text-decoration:none">Book a Session →</a>
+    </div>
   </div>
 </section>
 
@@ -777,7 +819,7 @@ video::-webkit-media-controls-fullscreen-button {
   const SESSION_KEY = "dpcPlayerSession";
   const SESSION_PHONE_KEY = "dpcPlayerPhone";
   const SESSION_SAVED_AT_KEY = "dpcPlayerSessionSavedAt";
-  const SESSION_TTL = 90 * 24 * 60 * 60 * 1000; // 90 days of inactivity (rolling)
+  const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
   const hamburger = document.getElementById("hamburger");
   const drawer    = document.getElementById("drawer");
   const overlay   = document.getElementById("drawerOverlay");
@@ -803,8 +845,6 @@ video::-webkit-media-controls-fullscreen-button {
       return false;
     }
 
-    // Rolling: refresh so it only expires after inactivity, not a fixed window.
-    localStorage.setItem(SESSION_SAVED_AT_KEY, String(Date.now()));
     return true;
   }
 
@@ -882,13 +922,10 @@ video::-webkit-media-controls-fullscreen-button {
    window.location.href = "/Application/";
   }
 
-  const applyBtnEl = document.getElementById("applyBtn");
-  if (applyBtnEl) {
-    applyBtnEl.addEventListener("click", e => {
-      e.preventDefault();
-      applyAlert();
-    });
-  }
+  document.getElementById("applyBtn").addEventListener("click", e => {
+    e.preventDefault(); 
+    applyAlert();
+  });
  if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
