@@ -7,7 +7,7 @@
 //
 //  Tabs: Locations, Coaches, Slots, Requests.
 //  Set COACHING_API to your deployed /exec URL. Until then the page
-//  runs in DEMO MODE with sample data so the flow can be tested.
+//  runs in DEMO MODE with sample data so the flow can be tested
 // ============================================================
 
 const COACHING_API = "https://script.google.com/macros/s/AKfycby8pq9xQ7tekBgjK-6lmSbpcZDaVodsIbdgNTYcxbBdPsWYzHDFbL-Qq1yqyq53P4zm/exec";
