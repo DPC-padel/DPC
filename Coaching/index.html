@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Delhi//PadelCollective — Coaching</title>
+<meta name="description" content="Book private padel coaching with Delhi Padel Collective. Pick your coach, location and time — send the request and your coach confirms directly on Calendly."/>
+<link rel="icon" type="image/png" href="../logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="config.js?v=6"></script>
+<style>
+@font-face { font-family:'Berling'; src:url('../Berling Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
+:root{
+  --bg:#f2f4f8; --card:#fff; --surface-2:#f7f8fb; --surface-3:#eef0f5;
+  --ink:#0f172a; --muted:#94a3b8; --muted2:#64748b;
+  --line:rgba(15,23,42,.06); --line2:rgba(15,23,42,.10);
+  --accent:#2e4e8e; --accent-soft:rgba(46,78,142,.10); --accent-glow:rgba(46,78,142,.18);
+  --display:'Space Grotesk',system-ui,sans-serif; --body:'Inter',system-ui,sans-serif;
+  --title:'Berling',Georgia,serif;
+  --shadow:0 1px 3px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.03);
+  --radius:16px; --radius-sm:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:40px;}
+
+/* ── Sidebar (desktop) ── */
+.left-sidebar{display:none;position:fixed;top:0;left:0;bottom:0;width:248px;z-index:200;background:#0b0f17;flex-direction:column;border-right:1px solid rgba(255,255,255,.08);}
+.sidebar-brand{padding:28px 24px 22px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-brand-name{font-family:var(--title);font-size:1.2rem;font-weight:700;color:#fff;display:block;text-decoration:none;}
+.sidebar-sub{margin-top:9px;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+.sidebar-nav{padding:14px 0;}
+.sidebar-link{display:flex;align-items:center;gap:12px;padding:13px 24px;color:rgba(255,255,255,.6);text-decoration:none;font-family:var(--body);font-size:.88rem;font-weight:500;transition:background .2s,color .2s;}
+.sidebar-link:hover{color:#fff;background:rgba(255,255,255,.06);}
+.sidebar-link.active{color:#fff;background:rgba(255,255,255,.05);box-shadow:inset 3px 0 0 var(--accent);}
+.sidebar-link.active svg{stroke:var(--accent);}
+.sidebar-link svg{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.sidebar-foot{margin-top:auto;padding:20px;border-top:1px solid rgba(255,255,255,.08);}
+.sidebar-signout{width:100%;height:44px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:transparent;color:rgba(255,255,255,.55);font-family:var(--body);font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:color .2s,border-color .2s;}
+.sidebar-signout:hover{color:#fff;border-color:rgba(255,255,255,.28);}
+
+/* ── Bottom nav (mobile) ── */
+.bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:300;background:linear-gradient(to top,var(--bg) 80%,transparent);padding:8px 16px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);}
+.bnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;color:var(--muted);padding:6px 0;}
+.bnav-tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.bnav-tab span{font-size:.62rem;font-weight:500;}
+.bnav-tab.active{color:var(--accent);}
+.bnav-tab.active svg{stroke:var(--accent);}
+
+/* ── Shell ── */
+.shell{padding-left:0;}
+.container{max-width:760px;margin:0 auto;padding:22px 20px 40px;}
+
+/* ── Topbar (demo pill + my sessions) ── */
+.topbar{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-bottom:8px;}
+.demo-pill{font-size:.58rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:5px 12px;border-radius:100px;display:none;}
+.demo-pill.show{display:inline-block;}
+.my-sessions-btn{font-size:.62rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);background:var(--card);border:1px solid var(--line);border-radius:100px;padding:8px 14px;cursor:pointer;box-shadow:var(--shadow);font-family:var(--body);transition:color .2s,border-color .2s;}
+.my-sessions-btn:hover{color:var(--ink);border-color:var(--line2);}
+
+/* ── Hero ── */
+.hero-banner{display:flex;align-items:baseline;gap:8px;padding:6px 0 8px;}
+.slash{font-family:var(--title);font-size:1.9rem;line-height:1;color:var(--accent);font-weight:700;}
+.hero-copy h1{font-family:var(--title);font-size:1.9rem;line-height:1;letter-spacing:-.5px;font-weight:700;}
+.hero-lead{font-size:.9rem;color:var(--muted2);line-height:1.65;margin:10px 0 0;max-width:460px;}
+
+/* ── Stepper ── */
+.stepper{display:flex;align-items:center;gap:8px;padding:22px 0 26px;overflow-x:auto;scrollbar-width:none;}
+.stepper::-webkit-scrollbar{display:none;}
+.step-dot{display:flex;align-items:center;gap:8px;flex-shrink:0;font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.step-dot .n{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:.72rem;font-weight:700;color:var(--muted);transition:all .25s;}
+.step-dot.active{color:var(--ink);} .step-dot.active .n{background:var(--accent);border-color:var(--accent);color:#fff;}
+.step-dot.done{color:var(--accent);cursor:pointer;} .step-dot.done .n{background:var(--accent);border-color:var(--accent);color:#fff;}
+.step-line{flex:1;min-width:14px;height:1px;background:var(--line2);}
+
+/* ── Panels ── */
+.panel{display:none;animation:fadeUp .4s ease both;}
+.panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.panel-title{font-family:var(--title);font-size:1.5rem;font-weight:700;margin-bottom:6px;}
+.panel-sub{font-size:.85rem;color:var(--muted2);line-height:1.6;margin-bottom:22px;}
+.panel-sub b{color:var(--ink);font-weight:600;}
+
+/* ── Location cards ── */
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.opt-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:18px;cursor:pointer;box-shadow:var(--shadow);text-align:left;font-family:var(--body);transition:border-color .2s,background .2s;}
+.opt-card:hover{border-color:var(--line2);}
+.opt-card.selected{border-color:var(--accent);background:var(--accent-soft);}
+.opt-card h3{font-family:var(--title);font-size:1.05rem;font-weight:700;margin-bottom:4px;}
+.opt-card .meta{font-size:.72rem;color:var(--muted2);}
+
+/* ── Multi-select location cards ── */
+.opt-card.pick{position:relative;padding-right:44px;}
+.opt-card.pick .tick{position:absolute;top:14px;right:14px;width:19px;height:19px;border-radius:50%;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;}
+.opt-card.pick.selected .tick{background:var(--accent);border-color:var(--accent);}
+.opt-card.pick.selected .tick::after{content:"✓";}
+
+/* ── Selected slots list ── */
+.selected-slots{margin-top:18px;}
+.sel-label{font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 2px 10px;}
+.sel-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--accent);border-radius:12px;padding:11px 14px;box-shadow:var(--shadow);margin-bottom:8px;}
+.sel-row .t{font-size:.88rem;font-weight:500;}
+.sel-row .t b{font-family:var(--title);font-weight:700;}
+.sel-row .x{color:var(--muted2);font-size:1.15rem;line-height:1;cursor:pointer;padding:0 4px;}
+.sel-row .x:hover{color:var(--ink);}
+
+/* ── Coach cards ── */
+.coach-list{display:flex;flex-direction:column;gap:12px;}
+.coach-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;cursor:pointer;box-shadow:var(--shadow);display:flex;gap:14px;align-items:center;text-align:left;width:100%;font-family:var(--body);transition:border-color .2s,background .2s;}
+.coach-card:hover{border-color:var(--line2);}
+.coach-card.selected{border-color:var(--accent);background:var(--accent-soft);}
+.coach-avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;background:#8a9099;color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--title);font-size:1.05rem;font-weight:700;overflow:hidden;}
+.coach-avatar img{width:100%;height:100%;object-fit:cover;}
+.coach-info{flex:1;min-width:0;}
+.coach-name{font-family:var(--title);font-size:1.05rem;font-weight:700;}
+.coach-stars{color:var(--accent);font-size:.72rem;letter-spacing:2px;margin:2px 0 3px;}
+.coach-stars .cnt{color:var(--muted2);letter-spacing:0;font-size:.7rem;margin-left:4px;}
+.coach-level{font-size:.72rem;color:var(--muted2);}
+.coach-price{text-align:right;flex-shrink:0;}
+.coach-price .from{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;}
+.coach-price .amt{font-family:var(--display);font-size:1.05rem;font-weight:700;}
+
+/* ── Date strip ── */
+.date-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;margin-bottom:20px;}
+.date-strip::-webkit-scrollbar{display:none;}
+.date-chip{flex-shrink:0;width:62px;padding:12px 0 10px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--line);text-align:center;cursor:pointer;box-shadow:var(--shadow);font-family:var(--body);transition:border-color .2s,background .2s;}
+.date-chip:hover{border-color:var(--line2);}
+.date-chip.selected{border-color:var(--accent);background:var(--accent-soft);}
+.date-chip .dow{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);display:block;margin-bottom:4px;}
+.date-chip .dom{font-family:var(--display);font-size:1.15rem;font-weight:700;display:block;}
+.date-chip .mon{font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);}
+
+/* ── Slot grid ── */
+.slot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.slot-btn{padding:12px 0 10px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--line);font-family:var(--display);font-size:.95rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);transition:border-color .2s,background .2s;}
+.slot-btn .sub{display:block;font-size:.58rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin-top:4px;}
+.slot-btn .sub.join{color:var(--accent);}
+.slot-btn:hover:not(:disabled){border-color:var(--line2);}
+.slot-btn.selected{border-color:var(--accent);background:var(--accent-soft);}
+.slot-btn:disabled{color:var(--muted);background:transparent;cursor:not-allowed;box-shadow:none;}
+.slot-btn:disabled .sub{color:var(--muted);}
+.empty-note{font-size:.85rem;color:var(--muted2);padding:22px 0;text-align:center;}
+
+/* ── Session types ── */
+.type-list{display:flex;flex-direction:column;gap:12px;}
+.type-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px 18px;cursor:pointer;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;width:100%;font-family:var(--body);text-align:left;transition:border-color .2s,background .2s;}
+.type-card:hover{border-color:var(--line2);}
+.type-card.selected{border-color:var(--accent);background:var(--accent-soft);}
+.type-card h3{font-family:var(--title);font-size:1rem;font-weight:700;margin-bottom:3px;}
+.type-card .meta{font-size:.72rem;color:var(--muted2);}
+.type-price{text-align:right;}
+.type-price .amt{font-family:var(--display);font-size:1.05rem;font-weight:700;}
+.type-price .per{font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;}
+.type-total{font-size:.82rem;color:var(--muted2);margin-top:16px;text-align:right;}
+.type-total strong{font-family:var(--display);font-size:1.2rem;color:var(--ink);margin-left:8px;}
+.join-banner{background:var(--accent-soft);border:1px solid rgba(46,78,142,.28);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;font-size:.8rem;color:var(--muted2);line-height:1.65;}
+.join-banner strong{color:var(--ink);}
+
+/* ── Form ── */
+.form-grid{display:flex;flex-direction:column;gap:16px;}
+.field label{display:block;font-size:.6rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.field input,.field select,.field textarea{width:100%;padding:13px 14px;border-radius:var(--radius-sm);background:var(--card);border:1px solid var(--line);font-family:var(--body);font-size:.95rem;color:var(--ink);box-shadow:var(--shadow);transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+.field textarea{resize:vertical;min-height:70px;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);}
+.field .err{font-size:.72rem;color:#c8752d;margin-top:5px;display:none;}
+.field.invalid input{border-color:#c8752d;}
+.field.invalid .err{display:block;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ── Review / confirm ── */
+.review-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;box-shadow:var(--shadow);}
+.review-row{display:flex;justify-content:space-between;align-items:baseline;padding:13px 18px;border-bottom:1px solid var(--line);}
+.review-row:last-child{border-bottom:none;}
+.review-row .k{font-size:.6rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.review-row .v{font-size:.9rem;font-weight:500;text-align:right;}
+.review-row.total{background:var(--surface-2);}
+.review-row.total .v{font-family:var(--display);font-size:1.15rem;font-weight:700;}
+
+.confirm-wrap{text-align:center;padding:22px 0 8px;}
+.confirm-check{width:64px;height:64px;border-radius:50%;background:var(--accent);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:pop .5s cubic-bezier(.68,-.55,.27,1.55) both;}
+@keyframes pop{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+.confirm-wrap h2{font-family:var(--title);font-size:1.7rem;font-weight:700;margin-bottom:8px;}
+.confirm-msg{font-size:.9rem;color:var(--muted2);line-height:1.7;max-width:420px;margin:0 auto 22px;}
+.confirm-id{font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin:14px 0 0;}
+.confirm-id strong{color:var(--accent);letter-spacing:.06em;}
+.bridge-note{background:var(--accent-soft);border:1px solid rgba(46,78,142,.28);border-radius:var(--radius-sm);padding:14px 16px;font-size:.82rem;color:var(--muted2);line-height:1.65;margin-top:16px;text-align:left;}
+.bridge-note strong{color:var(--ink);}
+.confirm-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px;}
+
+/* ── Buttons ── */
+.btn-row{display:flex;gap:10px;margin-top:26px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:99px;border:none;cursor:pointer;font-family:var(--body);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transition:all .2s;text-decoration:none;}
+.btn-accent{background:var(--accent);color:#fff;flex:1;box-shadow:0 6px 20px var(--accent-glow);}
+.btn-accent:hover{filter:brightness(1.05);}
+.btn-accent:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+.btn-ghost{background:var(--card);color:var(--muted2);border:1px solid var(--line);box-shadow:var(--shadow);}
+.btn-ghost:hover{color:var(--ink);border-color:var(--line2);}
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.btn.loading .spinner{display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error-banner{background:rgba(200,117,45,.1);border:1px solid rgba(200,117,45,.3);color:#a25f22;border-radius:var(--radius-sm);padding:13px 16px;font-size:.8rem;margin-top:16px;display:none;}
+.error-banner.show{display:block;}
+
+/* ── My Sessions modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.3);backdrop-filter:blur(4px);z-index:400;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--card);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:80vh;overflow-y:auto;padding:26px 22px 40px;animation:slideUp .35s cubic-bezier(.32,.72,0,1) both;}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal h3{font-family:var(--title);font-size:1.3rem;font-weight:700;margin-bottom:16px;}
+.session-item{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);}
+.session-item .top{display:flex;justify-content:space-between;margin-bottom:6px;}
+.session-item .coach{font-family:var(--title);font-weight:700;font-size:1rem;}
+.session-item .status{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;}
+.session-item .detail{font-size:.78rem;color:var(--muted2);}
+
+/* ── Desktop ── */
+@media (min-width:769px){
+  .left-sidebar{display:flex;}
+  .bottom-nav{display:none;}
+  .shell{padding-left:248px;}
+  .container{max-width:820px;padding:34px 48px 40px;}
+  body{padding-bottom:40px;}
+  .slot-grid{grid-template-columns:repeat(4,1fr);}
+}
+@media (max-width:400px){
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar (desktop) ── -->
+<aside class="left-sidebar">
+  <div class="sidebar-brand">
+    <a class="sidebar-brand-name" href="../">//PadelCollective</a>
+    <div class="sidebar-sub">Coaching</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="sidebar-link" href="/"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg><span>Home</span></a>
+    <a class="sidebar-link" href="/Dashboard/"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+    <a class="sidebar-link" href="/leaderboard/"><svg viewBox="0 0 24 24"><rect x="18" y="3" width="3" height="18"/><rect x="11" y="8" width="3" height="13"/><rect x="4" y="13" width="3" height="8"/></svg><span>Leaderboard</span></a>
+    <a class="sidebar-link" href="/calender/"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg><span>Games</span></a>
+    <a class="sidebar-link active" href="/coaching/"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 6.9H22l-5.8 4.3 2.2 6.8L12 16l-6.4 4 2.2-6.8L2 8.9h7.6z"/></svg><span>Coaching</span></a>
+  </nav>
+  <div class="sidebar-foot">
+    <button class="sidebar-signout" onclick="localStorage.removeItem('dpcPlayerSession');localStorage.removeItem('dpcPlayerPhone');sessionStorage.removeItem('dpcDemo');location.href='/login/'">Sign Out</button>
+  </div>
+</aside>
+
+<div class="shell">
+  <div class="container">
+
+    <div class="topbar">
+      <span class="demo-pill" id="demoPill">Demo Mode</span>
+      <button class="my-sessions-btn" id="mySessionsBtn">My Requests</button>
+    </div>
+
+    <div class="hero-banner">
+      <span class="slash">//</span>
+      <div class="hero-copy"><h1>Coaching</h1></div>
+    </div>
+
+    <div class="stepper" id="stepper">
+      <div class="step-dot" data-step="1"><span class="n">1</span><span>Coach</span></div>
+      <div class="step-line"></div>
+      <div class="step-dot" data-step="2"><span class="n">2</span><span>Location</span></div>
+      <div class="step-line"></div>
+      <div class="step-dot" data-step="3"><span class="n">3</span><span>Slot</span></div>
+      <div class="step-line"></div>
+      <div class="step-dot" data-step="4"><span class="n">4</span><span>Type</span></div>
+      <div class="step-line"></div>
+      <div class="step-dot" data-step="5"><span class="n">5</span><span>Details</span></div>
+    </div>
+
+    <!-- STEP 1 — COACH -->
+    <section class="panel active" id="panel-1">
+      <h2 class="panel-title">Choose your coach</h2>
+      <p class="panel-sub">Pick who you'd like to train with — they'll reach out to lock in the details.</p>
+      <div class="coach-list" id="coachList"><p class="empty-note">Loading coaches…</p></div>
+    </section>
+
+    <!-- STEP 2 — LOCATION (multi-select) -->
+    <section class="panel" id="panel-2">
+      <h2 class="panel-title">Which courts work for you?</h2>
+      <p class="panel-sub">Pick every location you can get to — select as many as you like.</p>
+      <div class="opt-grid" id="locationGrid"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" data-back="1">Back</button>
+        <button class="btn btn-accent" id="toStep3" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 3 — SLOTS (multi-select, dates → times) -->
+    <section class="panel" id="panel-3">
+      <h2 class="panel-title">Pick your slots</h2>
+      <p class="panel-sub">Tap a date, then the times you can make. Add as many as you like — your coach confirms one.</p>
+      <div class="date-strip" id="dateStrip"></div>
+      <div class="slot-grid" id="slotGrid"></div>
+      <div class="selected-slots" id="selectedSlots"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" data-back="2">Back</button>
+        <button class="btn btn-accent" id="toStep4" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 4 — SESSION TYPE -->
+    <section class="panel" id="panel-4">
+      <h2 class="panel-title" id="typeTitle">Session type</h2>
+      <p class="panel-sub" id="typeSub">The session price splits across the group — you pay only your share. Remaining spots stay open for others to join.</p>
+      <div id="joinBanner"></div>
+      <div class="type-list" id="typeList"></div>
+      <div class="type-total" id="typeTotal"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" data-back="3">Back</button>
+        <button class="btn btn-accent" id="toStep5" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- STEP 5 — DETAILS -->
+    <section class="panel" id="panel-5">
+      <h2 class="panel-title">Your details</h2>
+      <p class="panel-sub">Your coach uses these to reach out and confirm.</p>
+      <div class="form-grid">
+        <div class="field" id="f-name">
+          <label for="inName">Full name *</label>
+          <input id="inName" type="text" autocomplete="name" placeholder="Your name"/>
+          <div class="err">Please enter your name</div>
+        </div>
+        <div class="form-row">
+          <div class="field" id="f-phone">
+            <label for="inPhone">Phone *</label>
+            <input id="inPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="98XXXXXXXX"/>
+            <div class="err">Enter a valid 10-digit number</div>
+          </div>
+          <div class="field">
+            <label for="inSkill">Skill level</label>
+            <select id="inSkill">
+              <option value="">Select (optional)</option>
+              <option>Never played</option>
+              <option>Beginner</option>
+              <option>Intermediate</option>
+              <option>Advanced</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="error-banner" id="submitError"></div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" data-back="4">Back</button>
+        <button class="btn btn-accent" id="submitBtn"><span class="spinner"></span><span id="submitLabel">Send Request</span></button>
+      </div>
+    </section>
+
+    <!-- STEP 6 — CONFIRMED -->
+    <section class="panel" id="panel-6">
+      <div class="confirm-wrap">
+        <div class="confirm-check">✓</div>
+        <h2>Request received.</h2>
+        <p class="confirm-msg" id="confirmMsg">Your coach will contact you shortly to confirm the slot and sort out payment directly. We just connect you — the session is between you and your coach.</p>
+        <div class="review-card" id="confirmCard" style="text-align:left;max-width:440px;margin:0 auto"></div>
+        <div id="bridgeNote" style="max-width:440px;margin:0 auto"></div>
+        <div id="groupNote" style="max-width:440px;margin:0 auto"></div>
+        <div class="confirm-actions">
+          <button class="btn btn-accent" id="newBookingBtn" style="flex:0 1 auto">Book Another</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ── Bottom nav (mobile) ── -->
+<div class="bottom-nav" role="navigation" aria-label="Primary">
+
+  <a class="bnav-tab" href="/Dashboard/"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+  <a class="bnav-tab" href="/leaderboard/"><svg viewBox="0 0 24 24"><rect x="18" y="3" width="3" height="18"/><rect x="11" y="8" width="3" height="13"/><rect x="4" y="13" width="3" height="8"/></svg><span>Leaderboard</span></a>
+  <a class="bnav-tab" href="/"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg><span>Home</span></a>
+  <a class="bnav-tab" href="/calender/"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg><span>Games</span></a>
+  <a class="bnav-tab active" href="/coaching/"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 6.9H22l-5.8 4.3 2.2 6.8L12 16l-6.4 4 2.2-6.8L2 8.9h7.6z"/></svg><span>Coaching</span></a>
+
+</div>
+
+<!-- ── My Requests ── -->
+<div class="modal-overlay" id="sessionsModal">
+  <div class="modal">
+    <h3>My Requests</h3>
+    <div class="field" style="margin-bottom:16px">
+      <label for="lookupPhone">Phone number used in the request</label>
+      <input id="lookupPhone" type="tel" inputmode="numeric" placeholder="98XXXXXXXX"/>
+    </div>
+    <button class="btn btn-accent" id="lookupBtn" style="width:100%">Find My Requests</button>
+    <div id="sessionsList" style="margin-top:18px"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Coaching request flow — DPC is the bridge (no online payment).
+//  Player sends a request; the coach confirms directly on Calendly.
+// ============================================================
+const S = {
+  step: 1,
+  coach: null, locations: [], slots: [], type: null, details: {}, booking: null,
+  slotsByDate: {}, currentDate: null,
+};
+const $ = (id) => document.getElementById(id);
+const LAST_STEP = 5;
+
+if (DEMO_MODE) $("demoPill").classList.add("show");
+
+// ── Navigation ──────────────────────────────────────────────
+function goTo(step) {
+  S.step = step;
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  $(`panel-${step}`).classList.add("active");
+  document.querySelectorAll(".step-dot").forEach(d => {
+    const n = Number(d.dataset.step);
+    d.classList.toggle("active", n === step);
+    d.classList.toggle("done", n < step && step <= LAST_STEP);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+document.querySelectorAll("[data-back]").forEach(b =>
+  b.addEventListener("click", () => goTo(Number(b.dataset.back))));
+document.querySelectorAll(".step-dot").forEach(d =>
+  d.addEventListener("click", () => {
+    const n = Number(d.dataset.step);
+    if (d.classList.contains("done") && S.step <= LAST_STEP) goTo(n);
+  }));
+
+// ── Step 1: coaches (all) ───────────────────────────────────
+async function loadCoaches() {
+  try {
+    const coaches = await API.fetchAllCoaches();
+    $("coachList").innerHTML = "";
+    if (!coaches.length) {
+      $("coachList").innerHTML = `<p class="empty-note">No coaches available yet.</p>`;
+      return;
+    }
+    coaches.forEach(c => {
+      const minPrice = sharePrice(c.session_price, "1:3");
+      const initials = c.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+      const btn = document.createElement("button");
+      btn.className = "coach-card";
+      btn.innerHTML = `
+        <div class="coach-avatar">${c.photo ? `<img src="${c.photo}" alt="${c.name}"/>` : initials}</div>
+        <div class="coach-info">
+          <div class="coach-name">${c.name}</div>
+          <div class="coach-level">${c.level || ""}</div>
+        </div>
+        <div class="coach-price"><span class="from">From</span><span class="amt">₹${minPrice.toLocaleString("en-IN")}</span></div>`;
+      btn.addEventListener("click", () => {
+        S.coach = c;
+        document.querySelectorAll("#coachList .coach-card").forEach(x => x.classList.remove("selected"));
+        btn.classList.add("selected");
+        loadLocations();
+        goTo(2);
+      });
+      $("coachList").appendChild(btn);
+    });
+  } catch (e) {
+    $("coachList").innerHTML = `<p class="empty-note">Couldn't load coaches — please refresh.</p>`;
+  }
+}
+
+// ── Step 2: locations (multi-select) ────────────────────────
+async function loadLocations() {
+  $("locationGrid").innerHTML = `<p class="empty-note">Loading locations…</p>`;
+  $("toStep3").disabled = S.locations.length === 0;
+  try {
+    const locs = await API.fetchLocations();
+    $("locationGrid").innerHTML = "";
+    locs.forEach(loc => {
+      const btn = document.createElement("button");
+      btn.className = "opt-card pick";
+      if (S.locations.some(l => l.id === loc.id)) btn.classList.add("selected");
+      btn.innerHTML = `<span class="tick"></span><h3>${loc.name}</h3><div class="meta">${loc.area || ""}</div>`;
+      btn.addEventListener("click", () => {
+        const i = S.locations.findIndex(l => l.id === loc.id);
+        if (i >= 0) { S.locations.splice(i, 1); btn.classList.remove("selected"); }
+        else { S.locations.push(loc); btn.classList.add("selected"); }
+        $("toStep3").disabled = S.locations.length === 0;
+      });
+      $("locationGrid").appendChild(btn);
+    });
+  } catch (e) {
+    $("locationGrid").innerHTML = `<p class="empty-note">Couldn't load locations — please refresh.</p>`;
+  }
+}
+$("toStep3").addEventListener("click", () => { loadSlots(); goTo(3); });
+
+// ── Step 3: slots (multi-select, dates → times) ─────────────
+const slotKey = (s) => `${s.location_id}|${s.date}|${s.start_time}`;
+
+async function loadSlots() {
+  S.slots = []; S.currentDate = null;
+  $("toStep4").disabled = true;
+  $("dateStrip").innerHTML = "";
+  $("selectedSlots").innerHTML = "";
+  $("slotGrid").innerHTML = `<p class="empty-note" style="grid-column:1/-1">Loading availability…</p>`;
+  try {
+    const byDate = {};
+    for (const loc of S.locations) {
+      let res = {};
+      try { res = await API.fetchSlots(S.coach.id, loc.id); } catch (e) { res = {}; }
+      Object.keys(res).forEach(d => {
+        res[d].forEach(slot => {
+          if (slot.status !== "open") return;
+          (byDate[d] = byDate[d] || []).push({ ...slot, location_id: loc.id, location_name: loc.name });
+        });
+      });
+    }
+    Object.keys(byDate).forEach(d => byDate[d].sort((a, b) => a.start_time.localeCompare(b.start_time)));
+    S.slotsByDate = byDate;
+    const dates = Object.keys(byDate).sort();
+    if (!dates.length) {
+      $("dateStrip").innerHTML = "";
+      $("slotGrid").innerHTML = `<p class="empty-note" style="grid-column:1/-1">No open slots at these courts in the next two weeks.</p>`;
+      return;
+    }
+    $("dateStrip").innerHTML = "";
+    dates.forEach((dateStr, i) => {
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const dt = new Date(y, m - 1, d);
+      const chip = document.createElement("button");
+      chip.className = "date-chip";
+      chip.dataset.date = dateStr;
+      chip.innerHTML = `
+        <span class="dow">${dt.toLocaleDateString("en-IN", { weekday: "short" })}</span>
+        <span class="dom">${dt.getDate()}</span>
+        <span class="mon">${dt.toLocaleDateString("en-IN", { month: "short" })}</span>`;
+      chip.addEventListener("click", () => selectDate(dateStr, chip));
+      $("dateStrip").appendChild(chip);
+      if (i === 0) selectDate(dateStr, chip);
+    });
+  } catch (e) {
+    $("slotGrid").innerHTML = `<p class="empty-note" style="grid-column:1/-1">Couldn't load slots — please refresh.</p>`;
+  }
+}
+
+function selectDate(dateStr, chip) {
+  document.querySelectorAll(".date-chip").forEach(c => c.classList.remove("selected"));
+  chip.classList.add("selected");
+  S.currentDate = dateStr;
+  renderDateSlots(dateStr);
+}
+
+function renderDateSlots(dateStr) {
+  $("slotGrid").innerHTML = "";
+  const multiLoc = S.locations.length > 1;
+  (S.slotsByDate[dateStr] || []).forEach(slot => {
+    const b = document.createElement("button");
+    b.className = "slot-btn";
+    const sub = multiLoc ? `<span class="sub">${slot.location_name}</span>`
+                         : (slot.level ? `<span class="sub">${slot.level}</span>` : "");
+    b.innerHTML = formatTime12(slot.start_time) + sub;
+    if (S.slots.some(x => slotKey(x) === slotKey(slot))) b.classList.add("selected");
+    b.addEventListener("click", () => {
+      const i = S.slots.findIndex(x => slotKey(x) === slotKey(slot));
+      if (i >= 0) { S.slots.splice(i, 1); b.classList.remove("selected"); }
+      else { S.slots.push(slot); b.classList.add("selected"); }
+      $("toStep4").disabled = S.slots.length === 0;
+      renderSelected();
+    });
+    $("slotGrid").appendChild(b);
+  });
+}
+
+function renderSelected() {
+  const el = $("selectedSlots");
+  if (!S.slots.length) { el.innerHTML = ""; return; }
+  const multiLoc = S.locations.length > 1;
+  const sorted = [...S.slots].sort((a, b) =>
+    a.date === b.date ? a.start_time.localeCompare(b.start_time) : a.date.localeCompare(b.date));
+  el.innerHTML = `<div class="sel-label">Your slots · ${S.slots.length} picked</div>` + sorted.map(s => {
+    const [y, m, d] = s.date.split("-").map(Number);
+    const dl = new Date(y, m - 1, d).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+    return `<div class="sel-row"><span class="t"><b>${dl}</b> · ${formatTime12(s.start_time)}${multiLoc ? ` · ${s.location_name}` : ""}</span><span class="x" data-k="${slotKey(s)}">×</span></div>`;
+  }).join("");
+  el.querySelectorAll(".x").forEach(x => x.addEventListener("click", () => {
+    const i = S.slots.findIndex(s => slotKey(s) === x.dataset.k);
+    if (i >= 0) S.slots.splice(i, 1);
+    $("toStep4").disabled = S.slots.length === 0;
+    renderSelected();
+    if (S.currentDate) renderDateSlots(S.currentDate);
+  }));
+}
+$("toStep4").addEventListener("click", () => { renderTypes(); goTo(4); });
+
+// ── Step 4: session type ────────────────────────────────────
+function selectType(t, card) {
+  S.type = { ...t, price: sharePrice(S.coach.session_price, t.id), total: S.coach.session_price };
+  document.querySelectorAll(".type-card").forEach(c => c.classList.remove("selected"));
+  card.classList.add("selected");
+  $("typeTotal").innerHTML = `Est. your share<strong>₹${S.type.price.toLocaleString("en-IN")}</strong>`;
+  $("toStep5").disabled = false;
+}
+function typeCard(t) {
+  const price = sharePrice(S.coach.session_price, t.id);
+  const card = document.createElement("button");
+  card.className = "type-card";
+  card.innerHTML = `
+    <div><h3>${t.label}</h3><div class="meta">${t.players} player${t.players > 1 ? "s" : ""} · 60 min · session ₹${S.coach.session_price.toLocaleString("en-IN")}</div></div>
+    <div class="type-price"><span class="amt">₹${price.toLocaleString("en-IN")}</span><span class="per">${t.players > 1 ? "per person" : "full session"}</span></div>`;
+  return card;
+}
+function renderTypes() {
+  S.type = null;
+  $("toStep5").disabled = true;
+  $("typeTotal").textContent = "";
+  $("typeList").innerHTML = "";
+  $("joinBanner").innerHTML = "";
+  $("typeTitle").textContent = "Session type";
+  $("typeSub").textContent = "The session price splits across the group — you pay only your share.";
+  SESSION_TYPES.forEach(t => {
+    const card = typeCard(t);
+    card.addEventListener("click", () => selectType(t, card));
+    $("typeList").appendChild(card);
+  });
+}
+$("toStep5").addEventListener("click", () => goTo(5));
+
+// ── Step 5: details → submit request ────────────────────────
+function validateDetails() {
+  const name = $("inName").value.trim();
+  const phone = $("inPhone").value.replace(/\D/g, "");
+  let ok = true;
+  $("f-name").classList.toggle("invalid", !name); ok = ok && !!name;
+  const phoneOk = /^[6-9]\d{9}$/.test(phone);
+  $("f-phone").classList.toggle("invalid", !phoneOk); ok = ok && phoneOk;
+  if (!ok) return null;
+  return {
+    player_name: name, phone,
+    skill_level: $("inSkill").value,
+  };
+}
+
+function slotsText() {
+  const multiLoc = S.locations.length > 1;
+  return [...S.slots]
+    .sort((a, b) => a.date === b.date ? a.start_time.localeCompare(b.start_time) : a.date.localeCompare(b.date))
+    .map(s => {
+      const [y, m, d] = s.date.split("-").map(Number);
+      const dl = new Date(y, m - 1, d).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+      return `${dl} ${formatTime12(s.start_time)}${multiLoc ? ` (${s.location_name})` : ""}`;
+    }).join("; ");
+}
+
+$("submitBtn").addEventListener("click", async () => {
+  const d = validateDetails();
+  if (!d) return;
+  S.details = d;
+  const btn = $("submitBtn");
+  btn.disabled = true; btn.classList.add("loading");
+  $("submitError").classList.remove("show");
+  const first = S.slots[0] || {};
+  try {
+    S.booking = await API.createBooking({
+      coach_id: S.coach.id, coach_name: S.coach.name,
+      location_id: S.locations.map(l => l.id).join(", "),
+      location_name: S.locations.map(l => l.name).join(", "),
+      locations: S.locations.map(l => l.name).join(", "),
+      date: first.date || "", start_time: first.start_time || "", end_time: first.end_time || "",
+      slots: slotsText(),
+      session_type: S.type.id, players: S.type.players, amount: S.type.price,
+      ...S.details,
+    });
+    renderConfirmation();
+    goTo(6);
+    document.querySelectorAll(".step-dot").forEach(dd => dd.classList.add("done"));
+  } catch (e) {
+    $("submitError").textContent = e.message || "Something went wrong — please try again.";
+    $("submitError").classList.add("show");
+  } finally {
+    btn.disabled = false; btn.classList.remove("loading");
+  }
+});
+
+// ── Step 6: confirmation ────────────────────────────────────
+function confirmRows(target) {
+  const slotList = slotsText().split("; ");
+  const slotDisplay = slotList.length <= 2 ? slotList.join("<br>") : `${slotList.slice(0, 2).join("<br>")}<br>+${slotList.length - 2} more`;
+  const rows = [
+    ["Coach", S.coach.name],
+    ["Courts", S.locations.map(l => l.name).join(", ")],
+    ["Your slots", slotDisplay],
+    ["Type", `${S.type.label} · ${S.type.players} player${S.type.players > 1 ? "s" : ""}`],
+  ];
+  target.innerHTML = rows.map(([k, v]) =>
+    `<div class="review-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("")
+    + `<div class="review-row total"><span class="k">Est. per person</span><span class="v">₹${S.type.price.toLocaleString("en-IN")}</span></div>`;
+}
+
+function renderConfirmation() {
+  confirmRows($("confirmCard"));
+  if (S.booking && S.booking.booking_id) {
+    $("confirmMsg").insertAdjacentHTML("afterend",
+      `<p class="confirm-id">Request ID <strong>${S.booking.booking_id}</strong></p>`);
+  }
+  $("bridgeNote").innerHTML = `<div class="bridge-note"><strong>What happens next?</strong> Your coach calls or WhatsApps you on the number you gave and picks one of your slots. Pricing shown is indicative — you settle it directly with the coach.</div>`;
+  $("groupNote").innerHTML = "";
+}
+
+$("newBookingBtn").addEventListener("click", () => {
+  S.coach = null; S.locations = []; S.slots = []; S.type = null; S.booking = null;
+  document.querySelectorAll(".step-dot").forEach(d => d.classList.remove("done", "active"));
+  const cid = $("confirmMsg").nextElementSibling;
+  if (cid && cid.classList.contains("confirm-id")) cid.remove();
+  loadCoaches();
+  goTo(1);
+});
+
+// ── My Requests ─────────────────────────────────────────────
+$("mySessionsBtn").addEventListener("click", () => $("sessionsModal").classList.add("open"));
+$("sessionsModal").addEventListener("click", (e) => {
+  if (e.target === $("sessionsModal")) $("sessionsModal").classList.remove("open");
+});
+$("lookupBtn").addEventListener("click", async () => {
+  const phone = $("lookupPhone").value.replace(/\D/g, "");
+  const list = $("sessionsList");
+  if (!/^[6-9]\d{9}$/.test(phone)) { list.innerHTML = `<p class="empty-note">Enter a valid 10-digit number.</p>`; return; }
+  list.innerHTML = `<p class="empty-note">Looking up…</p>`;
+  try {
+    const bookings = await API.fetchBookings(phone);
+    if (!bookings.length) { list.innerHTML = `<p class="empty-note">No requests found for this number.</p>`; return; }
+    list.innerHTML = bookings.map(b => `
+      <div class="session-item">
+        <div class="top"><span class="coach">${b.coach_name}</span><span class="status">${b.booking_status}</span></div>
+        <div class="detail">${b.location_name} · ${formatDateLong(b.date)} · ${formatTime12(b.start_time)}</div>
+        <div class="detail">Request ${b.booking_id}</div>
+      </div>`).join("");
+  } catch (e) {
+    list.innerHTML = `<p class="empty-note">Couldn't fetch requests — try again.</p>`;
+  }
+});
+
+// ── Init ────────────────────────────────────────────────────
+loadCoaches();
+</script>
+</body>
+</html>
