@@ -103,29 +103,57 @@ function getJSON(url) {
   return fetch(url).then(r => r.json());
 }
 
+// ── Supabase cache (reliable reads; Apps Script kept as fallback) ──
+const SUPABASE = {
+  url:     "https://zruqzybdpniofxbcwuat.supabase.co",
+  anonKey: "sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy",
+};
+let _coachCache = null;
+async function loadCoachingCache() {
+  if (_coachCache) return _coachCache;
+  const res = await fetch(`${SUPABASE.url}/rest/v1/coaching_cache?select=source,payload`,
+    { headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` } });
+  if (!res.ok) throw new Error("cache read failed");
+  const c = { locations: [], coaches: [], slots: [] };
+  (await res.json()).forEach(r => { if (c[r.source] !== undefined) c[r.source] = r.payload || []; });
+  _coachCache = c;
+  return c;
+}
+
 const API = {
 
   async fetchLocations() {
     if (DEMO_MODE) return DEMO.locations;
-    return getJSON(`${COACHING_API}?action=getLocations`);
+    try { return (await loadCoachingCache()).locations; }
+    catch (e) { return getJSON(`${COACHING_API}?action=getLocations`); }
   },
 
+  // Coaches with slots at this location.
   async fetchCoaches(locationId) {
     if (DEMO_MODE) return DEMO.coaches.filter(c => c.locations.includes(locationId));
-    return getJSON(`${COACHING_API}?action=getCoaches&location=${encodeURIComponent(locationId)}`);
+    try {
+      const c = await loadCoachingCache();
+      const ids = new Set(c.slots.filter(s => String(s.location_id) === String(locationId)).map(s => String(s.coach_id)));
+      return c.coaches.filter(co => ids.has(String(co.id)));
+    } catch (e) {
+      return getJSON(`${COACHING_API}?action=getCoaches&location=${encodeURIComponent(locationId)}`);
+    }
   },
 
-  // All coaches (coach-first flow). Derived from every location, deduped by id.
+  // All coaches (coach-first flow).
   async fetchAllCoaches() {
     if (DEMO_MODE) return DEMO.coaches;
-    const locs = await this.fetchLocations();
-    const lists = await Promise.all(locs.map(l => this.fetchCoaches(l.id).catch(() => [])));
-    const seen = {}, all = [];
-    lists.flat().forEach(c => { if (c && c.id && !seen[c.id]) { seen[c.id] = 1; all.push(c); } });
-    return all;
+    try { return (await loadCoachingCache()).coaches; }
+    catch (e) {
+      const locs = await this.fetchLocations();
+      const lists = await Promise.all(locs.map(l => this.fetchCoaches(l.id).catch(() => [])));
+      const seen = {}, all = [];
+      lists.flat().forEach(c => { if (c && c.id && !seen[c.id]) { seen[c.id] = 1; all.push(c); } });
+      return all;
+    }
   },
 
-  // Returns { "YYYY-MM-DD": [slot, ...] }.
+  // Returns { "YYYY-MM-DD": [slot, ...] } for one coach + location.
   async fetchSlots(coachId, locationId, days = 14) {
     if (DEMO_MODE) {
       const today = new Date();
@@ -145,7 +173,21 @@ const API = {
       }
       return byDate;
     }
-    return getJSON(`${COACHING_API}?action=getSlots&coach=${encodeURIComponent(coachId)}&location=${encodeURIComponent(locationId)}`);
+    try {
+      const c = await loadCoachingCache();
+      const byDate = {};
+      c.slots
+        .filter(s => String(s.coach_id) === String(coachId) && String(s.location_id) === String(locationId) && s.status === "open")
+        .forEach(s => {
+          (byDate[s.date] = byDate[s.date] || []).push({
+            id: s.id, date: s.date, start_time: s.start_time, end_time: s.end_time,
+            level: s.level, session_type: null, capacity: 0, spots_taken: 0, status: "open",
+          });
+        });
+      return byDate;
+    } catch (e) {
+      return getJSON(`${COACHING_API}?action=getSlots&coach=${encodeURIComponent(coachId)}&location=${encodeURIComponent(locationId)}`);
+    }
   },
 
   // Logs a coaching request. DPC is the bridge — no payment; the coach
