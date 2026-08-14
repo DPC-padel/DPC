@@ -90,7 +90,7 @@ header {
 
 /* ── HERO ── */
 .hero {
-  padding: 30px 40px 18px;
+  padding: var(--head-pad-top) var(--page-pad-x) 18px;
   border-bottom: 1px solid var(--border);
   position: relative;
   overflow: hidden;
@@ -694,6 +694,7 @@ footer {
   .hero, .filter-bar, .events-wrap { max-width: 1080px; margin-left: auto; margin-right: auto; padding-left: 48px; padding-right: 48px; }
 }
 </style>
+<link rel="stylesheet" href="../tokens.css?v=3">
 </head>
 <body>
 
@@ -759,8 +760,8 @@ footer {
     <div class="modal-bd">
       <div id="costNotice" style="display:none" class="cost-notice"></div>
       <div class="mode-toggle" id="modeToggle">
-        <button class="mode-btn active" id="btnSingle" onclick="setMode('single')">👤 Single</button>
-        <button class="mode-btn" id="btnPartner" onclick="setMode('partner')">👥 With Partner</button>
+        <button class="mode-btn active" id="btnSingle" onclick="setMode('single')">Single</button>
+        <button class="mode-btn" id="btnPartner" onclick="setMode('partner')">With Partner</button>
       </div>
       <div class="fg"><label>Your Name</label><input type="text" id="rName" placeholder="Full name" autocomplete="name"/></div>
       <div class="fg">
@@ -818,8 +819,8 @@ function updateCostNotice(ev){
   if(ev.cost&&activeMode==="join"){
     cn.style.display="block";
     cn.innerHTML=bookingMode==="partner"
-      ?`<strong>💰 ${ev.cost} × 2 players</strong>We'll WhatsApp both players to confirm and collect payment.`
-      :`<strong>💰 ${ev.cost}</strong>We'll be in touch on WhatsApp to confirm your spot`;
+      ?`<strong>₹${ev.cost} × 2 players</strong>We'll WhatsApp both players to confirm and collect payment.`
+      :`<strong>₹${ev.cost}</strong>We'll be in touch on WhatsApp to confirm your spot`;
   } else { cn.style.display="none"; }
 }
 
@@ -903,7 +904,7 @@ function cardHTML(ev,me){
   else{stc="tag-open";stx=`${open} Left`;}
 
   const fc=isFull?"gone":pct>=70?"warn":"";
-  const costChip=ev.cost?`<div class="cost-chip">💰 ${ev.cost}</div>`:"";
+  const costChip=ev.cost?`<div class="cost-chip">₹${ev.cost}</div>`:"";
 
   let actionHTML="";
   if(iDid){
@@ -940,7 +941,7 @@ function cardHTML(ev,me){
       <div class="c-title">${ev.title}</div>
       <div class="c-meta">
         ${formatTimeRange(ev.startTime,ev.endTime)?`<span>⏱ ${formatTimeRange(ev.startTime,ev.endTime)}</span>`:""}
-        <span>📍 ${ev.location}</span>
+        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>${ev.location}</span>
       </div>
       ${costChip}
     </div>
@@ -968,7 +969,7 @@ function openModal(id,mode){
   if(mode==="waitlist"){hd.className="modal-hd waitlist-hd";ey.textContent="Join Waitlist";btn.className="btn-go wl";btn.textContent="Join Waitlist →";}
   else{hd.className="modal-hd";ey.textContent="Mark Your Interest";btn.className="btn-go";btn.textContent="I'm In →";}
   const cn=document.getElementById("costNotice");
-  if(ev.cost&&mode==="join"){cn.style.display="block";cn.innerHTML=`<strong>💰 ${ev.cost}</strong>We'll be in touch on WhatsApp to confirm your spot`;}
+  if(ev.cost&&mode==="join"){cn.style.display="block";cn.innerHTML=`<strong>₹${ev.cost}</strong>We'll be in touch on WhatsApp to confirm your spot`;}
   else{cn.style.display="none";}
   document.getElementById("rName").value="";document.getElementById("rPhone").value="";
   document.getElementById("rName2").value="";document.getElementById("rPhone2").value="";
@@ -1013,8 +1014,8 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
       const payLink=bookingMode==="partner"?ev?.link2:ev?.link1;
       if(bookingMode==="partner"){
         let baseMsg=ev&&ev.cost
-          ?`<div class="mbox ok">🎾 Both in! Total: <strong>${ev.cost} × 2</strong>. We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> with details.</div>`
-          :`<div class="mbox ok">🎾 Both in! We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> to confirm your slots.</div>`;
+          ?`<div class="mbox ok">Both in! Total: <strong>${ev.cost} × 2</strong>. We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> with details.</div>`
+          :`<div class="mbox ok">Both in! We'll WhatsApp <strong>${phone}</strong> and <strong>${phone2}</strong> to confirm your slots.</div>`;
         if(payLink){
           baseMsg+=`<div class="pay-cta">
             <div class="pay-cta-label">Next Step</div>
@@ -1026,8 +1027,8 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
         msgEl.innerHTML=baseMsg;
       } else {
         let baseMsg=ev&&ev.cost
-          ?`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> with details (${ev.cost}).</div>`
-          :`<div class="mbox ok">🎾 You're in! We'll WhatsApp you on <strong>${phone}</strong> to confirm your slot.</div>`;
+          ?`<div class="mbox ok">You're in! We'll WhatsApp you on <strong>${phone}</strong> with details (${ev.cost}).</div>`
+          :`<div class="mbox ok">You're in! We'll WhatsApp you on <strong>${phone}</strong> to confirm your slot.</div>`;
         if(payLink){
           baseMsg+=`<div class="pay-cta">
             <div class="pay-cta-label">Next Step</div>

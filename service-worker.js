@@ -1,4 +1,4 @@
-const CACHE_NAME = "dpc-v3";
+const CACHE_NAME = "dpc-v5";
 
 // Take over immediately on update so clients stop serving stale pages.
 self.addEventListener("install", () => self.skipWaiting());

@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Login · //PadelCollectiveIndia</title>
-<link rel="icon" type="image/png" href="logo.png">
+<link rel="icon" type="image/svg+xml" href="../logo.svg?v=1">
 <meta name="description" content="Login or create your Delhi Padel Collective account to track rankings, matches, and points."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
@@ -372,6 +372,7 @@
     .form-title { font-size: 28px; }
   }
 </style>
+<link rel="stylesheet" href="../tokens.css?v=3">
 </head>
 <body>
 
@@ -664,7 +665,7 @@ function saveSessionAndRedirect(player, phone) {
   localStorage.setItem(SESSION_KEY, JSON.stringify(player));
   localStorage.setItem(SESSION_PHONE_KEY, phone);
   localStorage.setItem(SESSION_SAVED_AT_KEY, String(Date.now()));
-  window.location.href = '/Dashboard/';
+  window.location.href = '../Dashboard/';
 }
 
 // ─── LOGIN ────────────────────────────────────────────────
@@ -846,7 +847,7 @@ function handleLogout() {
 
 function redirectIfLoggedIn() {
   if (hasValidSession()) {
-    window.location.href = '/Dashboard/';
+    window.location.href = '../Dashboard/';
   }
 }
 

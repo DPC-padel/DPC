@@ -3,45 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Break Point | Leaderboard</title>
-  <meta name="description" content="Live Break Point tournament and Americano leaderboards for Delhi Padel Collective.">
+  <title>Girls | Leaderboard</title>
+  <meta name="description" content="Live girls-only leaderboard for Delhi Padel Collective.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=33">
 <link rel="stylesheet" href="../tokens.css?v=3">
 </head>
-<body data-page="break-point">
+<body data-page="girls">
   <aside class="left-sidebar">
     <div class="sidebar-brand">
       <span class="sidebar-brand-name">//PadelCollective</span>
       <div class="sidebar-sub">Leaderboard</div>
-      
     </div>
     <nav class="sidebar-nav">
-      <a class="sidebar-link" href="/">
+      <a class="sidebar-link" href="../">
         <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
         <span>Home</span>
       </a>
-      <a class="sidebar-link" href="/Dashboard/">
+      <a class="sidebar-link" href="../Dashboard/">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         <span>Dashboard</span>
       </a>
-      <a class="sidebar-link active" href="/leaderboard/">
+      <a class="sidebar-link active" href="../leaderboard/">
         <svg viewBox="0 0 24 24"><rect x="18" y="3" width="3" height="18"/><rect x="11" y="8" width="3" height="13"/><rect x="4" y="13" width="3" height="8"/></svg>
         <span>Leaderboard</span>
       </a>
-      <a class="sidebar-link" href="/calender/">
+      <a class="sidebar-link" href="../calender/">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
         <span>Games</span>
       </a>
-      <a class="sidebar-link" href="/coaching/">
+      <a class="sidebar-link" href="../coaching/">
         <svg viewBox="0 0 24 24"><path d="M12 2l2.4 6.9H22l-5.8 4.3 2.2 6.8L12 16l-6.4 4 2.2-6.8L2 8.9h7.6z"/></svg>
         <span>Coaching</span>
       </a>
     </nav>
     <div class="sidebar-foot">
-      <button class="sidebar-signout" onclick="localStorage.removeItem('dpcPlayerSession');localStorage.removeItem('dpcPlayerPhone');sessionStorage.removeItem('dpcDemo');location.href='/login/'">Sign Out</button>
+      <button class="sidebar-signout" onclick="localStorage.removeItem('dpcPlayerSession');localStorage.removeItem('dpcPlayerPhone');sessionStorage.removeItem('dpcDemo');location.href='../login/'">Sign Out</button>
     </div>
   </aside>
 
@@ -50,7 +49,7 @@
       <header class="topbar">
         <div class="brand-lockup">
         <a class="brand-link" href="https://www.padelcollectiveindia.com/">
-            <img class="brand-logo" src="dpc-red-logo.svg" alt="Delhi Padel Collective logo">
+            <img class="brand-logo" src="dpc-logo.svg" alt="Delhi Padel Collective logo">
           </a>
         </div>
 
@@ -74,38 +73,22 @@
       <section class="hero-banner">
         <p class="slash">//</p>
         <div class="hero-copy">
-        <h1>Break Point</h1>
+        <h1>Girls</h1>
           <p>Leaderboard</p>
         </div>
       </section>
 
-      <section class="standings-section stacked-sections">
+      <section class="standings-section">
         <div class="standings-head">
           <div>
-            <p class="section-kicker">Break Point Rankings</p>
+            <p class="section-kicker">Overall Standings</p>
           </div>
           <button id="refreshButton" class="refresh-button" type="button" aria-label="Refresh" title="Refresh" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button>
         </div>
 
-        <div class="tab-switcher" role="tablist" aria-label="Break Point ranking types">
-          <button id="overallTab" class="tab-button is-active" type="button" data-tab="overall" role="tab" aria-selected="true">
-            Ranking
-          </button>
-          <button id="tournamentTab" class="tab-button" type="button" data-tab="tournament" role="tab" aria-selected="false">
-            Tournament
-          </button>
-          <button id="americanoTab" class="tab-button" type="button" data-tab="americano" role="tab" aria-selected="false">
-            Americano
-          </button>
-        </div>
-
         <div id="statusMessage" class="status-message" aria-live="polite"></div>
 
-        <section id="overallPanel" class="subsection" role="tabpanel" aria-labelledby="overallTab">
-          <div class="subsection-head">
-            <h2>Ranking</h2>
-          </div>
-
+        <section class="subsection">
           <div class="table-wrap">
             <table>
               <thead>
@@ -116,59 +99,9 @@
                   <th>Rating</th>
                 </tr>
               </thead>
-              <tbody id="overallRankingBody">
+              <tbody id="rankingBody">
                 <tr>
-                  <td colspan="4">Loading overall leaderboard...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section id="tournamentPanel" class="subsection panel-hidden" role="tabpanel" aria-labelledby="tournamentTab" hidden>
-          <div class="subsection-head">
-            <h2>Tournament</h2>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th class="rank-col">#</th>
-                  <th>Player</th>
-                  <th>MP</th>
-                  <th>W</th>
-                  <th>L</th>
-                  <th>PTS</th>
-                </tr>
-              </thead>
-              <tbody id="tournamentRankingBody">
-                <tr>
-                  <td colspan="6">Loading tournament leaderboard...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section id="americanoPanel" class="subsection panel-hidden" role="tabpanel" aria-labelledby="americanoTab" hidden>
-          <div class="subsection-head">
-            <h2>Americano</h2>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th class="rank-col">#</th>
-                  <th>Player</th>
-                  <th>MP</th>
-                  <th>PTS</th>
-                </tr>
-              </thead>
-              <tbody id="americanoRankingBody">
-                <tr>
-                  <td colspan="4">Loading Americano leaderboard...</td>
+                  <td colspan="4">Loading leaderboard...</td>
                 </tr>
               </tbody>
             </table>
@@ -178,7 +111,7 @@
 
       <footer class="card-footer">
         <div class="footer-rule"></div>
-        <p class="footer-note">3.0 – 3.9 · Intermediate -- 4.0+ · Upper Intermediate </p>
+        <p class="footer-note">MP = matches played · PTS = total score points</p>
         <div class="footer-meta">
           <span>Delhi//PadelCollective</span>
           <span>@DELHIPADELCOLLECTIVE</span>
@@ -189,23 +122,23 @@
 
   <div class="bottom-nav" role="navigation" aria-label="Primary">
 
-    <a class="bnav-tab" href="/Dashboard/">
+    <a class="bnav-tab" href="../Dashboard/">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       <span>Dashboard</span>
     </a>
-    <a class="bnav-tab active" href="/leaderboard/">
+    <a class="bnav-tab active" href="../leaderboard/">
       <svg viewBox="0 0 24 24"><rect x="18" y="3" width="3" height="18"/><rect x="11" y="8" width="3" height="13"/><rect x="4" y="13" width="3" height="8"/></svg>
       <span>Leaderboard</span>
     </a>
-    <a class="bnav-tab" href="/">
+    <a class="bnav-tab" href="../">
       <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
       <span>Home</span>
     </a>
-    <a class="bnav-tab" href="/calender/">
+    <a class="bnav-tab" href="../calender/">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
       <span>Games</span>
     </a>
-    <a class="bnav-tab" href="/coaching/">
+    <a class="bnav-tab" href="../coaching/">
       <svg viewBox="0 0 24 24"><path d="M12 2l2.4 6.9H22l-5.8 4.3 2.2 6.8L12 16l-6.4 4 2.2-6.8L2 8.9h7.6z"/></svg>
       <span>Coaching</span>
     </a>

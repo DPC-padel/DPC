@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Delhi//PadelCollective — Coaching</title>
 <meta name="description" content="Book private padel coaching with Delhi Padel Collective. Pick your coach, location and time — send the request and your coach confirms directly on Calendly."/>
-<link rel="icon" type="image/png" href="../logo.png">
+<link rel="icon" type="image/svg+xml" href="../logo.svg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <script src="config.js?v=7"></script>
@@ -50,17 +50,17 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-
 
 /* ── Shell ── */
 .shell{padding-left:0;}
-.container{max-width:760px;margin:0 auto;padding:22px 20px 40px;}
+.container{max-width:760px;margin:0 auto;padding:var(--head-pad-top) var(--page-pad-x) 40px;position:relative;}
 
 /* ── Topbar (demo pill + my sessions) ── */
-.topbar{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-bottom:8px;}
+.topbar{position:absolute;top:var(--head-pad-top);right:var(--page-pad-x);display:flex;align-items:center;gap:12px;z-index:50;}
 .demo-pill{font-size:.58rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:5px 12px;border-radius:100px;display:none;}
 .demo-pill.show{display:inline-block;}
 .my-sessions-btn{font-size:.62rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);background:var(--card);border:1px solid var(--line);border-radius:100px;padding:8px 14px;cursor:pointer;box-shadow:var(--shadow);font-family:var(--body);transition:color .2s,border-color .2s;}
 .my-sessions-btn:hover{color:var(--ink);border-color:var(--line2);}
 
 /* ── Hero ── */
-.hero-banner{display:flex;align-items:baseline;gap:8px;padding:6px 0 8px;}
+.hero-banner{display:flex;align-items:baseline;gap:8px;padding:0 0 8px;}
 .slash{font-family:var(--title);font-size:1.9rem;line-height:1;color:var(--accent);font-weight:700;}
 .hero-copy h1{font-family:var(--title);font-size:1.9rem;line-height:1;letter-spacing:-.5px;font-weight:700;}
 .hero-lead{font-size:.9rem;color:var(--muted2);line-height:1.65;margin:10px 0 0;max-width:460px;}
@@ -227,6 +227,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-
   .form-row{grid-template-columns:1fr;}
 }
 </style>
+<link rel="stylesheet" href="../tokens.css?v=3">
 </head>
 <body>
 

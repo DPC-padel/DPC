@@ -3,14 +3,14 @@
 <head>
  <link rel="manifest" href="/manifest.json">
 
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#2e4e8e">
 
-<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="logo.svg">
  
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>//PadelCollectiveIndia</title>
- <link rel="icon" type="image/png" href="logo.png">
+ <link rel="icon" type="image/svg+xml" href="logo.svg?v=1">
  <meta name="description" content="Delhi Padel Collective offers padel tournaments, rankings, coaching, americano events and community matches in Delhi NCR."/>
 
 <meta name="keywords" content="Delhi padel, padel Delhi NCR, Delhi Padel Collective, padel tournaments Delhi, padel club Delhi, americano padel Delhi, padel coaching Delhi, padel rankings
@@ -411,8 +411,8 @@
   .padel101-inner { max-width: 1100px; margin: 0 auto; }
   .pills-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 48px; }
   .pill-card { border: 1px solid var(--border-soft); border-radius: 100px; padding: 14px 24px; display: flex; align-items: center; gap: 10px; transition: border-color .2s, background .2s; background: var(--surface); }
-  .pill-card:hover { border-color: rgba(203,89,87,.3); background: var(--surface-hover); }
-  .pill-icon { font-size: 16px; }
+  .pill-card:hover { border-color: var(--accent-glow); background: var(--surface-hover); }
+  .pill-icon { width: 6px; height: 6px; border-radius: 2px; background: var(--accent); flex: none; }
   .pill-text { font-size: 13px; color: rgba(0,0,0,.44); }
   .facts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border-soft); margin-top: 60px; border: 1px solid var(--border-soft); border-radius: 4px; overflow: hidden; }
   .fact { background: var(--surface); padding: 32px 28px; }
@@ -557,6 +557,7 @@ video::-webkit-media-controls-fullscreen-button {
 }
 
 </style>
+<link rel="stylesheet" href="tokens.css?v=3">
 </head>
 <body>
 
@@ -682,7 +683,7 @@ video::-webkit-media-controls-fullscreen-button {
             ADD PHOTO 1 HERE — replace placeholder div with:
             <img src="photo1.jpg" alt="DPC Session"/>
           -->
-          <div class="photo-frame-placeholder">📸</div>
+          <div class="photo-frame-placeholder"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
         </div>
         <div>
           <div class="photo-label">Sessions</div>
@@ -696,7 +697,7 @@ video::-webkit-media-controls-fullscreen-button {
             ADD PHOTO 2 HERE — replace placeholder div with:
             <img src="photo2.jpg" alt="DPC Community"/>
           -->
-          <div class="photo-frame-placeholder">📸</div>
+          <div class="photo-frame-placeholder"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
         </div>
         <div>
           <div class="photo-label">Community</div>
@@ -710,7 +711,7 @@ video::-webkit-media-controls-fullscreen-button {
             ADD PHOTO 3 HERE — replace placeholder div with:
             <img src="photo3.jpg" alt="DPC Life"/>
           -->
-          <div class="photo-frame-placeholder">📸</div>
+          <div class="photo-frame-placeholder"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
         </div>
         <div>
           <div class="photo-label">The Collective</div>
@@ -731,12 +732,12 @@ video::-webkit-media-controls-fullscreen-button {
     <div class="section-title">New to the<br/>game?</div>
     <p class="section-body">Padel is doubles, played in a glass-walled enclosed court. Smaller than tennis, more social, faster to learn — and impossibly addictive.</p>
     <div class="pills-row">
-      <div class="pill-card"><span class="pill-icon">🎾</span><span class="pill-text">Played on a 10m × 20m enclosed court</span></div>
-      <div class="pill-card"><span class="pill-icon">👥</span><span class="pill-text">Always doubles — 4 players per match</span></div>
-      <div class="pill-card"><span class="pill-icon">🧱</span><span class="pill-text">Glass walls are in play — use them</span></div>
-      <div class="pill-card"><span class="pill-icon">🏸</span><span class="pill-text">Solid rackets, no strings</span></div>
-      <div class="pill-card"><span class="pill-icon">⚡</span><span class="pill-text">Easiest racket sport to pick up</span></div>
-      <div class="pill-card"><span class="pill-icon">🌍</span><span class="pill-text">25M+ players worldwide</span></div>
+      <div class="pill-card"><span class="pill-icon"></span><span class="pill-text">Played on a 10m × 20m enclosed court</span></div>
+      <div class="pill-card"><span class="pill-icon"></span><span class="pill-text">Always doubles — 4 players per match</span></div>
+      <div class="pill-card"><span class="pill-icon"></span><span class="pill-text">Glass walls are in play — use them</span></div>
+      <div class="pill-card"><span class="pill-icon"></span><span class="pill-text">Solid rackets, no strings</span></div>
+      <div class="pill-card"><span class="pill-icon"></span><span class="pill-text">Easiest racket sport to pick up</span></div>
+      <div class="pill-card"><span class="pill-icon"></span><span class="pill-text">25M+ players worldwide</span></div>
     </div>
     <div class="facts-grid">
       <div class="fact">
@@ -888,13 +889,9 @@ video::-webkit-media-controls-fullscreen-button {
   window.addEventListener("load", tryPlay);
   window.addEventListener("load", syncDashboardCta);
   function applyAlert() {
-   window.location.href = "/Application/";
+   window.location.href = "Application/";
   }
 
-  document.getElementById("applyBtn").addEventListener("click", e => {
-    e.preventDefault(); 
-    applyAlert();
-  });
  if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')

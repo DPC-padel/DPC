@@ -39,6 +39,7 @@ body[data-page="first-serve"] { --accent: #2e4e8e; --accent-soft: rgba(46,78,142
 body[data-page="break-point"] { --accent: #c8752d; --accent-soft: rgba(200,117,45,0.10); --accent-glow: rgba(200,117,45,0.16); }
 body[data-page="noida"]       { --accent: #1a7d5a; --accent-soft: rgba(26,125,90,0.10); --accent-glow: rgba(26,125,90,0.16); }
 body[data-page="match-point"] { --accent: #7a3b57; --accent-soft: rgba(122,59,87,0.12); --accent-glow: rgba(122,59,87,0.16); }
+body[data-page="girls"]       { --accent: #c2456e; --accent-soft: rgba(194,69,110,0.10); --accent-glow: rgba(194,69,110,0.16); }
 
 * { box-sizing: border-box; }
 
