@@ -650,6 +650,13 @@ function playtomicGroup(score) {
   return { label: "Elite", cls: "tag-advanced" };
 }
 
+// New players see a friendly floored self-rating: <1 → 1, 1–2.9 → 2, ≥3 → actual.
+function displaySelfRating(r) {
+  if (r < 1) return "1";
+  if (r < 3) return "2";
+  return r.toFixed(1);
+}
+
 function updateRating() {
   const mode = getSkillMode();
   if (mode !== "Intermediate" && mode !== "Advanced") return;
@@ -679,7 +686,7 @@ function updateRating() {
   const group = playtomicGroup(score);
 
   // Update UI
-  document.getElementById("ratingScoreDisplay").textContent = score.toFixed(1);
+  document.getElementById("ratingScoreDisplay").textContent = displaySelfRating(score);
   ratingCard.classList.add("show");
   ratingCard.style.display = "block";
 }
@@ -787,8 +794,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
     const scoreEl = document.getElementById("ratingScoreDisplay").textContent;
     ratingStr = scoreEl !== "—" ? `${scoreEl} / 7.0` : "Pending assessment";
   } else if (level === "Beginner") {
-    const exp2 = document.querySelector('input[name="experience"]:checked')?.value || "";
-    ratingStr = exp2 === "Never played" ? "0.0 — Initiation" : "0.5 — Initiation";
+    ratingStr = "1 / 7.0"; // floor: new beginners get a self-rating of 1
   }
 
   const finalLocations = locations.includes("Other")
