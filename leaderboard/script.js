@@ -782,7 +782,7 @@ function renderOverallTable(target, rankings, colspan, minMatches = MIN_MATCHES)
   if (!rankings.length) { renderMessageRow(target, "No overall entries yet.", colspan); return; }
   const viewer = getViewerName();
   const listRankings = enhancePanel(target, rankings, {
-    value: (p) => p.rating.toFixed(1),
+    value: (p) => p.rating.toFixed(2),
     label: "Rating",
     sub: (p) => [p.matches != null ? `${p.matches} matches` : "", `${p.score} score`].filter(Boolean).join(" · ")
   });
@@ -797,7 +797,7 @@ function renderOverallTable(target, rankings, colspan, minMatches = MIN_MATCHES)
         <td>${badge ? `<span class="${badge.className}">${badge.label}</span>` : `<span class="rank-text">${player.rank}</span>`}</td>
         <td>${playerCell(player, viewer, sub)}</td>
         <td class="stat-cell">${player.score}</td>
-        <td class="stat-cell points-cell">${player.rating.toFixed(1)}</td>
+        <td class="stat-cell points-cell">${player.rating.toFixed(2)}</td>
       </tr>`;
   }).join("");
 }

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Play · PadelCollectiveIndia</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../tokens.css?v=3">
+<script>
+// Play is gated to a single account for now — anyone else is bounced to the dashboard.
+(function(){var p=(localStorage.getItem('dpcPlayerPhone')||'').replace(/\D/g,'');if(p!=='9599216261')location.replace('index.html');})();
+</script>
+<style>
+@font-face{font-family:'Berling';src:url('../Berling Bold.otf') format('opentype');font-weight:700;font-display:swap}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text,#0f172a);font-family:var(--font-body,'Inter',system-ui,sans-serif);min-height:100dvh;-webkit-font-smoothing:antialiased}
+.app{max-width:520px;margin:0 auto;min-height:100dvh;position:relative;padding:0 0 40px}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:12px;padding:var(--head-pad-top,24px) var(--page-pad-x,20px) 12px;position:sticky;top:0;background:linear-gradient(to bottom,var(--bg) 70%,transparent);z-index:10}
+.backbtn{width:40px;height:40px;flex:none;border-radius:50%;background:#fff;border:1px solid var(--border,rgba(15,23,42,.08));display:flex;align-items:center;justify-content:center;color:var(--accent);text-decoration:none;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.04))}
+.backbtn:active{transform:scale(.94)}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand .slash{font-family:var(--font-display,serif);font-size:1.7rem;font-weight:700;color:var(--accent);line-height:1}
+.brand h1{font-family:var(--font-display,serif);font-size:1.7rem;font-weight:700;line-height:1;letter-spacing:-.5px}
+.back{font-size:.62rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2,#64748b);text-decoration:none;background:#fff;border:1px solid var(--border,rgba(15,23,42,.08));border-radius:100px;padding:8px 14px;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.04))}
+.wrap{padding:6px var(--page-pad-x,20px) 0}
+
+/* setup */
+.lead{font-size:.9rem;color:var(--muted2,#64748b);line-height:1.6;margin:2px 0 22px}
+.field{margin-bottom:22px}
+.flabel{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2,#64748b);margin-bottom:10px}
+.stepper{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border,rgba(15,23,42,.08));border-radius:var(--radius-sm,14px);padding:10px 14px;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.04))}
+.stepper button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border,rgba(15,23,42,.1));background:var(--bg);font-size:20px;font-weight:600;color:var(--text);cursor:pointer;flex:none;line-height:1;transition:.15s}
+.stepper button:active{transform:scale(.94)}
+.stepper button:disabled{opacity:.3;cursor:default}
+.stepper .val{flex:1;text-align:center;font-family:var(--font-display,serif);font-size:2rem;font-weight:700;line-height:1}
+.stepper .unit{font-size:.7rem;color:var(--muted2,#64748b);font-weight:500}
+.hint{font-size:.72rem;color:var(--muted,#94a3b8);margin-top:8px;line-height:1.5}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode{background:#fff;border:1.5px solid var(--border,rgba(15,23,42,.1));border-radius:var(--radius-sm,14px);padding:16px 14px;cursor:pointer;text-align:left;font-family:inherit;transition:.15s}
+.mode.sel{border-color:var(--accent);background:var(--accent-soft,rgba(46,78,142,.06))}
+.mode .mt{font-family:var(--font-display,serif);font-size:1.05rem;font-weight:700;margin-bottom:3px}
+.mode .md{font-size:.72rem;color:var(--muted2,#64748b);line-height:1.4}
+.cta{width:100%;height:52px;border:none;border-radius:100px;background:var(--accent);color:#fff;font-family:inherit;font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-top:8px;box-shadow:0 6px 18px var(--accent-glow,rgba(46,78,142,.18));transition:.15s}
+.cta:active{transform:translateY(1px)}
+.cta.ghost{background:#fff;color:var(--muted2,#64748b);border:1px solid var(--border,rgba(15,23,42,.1));box-shadow:none;height:44px;letter-spacing:.08em}
+
+/* tabs */
+.tabs{display:flex;gap:8px;padding:4px var(--page-pad-x,20px) 14px}
+.tab{flex:1;padding:11px;border-radius:100px;border:1px solid var(--border,rgba(15,23,42,.1));background:#fff;font-family:inherit;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2,#64748b);cursor:pointer}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* round nav */
+.rnav{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.rnav .arw{width:40px;height:40px;border-radius:12px;border:1px solid var(--border,rgba(15,23,42,.1));background:#fff;font-size:18px;cursor:pointer;flex:none;color:var(--text)}
+.rnav .arw:disabled{opacity:.3;cursor:default}
+.rnav .rtitle{flex:1;text-align:center}
+.rnav .rtitle b{font-family:var(--font-display,serif);font-size:1.3rem;font-weight:700;display:block;line-height:1.1}
+.rnav .rtitle span{font-size:.64rem;color:var(--muted2,#64748b);letter-spacing:.1em;text-transform:uppercase}
+.rpills{display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;scrollbar-width:none}
+.rpills::-webkit-scrollbar{display:none}
+.rpill{flex:none;width:30px;height:30px;border-radius:8px;border:1px solid var(--border,rgba(15,23,42,.1));background:#fff;font-size:.75rem;font-weight:600;color:var(--muted2,#64748b);cursor:pointer}
+.rpill.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.rpill.done{border-color:var(--accent);color:var(--accent)}
+
+/* court card */
+.court{background:#fff;border:1px solid var(--border,rgba(15,23,42,.08));border-radius:var(--radius,16px);padding:16px;margin-bottom:12px;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.04))}
+.court-h{font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted,#94a3b8);margin-bottom:12px}
+.team{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0}
+.team .names{display:flex;align-items:center;gap:8px;min-width:0}
+.team .names .nm{font-weight:600;font-size:.9rem}
+.team.win .nm{color:var(--accent)}
+.score-in{width:62px;height:44px;border:1.5px solid var(--border,rgba(15,23,42,.12));border-radius:10px;text-align:center;font-family:var(--font-display,serif);font-size:1.4rem;font-weight:700;color:var(--text);outline:none;background:var(--bg)}
+.score-in:focus{border-color:var(--accent)}
+.score-in[readonly]{background:var(--surface-3,#eef0f5);color:var(--muted2,#64748b)}
+.vs{text-align:center;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted,#94a3b8);padding:2px 0}
+.wintag{font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft,rgba(46,78,142,.08));padding:2px 7px;border-radius:100px;margin-left:6px}
+.resting{font-size:.75rem;color:var(--muted2,#64748b);background:#fff;border:1px dashed var(--border-strong,rgba(15,23,42,.14));border-radius:var(--radius-sm,14px);padding:12px 14px;margin-bottom:12px;line-height:1.5}
+.resting b{color:var(--text);font-weight:600}
+
+/* leaderboard */
+.lb-meta{font-size:.72rem;color:var(--muted2,#64748b);margin-bottom:6px}
+.lb-lead{background:var(--accent);color:#fff;border-radius:var(--radius,16px);padding:16px 18px;margin-bottom:14px;box-shadow:0 6px 18px var(--accent-glow,rgba(46,78,142,.18))}
+.lb-lead .k{font-size:.58rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.8}
+.lb-lead .nm{font-family:var(--font-display,serif);font-size:1.6rem;font-weight:700;line-height:1.1;margin-top:4px}
+.lb-lead .pts{font-size:.8rem;opacity:.9;margin-top:2px}
+.lb-row{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border,rgba(15,23,42,.06));border-radius:var(--radius-sm,14px);padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.03))}
+.lb-rank{font-family:var(--font-display,serif);font-size:1.1rem;font-weight:700;width:22px;text-align:center;color:var(--muted2,#64748b)}
+.lb-row.top .lb-rank{color:var(--accent)}
+.lb-nm{flex:1;font-weight:600;font-size:.92rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-sub{font-size:.68rem;color:var(--muted2,#64748b);font-weight:400}
+.lb-pts{font-family:var(--font-display,serif);font-size:1.3rem;font-weight:700}
+.lb-pts small{font-size:.6rem;color:var(--muted2,#64748b);font-weight:500;font-family:var(--font-body,sans-serif)}
+
+/* rename modal */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;align-items:flex-end;justify-content:center;z-index:100}
+.modal.open{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom))}
+.sheet h3{font-family:var(--font-display,serif);font-size:1.2rem;margin-bottom:14px}
+.sheet input{width:100%;height:48px;border:1.5px solid var(--border,rgba(15,23,42,.12));border-radius:12px;padding:0 14px;font-family:inherit;font-size:1rem;outline:none;background:#fff;margin-bottom:14px}
+.sheet input:focus{border-color:var(--accent)}
+.hidden{display:none!important}
+.footer-actions{margin-top:20px;display:flex;flex-direction:column;gap:8px}
+.tap-name{cursor:pointer;border-bottom:1px dashed transparent}
+.tap-name:hover{border-bottom-color:var(--muted,#94a3b8)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <a class="backbtn" href="index.html" aria-label="Back to dashboard"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
+    <div class="brand"><span class="slash">//</span><h1>Play</h1></div>
+  </div>
+
+  <!-- ── SETUP ── -->
+  <div id="setup" class="wrap">
+    <p class="lead">Run an Americano. Unique partners every round, opponents mixed. Scores and standings live — this is a one-off board, separate from the club leaderboards.</p>
+
+    <div class="field">
+      <div class="flabel">Players</div>
+      <div class="stepper">
+        <button id="pMinus">−</button>
+        <div class="val"><span id="pVal">8</span><div class="unit">players</div></div>
+        <button id="pPlus">+</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="flabel">Courts</div>
+      <div class="stepper">
+        <button id="cMinus">−</button>
+        <div class="val"><span id="cVal">2</span><div class="unit">courts</div></div>
+        <button id="cPlus">+</button>
+      </div>
+      <div class="hint" id="courtHint"></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel">Scoring</div>
+      <div class="modes">
+        <button class="mode sel" id="modeRace" data-mode="race20">
+          <div class="mt">Race to 20</div>
+          <div class="md">First team to 20 points wins.</div>
+        </button>
+        <button class="mode" id="modeServe" data-mode="serves24">
+          <div class="mt">24 Serves</div>
+          <div class="md">24 points total — over 12 wins.</div>
+        </button>
+      </div>
+    </div>
+
+    <button class="cta" id="startBtn">Start Game</button>
+  </div>
+
+  <!-- ── GAME ── -->
+  <div id="game" class="hidden">
+    <div class="tabs">
+      <button class="tab on" id="tabRound">This Round</button>
+      <button class="tab" id="tabLb">Leaderboard</button>
+    </div>
+    <div class="wrap">
+      <div id="roundView"></div>
+      <div id="lbView" class="hidden"></div>
+      <div class="footer-actions">
+        <button class="cta ghost" id="newGame">New Game</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- rename sheet -->
+<div class="modal" id="renameModal">
+  <div class="sheet">
+    <h3>Rename player</h3>
+    <input id="renameInput" type="text" maxlength="24" placeholder="Player name"/>
+    <button class="cta" id="renameSave">Save</button>
+  </div>
+</div>
+
+<script>
+const KEY = "dpcAmericanoGame";
+const $ = id => document.getElementById(id);
+let setup = { players: 8, courts: 2, mode: "race20" };
+let game = null;
+let view = "round";
+let renameIdx = -1;
+
+/* ── SCHEDULER ──────────────────────────────────────────────
+   Greedy: each round pick the least-played players to fill the
+   courts (rest rotates), pair them minimising repeated partners,
+   then match pairs minimising repeated opponents.
+   ponytail: greedy heuristic, not provably optimal — good enough
+   for club play; swap in an exact solver only if repeats bite. */
+function buildSchedule(P, courts) {
+  const perRound = Math.min(courts * 4, P - (P % 4)); // active players (multiple of 4)
+  // Everyone plays every round → exact 1-factorization: unique partners guaranteed.
+  if (perRound === P && P % 4 === 0) return buildFull(P);
+  return buildGreedy(P, courts, perRound);
+}
+
+// Circle method: P-1 rounds where every pair partners exactly once (0 repeats).
+function factorPairs(P) {
+  const arr = [...Array(P).keys()], rounds = [];
+  for (let r = 0; r < P - 1; r++) {
+    const pairs = [];
+    for (let i = 0; i < P/2; i++) pairs.push([arr[i], arr[P-1-i]]);
+    rounds.push(pairs);
+    arr.splice(1, 0, arr.pop()); // rotate all but the first
+  }
+  return rounds;
+}
+function buildFull(P) {
+  const oppo = Array.from({length:P}, () => new Array(P).fill(0));
+  return factorPairs(P).map(pairs => {
+    const matches = greedyMatches(pairs, oppo);
+    for (const m of matches) for (const a of m.teamA) for (const b of m.teamB) { oppo[a][b]++; oppo[b][a]++; }
+    return { matches, resting: [] };
+  });
+}
+// Resting case (fewer courts than players/4): greedy, unique partners best-effort.
+function buildGreedy(P, courts, perRound) {
+  const partner = Array.from({length:P}, () => new Array(P).fill(0));
+  const oppo    = Array.from({length:P}, () => new Array(P).fill(0));
+  const played  = new Array(P).fill(0);
+  const sched = [];
+  for (let r = 0; r < P - 1; r++) {
+    const order = [...Array(P).keys()].sort((a,b) => played[a]-played[b] || Math.random()-0.5);
+    const active = order.slice(0, perRound), resting = order.slice(perRound);
+    active.forEach(p => played[p]++);
+    const pairs = greedyPairs(active, partner);
+    const matches = greedyMatches(pairs, oppo);
+    for (const [x,y] of pairs) { partner[x][y]++; partner[y][x]++; }
+    for (const m of matches) for (const a of m.teamA) for (const b of m.teamB) { oppo[a][b]++; oppo[b][a]++; }
+    sched.push({ matches, resting });
+  }
+  return sched;
+}
+function greedyPairs(players, partner) {
+  const pool = [...players].sort(() => Math.random()-0.5);
+  const pairs = [];
+  while (pool.length) {
+    const a = pool.shift();
+    let bi = 0, best = Infinity;
+    for (let i=0;i<pool.length;i++) if (partner[a][pool[i]] < best) { best = partner[a][pool[i]]; bi = i; }
+    pairs.push([a, pool.splice(bi,1)[0]]);
+  }
+  return pairs;
+}
+function greedyMatches(pairs, oppo) {
+  const pool = [...pairs], matches = [];
+  while (pool.length >= 2) {
+    const teamA = pool.shift();
+    let bi = 0, best = Infinity;
+    for (let i=0;i<pool.length;i++) {
+      let c = 0;
+      for (const a of teamA) for (const b of pool[i]) c += oppo[a][b];
+      if (c < best) { best = c; bi = i; }
+    }
+    matches.push({ teamA, teamB: pool.splice(bi,1)[0] });
+  }
+  return matches;
+}
+
+/* ── STATE ── */
+function save() { localStorage.setItem(KEY, JSON.stringify(game)); }
+function load() { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } }
+
+function startGame() {
+  const P = setup.players, courts = setup.courts;
+  const names = Array.from({length:P}, (_,i) => `Player ${i+1}`);
+  const schedule = buildSchedule(P, courts);
+  const scores = schedule.map(rd => rd.matches.map(() => ({ a: null, b: null })));
+  game = {
+    names, courts, mode: setup.mode,
+    target: setup.mode === "race20" ? 20 : 24,
+    schedule, scores, round: 0
+  };
+  save();
+  renderGame();
+}
+
+/* ── SCORING / LEADERBOARD ── */
+function matchWinner(mode, target, a, b) {
+  if (a == null || b == null) return 0;           // unscored
+  if (mode === "serves24") return a > 12 ? 1 : b > 12 ? 2 : 0;
+  return a >= target && a > b ? 1 : b >= target && b > a ? 2 : (a>b?1:b>a?2:0);
+}
+function leaderboard() {
+  const P = game.names.length;
+  const pts = new Array(P).fill(0), wins = new Array(P).fill(0), played = new Array(P).fill(0);
+  game.schedule.forEach((rd, ri) => rd.matches.forEach((m, ci) => {
+    const s = game.scores[ri][ci];
+    const w = matchWinner(game.mode, game.target, s.a, s.b);
+    m.teamA.forEach(p => { if (s.a!=null){pts[p]+=s.a; played[p]++; if(w===1)wins[p]++;} });
+    m.teamB.forEach(p => { if (s.b!=null){pts[p]+=s.b; played[p]++; if(w===2)wins[p]++;} });
+  }));
+  return game.names.map((nm,i) => ({ i, nm, pts:pts[i], wins:wins[i], played:played[i] }))
+    .sort((a,b) => b.pts-a.pts || b.wins-a.wins || a.nm.localeCompare(b.nm));
+}
+
+/* ── RENDER ── */
+function renderGame() {
+  $("setup").classList.add("hidden");
+  $("game").classList.remove("hidden");
+  view === "round" ? renderRound() : renderLb();
+  $("tabRound").classList.toggle("on", view==="round");
+  $("tabLb").classList.toggle("on", view==="lb");
+  $("roundView").classList.toggle("hidden", view!=="round");
+  $("lbView").classList.toggle("hidden", view!=="lb");
+}
+function nm(i){ return `<span class="tap-name" data-rename="${i}">${game.names[i]}</span>`; }
+
+function renderRound() {
+  const R = game.schedule.length, ri = game.round, rd = game.schedule[ri];
+  const scored = i => game.scores[i].every(s => s.a!=null && s.b!=null);
+  let h = `<div class="rnav">
+    <button class="arw" id="rPrev" ${ri===0?"disabled":""}>‹</button>
+    <div class="rtitle"><b>Round ${ri+1}</b><span>of ${R}</span></div>
+    <button class="arw" id="rNext" ${ri===R-1?"disabled":""}>›</button>
+  </div>
+  <div class="rpills">${game.schedule.map((_,i)=>`<button class="rpill ${i===ri?"on":scored(i)?"done":""}" data-round="${i}">${i+1}</button>`).join("")}</div>`;
+
+  if (rd.resting.length)
+    h += `<div class="resting">Resting this round: <b>${rd.resting.map(p=>game.names[p]).join(", ")}</b></div>`;
+
+  rd.matches.forEach((m, ci) => {
+    const s = game.scores[ri][ci];
+    const w = matchWinner(game.mode, game.target, s.a, s.b);
+    const serve = game.mode === "serves24";
+    h += `<div class="court">
+      <div class="court-h">Court ${ci+1}</div>
+      <div class="team ${w===1?"win":""}">
+        <div class="names"><span class="nm">${nm(m.teamA[0])} &amp; ${nm(m.teamA[1])}</span>${w===1?'<span class="wintag">Win</span>':''}</div>
+        <input class="score-in" inputmode="numeric" data-s="${ri}-${ci}-a" value="${s.a??""}" placeholder="0">
+      </div>
+      <div class="vs">vs</div>
+      <div class="team ${w===2?"win":""}">
+        <div class="names"><span class="nm">${nm(m.teamB[0])} &amp; ${nm(m.teamB[1])}</span>${w===2?'<span class="wintag">Win</span>':''}</div>
+        <input class="score-in" inputmode="numeric" data-s="${ri}-${ci}-b" value="${s.b??""}" placeholder="0" ${serve?"readonly":""}>
+      </div>
+    </div>`;
+  });
+  $("roundView").innerHTML = h;
+
+  $("rPrev").onclick = () => { game.round--; renderRound(); };
+  $("rNext").onclick = () => { game.round++; renderRound(); };
+  document.querySelectorAll(".rpill").forEach(b => b.onclick = () => { game.round=+b.dataset.round; renderRound(); });
+  document.querySelectorAll(".score-in").forEach(inp => inp.oninput = onScore);
+  document.querySelectorAll("[data-rename]").forEach(el => el.onclick = () => openRename(+el.dataset.rename));
+}
+
+function onScore(e) {
+  const [ri,ci,side] = e.target.dataset.s.split("-");
+  let v = e.target.value.replace(/[^\d]/g,"");
+  const s = game.scores[+ri][+ci];
+  if (game.mode === "serves24") {
+    if (v!=="") v = Math.min(24, +v);
+    s.a = v==="" ? null : +v;
+    s.b = v==="" ? null : 24 - +v;
+  } else {
+    s[side] = v==="" ? null : +v;
+  }
+  save();
+  renderRound(); // re-render to refresh win tags + serve-partner value
+}
+
+function renderLb() {
+  const rows = leaderboard();
+  const label = game.mode === "serves24" ? "24 Serves · win at 13" : "Race to 20";
+  const leader = rows.find(r => r.played > 0) ? rows[0] : null;
+  let h = `<div class="lb-meta">${label} · ${game.names.length} players · ${game.courts} courts</div>`;
+  if (leader && leader.pts > 0)
+    h += `<div class="lb-lead"><div class="k">Leading</div><div class="nm">${leader.nm}</div><div class="pts">${leader.pts} pts · ${leader.wins} wins</div></div>`;
+  h += rows.map((r,idx) => `<div class="lb-row ${idx===0&&r.pts>0?"top":""}">
+      <div class="lb-rank">${idx+1}</div>
+      <div class="lb-nm">${r.nm}<span class="lb-sub"> · ${r.played} played · ${r.wins}W</span></div>
+      <div class="lb-pts">${r.pts}<small> pts</small></div>
+    </div>`).join("");
+  $("lbView").innerHTML = h;
+}
+
+/* ── rename ── */
+function openRename(i){ renameIdx=i; $("renameInput").value=game.names[i]; $("renameModal").classList.add("open"); $("renameInput").focus(); }
+$("renameSave").onclick = () => {
+  const v = $("renameInput").value.trim();
+  if (v) game.names[renameIdx] = v;
+  save(); $("renameModal").classList.remove("open"); renderGame();
+};
+$("renameModal").onclick = e => { if (e.target.id==="renameModal") $("renameModal").classList.remove("open"); };
+
+/* ── setup controls ── */
+function clampCourts(){ const max=Math.max(1,Math.floor(setup.players/4)); if(setup.courts>max)setup.courts=max; if(setup.courts<1)setup.courts=1; }
+function renderSetup(){
+  clampCourts();
+  $("pVal").textContent = setup.players;
+  $("cVal").textContent = setup.courts;
+  const perRound = Math.min(setup.courts*4, setup.players-(setup.players%4));
+  const rest = setup.players - perRound;
+  $("courtHint").textContent = `${setup.players-1} rounds · ${perRound} play${rest>0?`, ${rest} rest`:""} each round`;
+  $("cMinus").disabled = setup.courts<=1;
+  $("cPlus").disabled  = setup.courts>=Math.floor(setup.players/4);
+  $("pMinus").disabled = setup.players<=4;
+  $("pPlus").disabled  = setup.players>=24;
+}
+$("pMinus").onclick=()=>{setup.players=Math.max(4,setup.players-1);renderSetup();};
+$("pPlus").onclick =()=>{setup.players=Math.min(24,setup.players+1);renderSetup();};
+$("cMinus").onclick=()=>{setup.courts=Math.max(1,setup.courts-1);renderSetup();};
+$("cPlus").onclick =()=>{setup.courts=Math.min(Math.floor(setup.players/4),setup.courts+1);renderSetup();};
+document.querySelectorAll(".mode").forEach(m=>m.onclick=()=>{
+  setup.mode=m.dataset.mode;
+  document.querySelectorAll(".mode").forEach(x=>x.classList.toggle("sel",x===m));
+});
+$("startBtn").onclick=startGame;
+$("tabRound").onclick=()=>{view="round";renderGame();};
+$("tabLb").onclick=()=>{view="lb";renderGame();};
+let armNew=false, armTimer;
+$("newGame").onclick=()=>{
+  const b=$("newGame");
+  if(!armNew){ armNew=true; b.textContent="Tap again to reset"; b.style.color="var(--danger,#dc2626)"; b.style.borderColor="var(--danger,#dc2626)";
+    clearTimeout(armTimer); armTimer=setTimeout(()=>{armNew=false;b.textContent="New Game";b.style.color="";b.style.borderColor="";},3000); return; }
+  clearTimeout(armTimer); armNew=false; b.textContent="New Game"; b.style.color=""; b.style.borderColor="";
+  localStorage.removeItem(KEY); game=null; view="round";
+  $("game").classList.add("hidden"); $("setup").classList.remove("hidden"); renderSetup();
+};
+
+/* ── boot ── */
+(function(){
+  const saved = load();
+  if (saved && saved.schedule) { game = saved; renderGame(); }
+  else renderSetup();
+})();
+
+/* ── self-test: /americano.html?selftest=1 ── */
+if (new URLSearchParams(location.search).get("selftest")==="1") {
+  const out=[];
+  for (const [P,C] of [[8,2],[12,3],[16,4],[10,2],[6,1]]) {
+    const s = buildSchedule(P,C), part={}, games=new Array(P).fill(0);
+    let dupPartner=0, maxOppo=0; const opp={};
+    s.forEach(rd=>{
+      const seen=new Set();
+      rd.matches.forEach(m=>{
+        [...m.teamA,...m.teamB].forEach(p=>{ if(seen.has(p))out.push(`FAIL ${P}/${C}: player twice in round`); seen.add(p); games[p]++; });
+        [m.teamA,m.teamB].forEach(t=>{ const k=t.slice().sort().join("-"); if(part[k])dupPartner++; part[k]=1; });
+        for(const a of m.teamA)for(const b of m.teamB){const k=[a,b].sort().join("-");opp[k]=(opp[k]||0)+1;maxOppo=Math.max(maxOppo,opp[k]);}
+      });
+    });
+    console.assert(s.length===P-1, `rounds ${P}`);
+    out.push(`${P}p/${C}c: ${s.length} rounds, partner-repeats=${dupPartner}, max opponent-meets=${maxOppo}, games/player=${Math.min(...games)}–${Math.max(...games)}`);
+  }
+  document.body.innerHTML = "<pre style='padding:20px;font:13px monospace'>"+out.join("\n")+"</pre>";
+}
+</script>
+</body>
+</html>
