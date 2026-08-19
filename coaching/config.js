@@ -34,24 +34,22 @@ const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 // ── Demo data ───────────────────────────────────────────────
 const DEMO = {
   locations: [
-    { id: "loc-sirifort",  name: "Siri Fort",     area: "South Delhi", courts: 2, maps_url: "https://maps.google.com/?q=Siri+Fort+Sports+Complex" },
-    { id: "loc-rackonnect",name: "Rackonnect",    area: "Greater Kailash", courts: 3, maps_url: "https://maps.google.com/?q=Rackonnect+GK" },
-    { id: "loc-vasant",    name: "Vasant Vihar",  area: "West Delhi",  courts: 1, maps_url: "https://maps.google.com/?q=Vasant+Vihar+Delhi" },
-    { id: "loc-gurgaon",   name: "Gurgaon",       area: "Sector 43",   courts: 4, maps_url: "https://maps.google.com/?q=Gurgaon+padel" },
+    { id: "loc-dace",    name: "Dace Club", area: "Delhi", courts: 3, maps_url: "https://maps.google.com/?q=Dace+Club+Delhi" },
+    { id: "loc-commons", name: "Commons",   area: "Delhi", courts: 2, maps_url: "https://maps.google.com/?q=Commons+Delhi" },
   ],
   // NOTE: `locations` here is demo-only (to filter coaches by location in
   // preview). The live sheet has no locations column — coaches available at a
   // location are derived from the Slots tab (coach_id + location_id).
   coaches: [
-    { id: "coach-prannay", name: "Prannay Merchant", experience: "8 yrs",  level: "Advanced Coach",         photo: "", session_price: 4800, locations: ["loc-sirifort", "loc-rackonnect", "loc-gurgaon"] },
-    { id: "coach-aditi",   name: "Aditi Rao",        experience: "5 yrs",  level: "Intermediate & Beginner", photo: "", session_price: 3600, locations: ["loc-sirifort", "loc-vasant"] },
-    { id: "coach-karan",   name: "Karan Bhatia",     experience: "10 yrs", level: "Advanced Coach",         photo: "", session_price: 5400, locations: ["loc-gurgaon", "loc-rackonnect"] },
+    { id: "coach-prannay", name: "Prannay Merchant", experience: "",  level: "Intermediate & Advanced", photo: "", session_price: 4800, bio: "Coaches intermediate and advanced players on tactics, net play and match sharpness — the pick if you're chasing a competitive edge.", locations: ["loc-dace", "loc-commons"] },
+    { id: "coach-steisha", name: "Steisha Budhala",  experience: "",  level: "Intermediate & Advanced", photo: "", session_price: 3600, bio: "Works with intermediate and advanced players on consistency, shot selection and smarter decisions on court.", locations: ["loc-dace", "loc-commons"] },
+    { id: "coach-gobind",  name: "Gobind",           experience: "",  level: "Beginner Coach",          photo: "", session_price: 3000, bio: "Beginner specialist — patient and encouraging, perfect for your first sessions and building clean, confident fundamentals.", locations: ["loc-dace", "loc-commons"] },
   ],
   // Weekly template: coach id → weekday (0=Sun) → start times
   availability: {
     "coach-prannay": { 1: ["17:00","18:00","19:30"], 2: ["17:00","18:00"], 3: ["17:00","18:00","19:30","20:30"], 5: ["07:00","08:00","17:00"], 6: ["07:00","08:00","09:00"] },
-    "coach-aditi":   { 0: ["08:00","09:00","10:00"], 2: ["18:00","19:00"], 4: ["17:00","18:00","19:00"], 6: ["16:00","17:00","18:00"] },
-    "coach-karan":   { 1: ["07:00","08:00"], 3: ["07:00","08:00"], 4: ["18:30","19:30","20:30"], 5: ["18:30","19:30"], 0: ["17:00","18:00"] },
+    "coach-steisha":   { 0: ["08:00","09:00","10:00"], 2: ["18:00","19:00"], 4: ["17:00","18:00","19:00"], 6: ["16:00","17:00","18:00"] },
+    "coach-gobind":   { 1: ["07:00","08:00"], 3: ["07:00","08:00"], 4: ["18:30","19:30","20:30"], 5: ["18:30","19:30"], 0: ["17:00","18:00"] },
   },
 };
 
