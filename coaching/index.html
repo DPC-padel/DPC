@@ -209,12 +209,17 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-
 .modal{background:var(--card);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:80vh;overflow-y:auto;padding:26px 22px 40px;animation:slideUp .35s cubic-bezier(.32,.72,0,1) both;}
 @keyframes slideUp{from{transform:translateY(60px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 .modal h3{font-family:var(--title);font-size:1.3rem;font-weight:700;margin-bottom:16px;}
-.gp-card{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;}
-.gp-c-info{flex:1;min-width:0;}
-.gp-c-title{font-weight:600;font-size:.9rem;margin-bottom:2px;}
-.gp-c-meta{font-size:.74rem;color:var(--muted2);margin-bottom:6px;}
-.gp-spots{display:inline-block;font-size:.56rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:4px 9px;border-radius:100px;}
-.gp-join{flex:none;padding:9px 16px;font-size:.72rem;}
+.open-box{background:var(--accent);color:#fff;border-radius:var(--radius);padding:18px;margin-top:20px;box-shadow:0 8px 22px var(--accent-glow);}
+.open-box .ob-head{font-size:.58rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.85;margin-bottom:3px;}
+.open-box .ob-title{font-family:var(--title);font-size:1.15rem;font-weight:700;margin-bottom:14px;}
+.ob-row{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;}
+.ob-row:last-child{margin-bottom:0;}
+.ob-info{flex:1;min-width:0;}
+.ob-r-title{font-weight:600;font-size:.86rem;}
+.ob-r-meta{font-size:.72rem;opacity:.82;margin-top:2px;}
+.ob-spots{display:inline-block;font-size:.58rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.92;margin-top:5px;}
+.ob-join{flex:none;background:#fff;color:var(--accent);border:none;border-radius:100px;padding:9px 16px;font-family:var(--body);font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;}
+.ob-join:active{transform:scale(.96);}
 .session-item{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;margin-bottom:10px;box-shadow:var(--shadow);}
 .session-item .top{display:flex;justify-content:space-between;margin-bottom:6px;}
 .session-item .coach{font-family:var(--title);font-weight:700;font-size:1rem;}
@@ -286,6 +291,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-
       <h2 class="panel-title">Choose your coach</h2>
       <p class="panel-sub">Pick who you'd like to train with — they'll reach out to lock in the details.</p>
       <div class="coach-list" id="coachList"><p class="empty-note">Loading coaches…</p></div>
+      <div id="openBox" class="open-box" style="display:none"></div>
     </section>
 
     <!-- STEP 2 — LOCATION (multi-select) -->
@@ -399,17 +405,6 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-
     </div>
     <button class="btn btn-accent" id="lookupBtn" style="width:100%">Find My Requests</button>
     <div id="sessionsList" style="margin-top:18px"></div>
-  </div>
-</div>
-
-<!-- ── Ongoing group sessions — join popup ── -->
-<div class="modal-overlay" id="groupPop">
-  <div class="modal">
-    <div style="font-size:.58rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:4px">Sessions on now</div>
-    <h3 id="gpHead" style="margin-bottom:6px"></h3>
-    <p style="font-size:.82rem;color:var(--muted2);margin-bottom:16px">Someone's already booked these — hop in on an open spot.</p>
-    <div id="gpList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px"></div>
-    <button class="btn btn-ghost" id="gpDismiss" style="width:100%">Maybe later</button>
   </div>
 </div>
 
@@ -686,6 +681,10 @@ $("submitBtn").addEventListener("click", async () => {
       ...S.details,
     });
     renderConfirmation();
+    if (S.type && S.type.players > 1) {           // group session → remember it on this device
+      S.slots.forEach(sl => markJoined([S.coach.id, sl.location_id, sl.date, sl.start_time, S.type.id].join("|")));
+      renderOpenBox();
+    }
     goTo(6);
     document.querySelectorAll(".step-dot").forEach(dd => dd.classList.add("done"));
   } catch (e) {
@@ -779,27 +778,37 @@ async function openGroupSessions() {
     }));
   } catch (e) { return []; }
 }
-async function maybeShowGroupPop() {
-  const list = await openGroupSessions();
-  if (!list.length) return;
-  $("gpHead").textContent = list.length === 1 ? "1 session with an open spot"
-                                              : `${list.length} sessions with open spots`;
-  $("gpList").innerHTML = list.map((s, i) => {
-    const [y, m, d] = s.date.split("-").map(Number);
-    const dl = new Date(y, m - 1, d).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
-    const t = SESSION_TYPES.find(x => x.id === s.typeId);
-    return `<div class="gp-card">
-      <div class="gp-c-info">
-        <div class="gp-c-title">${s.coach.name} · ${t.label}</div>
-        <div class="gp-c-meta">${s.location.name} · ${dl}, ${formatTime12(s.start_time)}</div>
-        <span class="gp-spots">${s.spotsLeft} spot${s.spotsLeft > 1 ? "s" : ""} left</span>
-      </div>
-      <button class="btn btn-accent gp-join" data-i="${i}">Join</button>
-    </div>`;
-  }).join("");
-  $("gpList").querySelectorAll(".gp-join").forEach(b =>
+// On-device "already registered" tracking (same idea as the Games RSVP list):
+// once you join a session on this device, it stops showing here.
+function joinedSlots() { try { return JSON.parse(localStorage.getItem("dpcCoachJoined") || "[]"); } catch (e) { return []; } }
+function markJoined(key) { const a = joinedSlots(); if (!a.includes(key)) { a.push(key); localStorage.setItem("dpcCoachJoined", JSON.stringify(a)); } }
+function sessionKey(s) { return [s.coach.id, s.location.id, s.date, s.start_time, s.typeId].join("|"); }
+
+// Persistent box under the coach list: group sessions with open spots that
+// this device hasn't already registered for.
+async function renderOpenBox() {
+  const box = $("openBox"); if (!box) return;
+  const joined = joinedSlots();
+  const list = (await openGroupSessions()).filter(s => !joined.includes(sessionKey(s)));
+  if (!list.length) { box.style.display = "none"; box.innerHTML = ""; return; }
+  box.style.display = "block";
+  box.innerHTML = `<div class="ob-head">Sessions on now</div>
+    <div class="ob-title">${list.length === 1 ? "A session has an open spot" : list.length + " sessions have open spots"}</div>` +
+    list.map((s, i) => {
+      const [y, m, d] = s.date.split("-").map(Number);
+      const dl = new Date(y, m - 1, d).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+      const t = SESSION_TYPES.find(x => x.id === s.typeId);
+      return `<div class="ob-row">
+        <div class="ob-info">
+          <div class="ob-r-title">${s.coach.name} · ${t.label}</div>
+          <div class="ob-r-meta">${s.location.name} · ${dl}, ${formatTime12(s.start_time)}</div>
+          <span class="ob-spots">${s.spotsLeft} spot${s.spotsLeft > 1 ? "s" : ""} left</span>
+        </div>
+        <button class="ob-join" data-i="${i}">Join</button>
+      </div>`;
+    }).join("");
+  box.querySelectorAll(".ob-join").forEach(b =>
     b.addEventListener("click", () => joinSession(list[+b.dataset.i])));
-  $("groupPop").classList.add("open");
 }
 function joinSession(s) {
   const t = SESSION_TYPES.find(x => x.id === s.typeId);
@@ -807,15 +816,12 @@ function joinSession(s) {
   S.locations = [s.location];
   S.slots = [{ location_id: s.location.id, location_name: s.location.name, date: s.date, start_time: s.start_time, level: "" }];
   S.type = { ...t, price: sharePrice(s.coach.session_price, t.id), total: s.coach.session_price };
-  $("groupPop").classList.remove("open");
   goTo(5);
 }
-$("gpDismiss").addEventListener("click", () => $("groupPop").classList.remove("open"));
-$("groupPop").addEventListener("click", e => { if (e.target.id === "groupPop") $("groupPop").classList.remove("open"); });
 
 // ── Init ────────────────────────────────────────────────────
 loadCoaches();
-setTimeout(maybeShowGroupPop, 700);
+renderOpenBox();
 </script>
 </body>
 </html>
