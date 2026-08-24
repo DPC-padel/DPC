@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="../logo.svg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="config.js?v=8"></script>
+<script src="config.js?v=9"></script>
 <style>
 @font-face { font-family:'Berling'; src:url('../Berling Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
 :root{
@@ -453,7 +453,7 @@ async function loadCoaches() {
       return;
     }
     coaches.forEach(c => {
-      const minPrice = sharePrice(c.session_price, "1:3");
+      const minPrice = Math.min(...SESSION_TYPES.map(t => typePrice(c, t.id)));
       const initials = c.name.split(" ").map(w => w[0]).join("").slice(0, 2);
       const btn = document.createElement("button");
       btn.className = "coach-card";
@@ -484,7 +484,7 @@ async function loadLocations() {
   $("locationGrid").innerHTML = `<p class="empty-note">Loading locations…</p>`;
   $("toStep3").disabled = S.locations.length === 0;
   try {
-    const locs = await API.fetchLocations();
+    const locs = await API.fetchCoachLocations(S.coach.id);
     $("locationGrid").innerHTML = "";
     locs.forEach(loc => {
       const btn = document.createElement("button");
@@ -604,18 +604,19 @@ $("toStep4").addEventListener("click", () => { renderTypes(); goTo(4); });
 
 // ── Step 4: session type ────────────────────────────────────
 function selectType(t, card) {
-  S.type = { ...t, price: sharePrice(S.coach.session_price, t.id), total: S.coach.session_price };
+  S.type = { ...t, price: typePrice(S.coach, t.id), total: typeTotal(S.coach, t.id) };
   document.querySelectorAll(".type-card").forEach(c => c.classList.remove("selected"));
   card.classList.add("selected");
   $("typeTotal").innerHTML = `Est. your share<strong>₹${S.type.price.toLocaleString("en-IN")}</strong>`;
   $("toStep5").disabled = false;
 }
 function typeCard(t) {
-  const price = sharePrice(S.coach.session_price, t.id);
+  const price = typePrice(S.coach, t.id);
+  const total = typeTotal(S.coach, t.id);
   const card = document.createElement("button");
   card.className = "type-card";
   card.innerHTML = `
-    <div><h3>${t.label}</h3><div class="meta">${t.players} player${t.players > 1 ? "s" : ""} · 60 min · session ₹${S.coach.session_price.toLocaleString("en-IN")}</div></div>
+    <div><h3>${t.label}</h3><div class="meta">${t.players} player${t.players > 1 ? "s" : ""} · 60 min · session ₹${total.toLocaleString("en-IN")}</div></div>
     <div class="type-price"><span class="amt">₹${price.toLocaleString("en-IN")}</span><span class="per">${t.players > 1 ? "per person" : "full session"}</span></div>`;
   return card;
 }
@@ -815,7 +816,7 @@ function joinSession(s) {
   S.coach = s.coach;
   S.locations = [s.location];
   S.slots = [{ location_id: s.location.id, location_name: s.location.name, date: s.date, start_time: s.start_time, level: "" }];
-  S.type = { ...t, price: sharePrice(s.coach.session_price, t.id), total: s.coach.session_price };
+  S.type = { ...t, price: typePrice(s.coach, t.id), total: typeTotal(s.coach, t.id) };
   goTo(5);
 }
 

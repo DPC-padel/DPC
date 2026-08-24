@@ -28,6 +28,27 @@ function sharePrice(sessionPrice, typeId) {
   return Math.round(sessionPrice / t.players);
 }
 
+// Per-type pricing. Each session type can carry its own TOTAL session fee in
+// the sheet (columns session_price1:1 / 1:2 / 1:3). typeTotal returns that
+// total; typePrice returns one player's share (total / players). Falls back to
+// the single session_price split when the per-type column is empty.
+function typeTotal(coach, typeId) {
+  if (!coach) return 0;
+  const cands = ["session_price" + typeId, "session_price_" + typeId.replace(":", "_"),
+                 "session_price" + typeId.replace(":", ""), "price" + typeId];
+  for (const k of cands) {
+    if (coach[k] != null && coach[k] !== "") {
+      const v = Number(coach[k]);
+      if (!isNaN(v) && v > 0) return Math.round(v);
+    }
+  }
+  return Number(coach.session_price) || 0;
+}
+function typePrice(coach, typeId) {
+  const t = SESSION_TYPES.find(x => x.id === typeId);
+  return Math.round(typeTotal(coach, typeId) / (t ? t.players : 1));
+}
+
 // Per-session level (a slot, not the coach — any coach can run any level).
 const LEVELS = ["Beginner", "Intermediate", "Advanced"];
 
@@ -138,10 +159,25 @@ const API = {
     }
   },
 
-  // All coaches (coach-first flow).
+  // Locations where a specific coach has open slots.
+  async fetchCoachLocations(coachId) {
+    if (DEMO_MODE) {
+      const c = DEMO.coaches.find(x => x.id === coachId);
+      return DEMO.locations.filter(l => c && c.locations.includes(l.id));
+    }
+    const c = await loadCoachingCache();
+    const ids = new Set(c.slots.filter(s => String(s.coach_id) === String(coachId) && s.status === "open").map(s => String(s.location_id)));
+    return c.locations.filter(l => ids.has(String(l.id)));
+  },
+
+  // All coaches that have open slots (coach-first flow — no dead-end coaches).
   async fetchAllCoaches() {
     if (DEMO_MODE) return DEMO.coaches;
-    try { return (await loadCoachingCache()).coaches; }
+    try {
+      const c = await loadCoachingCache();
+      const withSlots = new Set(c.slots.filter(s => s.status === "open").map(s => String(s.coach_id)));
+      return c.coaches.filter(co => withSlots.has(String(co.id)));
+    }
     catch (e) {
       const locs = await this.fetchLocations();
       const lists = await Promise.all(locs.map(l => this.fetchCoaches(l.id).catch(() => [])));
