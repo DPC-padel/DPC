@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Coaching Admin · Delhi//PadelCollective</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../tokens.css?v=3">
+<style>
+@font-face{font-family:'Berling';src:url('../Berling Bold.otf') format('opentype');font-weight:700;font-display:swap;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--ink,#0f172a);font-family:var(--body,'Inter',system-ui,sans-serif);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:560px;margin:0 auto;padding:26px 20px 60px;}
+h1{font-family:var(--title,'Berling',serif);font-size:1.8rem;font-weight:700;letter-spacing:-.5px;}
+h1 .slash{color:var(--accent);}
+.sub{font-size:.82rem;color:var(--muted2,#64748b);margin:4px 0 22px;}
+
+/* login gate */
+#gate{max-width:360px;margin:16vh auto 0;padding:0 20px;text-align:center;}
+#gate h1{margin-bottom:6px;}
+#gate p{font-size:.85rem;color:var(--muted2,#64748b);margin-bottom:20px;}
+.inp{width:100%;height:48px;border:1.5px solid var(--line,rgba(15,23,42,.12));border-radius:12px;padding:0 14px;font-family:inherit;font-size:1rem;outline:none;background:#fff;}
+.inp:focus{border-color:var(--accent);}
+.err{color:var(--danger,#dc2626);font-size:.8rem;margin-top:10px;display:none;}
+.err.show{display:block;}
+
+/* tabs */
+.tabs{display:flex;gap:8px;margin-bottom:20px;}
+.tab{flex:1;padding:11px;border-radius:100px;border:1px solid var(--line,rgba(15,23,42,.1));background:#fff;font-family:inherit;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2,#64748b);cursor:pointer;}
+.tab.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.panel{display:none;}
+.panel.on{display:block;animation:fade .3s ease both;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* form */
+.card{background:#fff;border:1px solid var(--line,rgba(15,23,42,.08));border-radius:var(--radius,16px);padding:20px;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.04));margin-bottom:16px;}
+.field{margin-bottom:14px;}
+.field:last-of-type{margin-bottom:0;}
+label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2,#64748b);margin-bottom:7px;}
+select.inp,textarea.inp{width:100%;}
+textarea.inp{height:auto;min-height:80px;padding:12px 14px;line-height:1.5;resize:vertical;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.hint{font-size:.72rem;color:var(--muted,#94a3b8);margin-top:6px;line-height:1.4;}
+.cta{width:100%;height:50px;border:none;border-radius:100px;background:var(--accent);color:#fff;font-family:inherit;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-top:6px;box-shadow:0 6px 18px var(--accent-glow,rgba(46,78,142,.18));}
+.cta:disabled{opacity:.55;cursor:default;}
+.msg{font-size:.82rem;margin-top:12px;padding:11px 14px;border-radius:12px;display:none;line-height:1.5;}
+.msg.ok{display:block;background:rgba(74,140,66,.1);color:#3a6f2f;border:1px solid rgba(74,140,66,.25);}
+.msg.bad{display:block;background:rgba(220,38,38,.08);color:#b42318;border:1px solid rgba(220,38,38,.2);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.chip{font-size:.72rem;padding:8px 12px;border-radius:100px;border:1px solid var(--line2,rgba(15,23,42,.14));background:#fff;cursor:pointer;user-select:none;}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+.logout{position:absolute;top:22px;right:20px;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2,#64748b);background:#fff;border:1px solid var(--line,rgba(15,23,42,.1));border-radius:100px;padding:7px 12px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- ── Login ── -->
+<div id="gate">
+  <h1><span class="slash">//</span> Coaching Admin</h1>
+  <p>Enter the admin password to continue.</p>
+  <input class="inp" id="pw" type="password" placeholder="••••••••" autocomplete="current-password"/>
+  <div class="err" id="pwErr">Incorrect password.</div>
+  <button class="cta" id="pwBtn" style="margin-top:16px">Enter</button>
+</div>
+
+<!-- ── App ── -->
+<div id="app" style="display:none">
+  <button class="logout" id="logout">Log out</button>
+  <div class="wrap">
+    <h1><span class="slash">//</span> Coaching Admin</h1>
+    <p class="sub">Add coaches, courts and availability — it writes straight to the coaching sheet and goes live.</p>
+
+    <div class="tabs">
+      <button class="tab on" data-tab="slots">Slots</button>
+      <button class="tab" data-tab="coaches">Coaches</button>
+      <button class="tab" data-tab="courts">Courts</button>
+    </div>
+
+    <!-- SLOTS -->
+    <div class="panel on" id="p-slots">
+      <div class="card">
+        <div class="field">
+          <label>Coach</label>
+          <select class="inp" id="s-coach"><option value="">Loading…</option></select>
+        </div>
+        <div class="field">
+          <label>Court</label>
+          <select class="inp" id="s-loc"><option value="">Loading…</option></select>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Date</label>
+            <input class="inp" id="s-date" type="date"/>
+          </div>
+          <div class="field">
+            <label>Level</label>
+            <select class="inp" id="s-level">
+              <option value="">Any</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Times</label>
+          <div class="chips" id="s-times"></div>
+          <div class="hint">Tap the times this coach is available on that date. Adds one slot each.</div>
+        </div>
+        <button class="cta" id="s-add">Add slots</button>
+        <div class="msg" id="s-msg"></div>
+      </div>
+    </div>
+
+    <!-- COACHES -->
+    <div class="panel" id="p-coaches">
+      <div class="card">
+        <div class="field"><label>Name</label><input class="inp" id="c-name" placeholder="e.g. Prannay Merchant"/></div>
+        <div class="row">
+          <div class="field">
+            <label>Level</label>
+            <select class="inp" id="c-level">
+              <option>Beginner Coach</option><option>Intermediate & Advanced</option><option>Intermediate</option><option>Advanced Coach</option>
+            </select>
+          </div>
+          <div class="field"><label>Session price (₹)</label><input class="inp" id="c-price" type="number" inputmode="numeric" placeholder="4800"/></div>
+        </div>
+        <div class="field"><label>Bio</label><textarea class="inp" id="c-bio" placeholder="Short write-up shown on the coach card"></textarea></div>
+        <button class="cta" id="c-add">Add coach</button>
+        <div class="msg" id="c-msg"></div>
+      </div>
+    </div>
+
+    <!-- COURTS -->
+    <div class="panel" id="p-courts">
+      <div class="card">
+        <div class="field"><label>Court name</label><input class="inp" id="l-name" placeholder="e.g. Dace Club"/></div>
+        <div class="row">
+          <div class="field"><label>Area</label><input class="inp" id="l-area" placeholder="Delhi"/></div>
+          <div class="field"><label>No. of courts</label><input class="inp" id="l-courts" type="number" inputmode="numeric" placeholder="2"/></div>
+        </div>
+        <button class="cta" id="l-add">Add court</button>
+        <div class="msg" id="l-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONFIG = {
+  COACHING_API:   "https://script.google.com/macros/s/AKfycby8pq9xQ7tekBgjK-6lmSbpcZDaVodsIbdgNTYcxbBdPsWYzHDFbL-Qq1yqyq53P4zm/exec",
+  ADMIN_PASSWORD: "padel2024",
+  SUPABASE: { url: "https://zruqzybdpniofxbcwuat.supabase.co", anonKey: "sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
+};
+const $ = id => document.getElementById(id);
+const TIMES = ["06:00","07:00","08:00","09:00","10:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+const fmt12 = t => { const [h,m]=t.split(":").map(Number); return `${h%12||12}:${String(m).padStart(2,"0")} ${h>=12?"PM":"AM"}`; };
+
+// ── auth ──
+$("pwBtn").addEventListener("click", tryLogin);
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") tryLogin(); });
+function tryLogin() {
+  if ($("pw").value === CONFIG.ADMIN_PASSWORD) {
+    sessionStorage.setItem("dpcCoachAdmin", "1");
+    $("gate").style.display = "none"; $("app").style.display = "block"; init();
+  } else { $("pwErr").classList.add("show"); }
+}
+$("logout").addEventListener("click", () => { sessionStorage.removeItem("dpcCoachAdmin"); location.reload(); });
+if (sessionStorage.getItem("dpcCoachAdmin") === "1") { $("gate").style.display = "none"; $("app").style.display = "block"; }
+
+// ── tabs ──
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t.dataset.tab));
+}));
+
+// ── time chips ──
+let picked = new Set();
+$("s-times").innerHTML = TIMES.map(t => `<span class="chip" data-t="${t}">${fmt12(t)}</span>`).join("");
+$("s-times").querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => {
+  const t = c.dataset.t; c.classList.toggle("on"); picked.has(t) ? picked.delete(t) : picked.add(t);
+}));
+
+// ── data ──
+async function readCache() {
+  try {
+    const res = await fetch(`${CONFIG.SUPABASE.url}/rest/v1/coaching_cache?select=source,payload`,
+      { headers: { apikey: CONFIG.SUPABASE.anonKey, Authorization: `Bearer ${CONFIG.SUPABASE.anonKey}` } });
+    const out = { coaches: [], locations: [] };
+    (await res.json()).forEach(r => { if (out[r.source] !== undefined) out[r.source] = r.payload || []; });
+    return out;
+  } catch (e) { return { coaches: [], locations: [] }; }
+}
+async function init() { await refreshDropdowns(); }
+async function refreshDropdowns() {
+  const c = await readCache();
+  $("s-coach").innerHTML = c.coaches.length
+    ? c.coaches.map(x => `<option value="${x.id}">${x.name}</option>`).join("")
+    : `<option value="">No coaches yet — add one first</option>`;
+  $("s-loc").innerHTML = c.locations.length
+    ? c.locations.map(x => `<option value="${x.id}">${x.name}</option>`).join("")
+    : `<option value="">No courts yet — add one first</option>`;
+}
+
+async function post(action, data, btn, msgEl) {
+  btn.disabled = true; const label = btn.textContent; btn.textContent = "Saving…";
+  msgEl.className = "msg";
+  try {
+    const res = await fetch(CONFIG.COACHING_API, {
+      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action, data }),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "Failed");
+    msgEl.className = "msg ok"; msgEl.textContent = json.message || "Saved and live.";
+    return json;
+  } catch (e) {
+    msgEl.className = "msg bad"; msgEl.textContent = "Couldn't save — " + (e.message || "try again.");
+    return null;
+  } finally { btn.disabled = false; btn.textContent = label; }
+}
+
+// ── add slots ──
+$("s-add").addEventListener("click", async () => {
+  const coach_id = $("s-coach").value, location_id = $("s-loc").value, date = $("s-date").value;
+  const times = [...picked];
+  if (!coach_id || !location_id || !date || !times.length) {
+    $("s-msg").className = "msg bad"; $("s-msg").textContent = "Pick a coach, court, date and at least one time."; return;
+  }
+  const r = await post("addSlots", { coach_id, location_id, date, times, level: $("s-level").value }, $("s-add"), $("s-msg"));
+  if (r) { picked.clear(); $("s-times").querySelectorAll(".chip.on").forEach(c => c.classList.remove("on")); }
+});
+
+// ── add coach ──
+$("c-add").addEventListener("click", async () => {
+  const name = $("c-name").value.trim();
+  if (!name) { $("c-msg").className = "msg bad"; $("c-msg").textContent = "Enter the coach's name."; return; }
+  const r = await post("addCoach", {
+    name, level: $("c-level").value, session_price: Number($("c-price").value) || 0, bio: $("c-bio").value.trim()
+  }, $("c-add"), $("c-msg"));
+  if (r) { $("c-name").value = ""; $("c-price").value = ""; $("c-bio").value = ""; await refreshDropdowns(); }
+});
+
+// ── add court ──
+$("l-add").addEventListener("click", async () => {
+  const name = $("l-name").value.trim();
+  if (!name) { $("l-msg").className = "msg bad"; $("l-msg").textContent = "Enter the court name."; return; }
+  const r = await post("addLocation", {
+    name, area: $("l-area").value.trim(), courts: Number($("l-courts").value) || 1
+  }, $("l-add"), $("l-msg"));
+  if (r) { $("l-name").value = ""; $("l-area").value = ""; $("l-courts").value = ""; await refreshDropdowns(); }
+});
+
+if (sessionStorage.getItem("dpcCoachAdmin") === "1") init();
+</script>
+</body>
+</html>
