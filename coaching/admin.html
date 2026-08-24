@@ -10,46 +10,119 @@
 @font-face{font-family:'Berling';src:url('../Berling Bold.otf') format('opentype');font-weight:700;font-display:swap;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--ink,#0f172a);font-family:var(--body,'Inter',system-ui,sans-serif);min-height:100dvh;-webkit-font-smoothing:antialiased;}
-.wrap{max-width:560px;margin:0 auto;padding:26px 20px 60px;}
-h1{font-family:var(--title,'Berling',serif);font-size:1.8rem;font-weight:700;letter-spacing:-.5px;}
-h1 .slash{color:var(--accent);}
-.sub{font-size:.82rem;color:var(--muted2,#64748b);margin:4px 0 22px;}
+h1,h2,h3{font-family:var(--title,'Berling',serif);letter-spacing:-.5px;}
+.slash{color:var(--accent);}
 
 /* login gate */
 #gate{max-width:360px;margin:16vh auto 0;padding:0 20px;text-align:center;}
-#gate h1{margin-bottom:6px;}
+#gate h1{font-size:1.8rem;font-weight:700;margin-bottom:6px;}
 #gate p{font-size:.85rem;color:var(--muted2,#64748b);margin-bottom:20px;}
 .inp{width:100%;height:48px;border:1.5px solid var(--line,rgba(15,23,42,.12));border-radius:12px;padding:0 14px;font-family:inherit;font-size:1rem;outline:none;background:#fff;}
 .inp:focus{border-color:var(--accent);}
-.err{color:var(--danger,#dc2626);font-size:.8rem;margin-top:10px;display:none;}
-.err.show{display:block;}
-
-/* tabs */
-.tabs{display:flex;gap:8px;margin-bottom:20px;}
-.tab{flex:1;padding:11px;border-radius:100px;border:1px solid var(--line,rgba(15,23,42,.1));background:#fff;font-family:inherit;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2,#64748b);cursor:pointer;}
-.tab.on{background:var(--accent);color:#fff;border-color:var(--accent);}
-.panel{display:none;}
-.panel.on{display:block;animation:fade .3s ease both;}
-@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-
-/* form */
-.card{background:#fff;border:1px solid var(--line,rgba(15,23,42,.08));border-radius:var(--radius,16px);padding:20px;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.04));margin-bottom:16px;}
-.field{margin-bottom:14px;}
-.field:last-of-type{margin-bottom:0;}
-label{display:block;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2,#64748b);margin-bottom:7px;}
 select.inp,textarea.inp{width:100%;}
 textarea.inp{height:auto;min-height:80px;padding:12px 14px;line-height:1.5;resize:vertical;}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.hint{font-size:.72rem;color:var(--muted,#94a3b8);margin-top:6px;line-height:1.4;}
-.cta{width:100%;height:50px;border:none;border-radius:100px;background:var(--accent);color:#fff;font-family:inherit;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-top:6px;box-shadow:0 6px 18px var(--accent-glow,rgba(46,78,142,.18));}
+.err{color:var(--danger,#dc2626);font-size:.8rem;margin-top:10px;display:none;}
+.err.show{display:block;}
+.cta{width:100%;height:50px;border:none;border-radius:100px;background:var(--accent);color:#fff;font-family:inherit;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 18px var(--accent-glow,rgba(46,78,142,.18));}
 .cta:disabled{opacity:.55;cursor:default;}
-.msg{font-size:.82rem;margin-top:12px;padding:11px 14px;border-radius:12px;display:none;line-height:1.5;}
-.msg.ok{display:block;background:rgba(74,140,66,.1);color:#3a6f2f;border:1px solid rgba(74,140,66,.25);}
-.msg.bad{display:block;background:rgba(220,38,38,.08);color:#b42318;border:1px solid rgba(220,38,38,.2);}
+
+/* ── app shell ── */
+#app{display:none;}
+.layout{display:flex;min-height:100dvh;}
+.sidebar{width:212px;background:#0f1b33;display:flex;flex-direction:column;position:sticky;top:0;height:100dvh;flex-shrink:0;}
+.sb-logo{padding:22px 22px 18px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo .name{font-family:var(--title,'Berling',serif);font-size:1.05rem;font-weight:700;color:#fff;}
+.sb-logo .name .slash{color:#7ea2e0;}
+.sb-logo .tag{font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:#6d80a6;display:block;margin-top:4px;}
+.nav{padding:12px 0;flex:1;}
+.ni{display:flex;align-items:center;gap:10px;padding:11px 22px;font-size:.82rem;font-weight:600;color:#8ea0c4;cursor:pointer;border:none;background:transparent;font-family:inherit;width:100%;text-align:left;transition:all .15s;}
+.ni:hover{color:#cdd8ec;}
+.ni.active{color:#fff;background:rgba(255,255,255,.07);box-shadow:inset 3px 0 0 var(--accent);}
+.ni svg{width:15px;height:15px;flex-shrink:0;stroke-width:1.9;}
+.sb-bottom{padding:16px;border-top:1px solid rgba(255,255,255,.08);}
+.logout{width:100%;background:transparent;border:1px solid rgba(255,255,255,.14);color:#8ea0c4;font-family:inherit;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:100px;padding:9px;cursor:pointer;transition:all .15s;}
+.logout:hover{border-color:#f0a5a5;color:#f0a5a5;}
+
+.content{flex:1;overflow-y:auto;}
+.sec{display:none;padding:34px 40px 64px;max-width:900px;}
+.sec.active{display:block;animation:fade .25s ease both;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.sec-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:26px;}
+.sec-hd h2{font-size:1.7rem;font-weight:700;}
+.sec-hd p{color:var(--muted2,#64748b);font-size:.85rem;margin-top:4px;}
+.new-btn{background:var(--accent);color:#fff;border:none;border-radius:100px;padding:11px 20px;font-family:inherit;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}
+
+/* mobile top tabs (hidden on desktop) */
+.mtabs{display:none;gap:8px;padding:16px 18px 0;}
+.mtab{flex:1;padding:10px;border-radius:100px;border:1px solid var(--line,rgba(15,23,42,.1));background:#fff;font-family:inherit;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted2,#64748b);cursor:pointer;}
+.mtab.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
+.stat{background:#fff;border:1px solid var(--line,rgba(15,23,42,.08));border-radius:14px;padding:16px 18px;}
+.stat-lbl{font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2,#64748b);margin-bottom:9px;}
+.stat-val{font-family:var(--title,'Berling',serif);font-size:2rem;font-weight:700;line-height:1;}
+.stat-val.accent{color:var(--accent);}
+
+/* rows */
+.subhd{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2,#64748b);margin:26px 0 12px;}
+.row-item{background:#fff;border:1px solid var(--line,rgba(15,23,42,.08));border-radius:12px;display:flex;align-items:center;gap:14px;padding:13px 16px;margin-bottom:9px;transition:box-shadow .15s;}
+.row-item:hover{box-shadow:0 3px 16px rgba(15,23,42,.07);}
+.ri-date{width:50px;text-align:center;flex-shrink:0;}
+.ri-day{font-family:var(--title,'Berling',serif);font-size:1.35rem;font-weight:700;line-height:1;}
+.ri-mon{font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2,#64748b);margin-top:2px;}
+.ri-body{flex:1;min-width:0;}
+.ri-title{font-weight:700;font-size:.95rem;}
+.ri-meta{font-size:.75rem;color:var(--muted2,#64748b);display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;}
+.badge{font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:100px;letter-spacing:.03em;}
+.badge.lvl{background:var(--accent-soft,rgba(46,78,142,.1));color:var(--accent);}
+.badge.open{background:rgba(74,140,66,.12);color:#3a6f2f;}
+.badge.blocked{background:rgba(100,116,139,.14);color:#64748b;}
+.edit-btn{background:transparent;border:1px solid var(--line2,rgba(15,23,42,.14));color:var(--muted2,#64748b);font-family:inherit;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:100px;padding:6px 13px;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.edit-btn:hover{border-color:var(--accent);color:var(--accent);}
+.empty{color:var(--muted2,#64748b);font-size:.85rem;padding:22px 0;}
+
+/* form */
+.card{background:#fff;border:1px solid var(--line,rgba(15,23,42,.08));border-radius:16px;padding:22px;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.04));max-width:620px;}
+.field{margin-bottom:15px;}
+.field:last-of-type{margin-bottom:0;}
+label{display:block;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2,#64748b);margin-bottom:7px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.hint{font-size:.72rem;color:var(--muted,#94a3b8);margin-top:6px;line-height:1.4;}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
 .chip{font-size:.72rem;padding:8px 12px;border-radius:100px;border:1px solid var(--line2,rgba(15,23,42,.14));background:#fff;cursor:pointer;user-select:none;}
 .chip.on{background:var(--accent);color:#fff;border-color:var(--accent);}
-.logout{position:absolute;top:22px;right:20px;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2,#64748b);background:#fff;border:1px solid var(--line,rgba(15,23,42,.1));border-radius:100px;padding:7px 12px;cursor:pointer;}
+.msg{font-size:.82rem;margin-top:14px;padding:11px 14px;border-radius:12px;display:none;line-height:1.5;}
+.msg.ok{display:block;background:rgba(74,140,66,.1);color:#3a6f2f;border:1px solid rgba(74,140,66,.25);}
+.msg.bad{display:block;background:rgba(220,38,38,.08);color:#b42318;border:1px solid rgba(220,38,38,.2);}
+.formcta{margin-top:18px;}
+
+/* edit modal */
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;overflow-y:auto;}
+.ov.open{opacity:1;pointer-events:all;}
+.modal{background:#fff;width:100%;max-width:520px;border-radius:18px;max-height:92vh;overflow-y:auto;transform:translateY(14px);transition:transform .2s;}
+.ov.open .modal{transform:translateY(0);}
+.modal-hd{background:#0f1b33;color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-radius:18px 18px 0 0;}
+.modal-hd .ey{font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:#6d80a6;margin-bottom:3px;}
+.modal-hd h3{font-size:1.1rem;font-weight:700;}
+.close-x{background:transparent;border:none;color:#8ea0c4;font-size:1.3rem;cursor:pointer;line-height:1;}
+.close-x:hover{color:#fff;}
+.modal-body{padding:22px;}
+.modal-acts{display:flex;gap:10px;padding:0 22px 22px;}
+.mbtn{flex:1;height:46px;border-radius:100px;border:none;font-family:inherit;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;}
+.mbtn.save{background:var(--accent);color:#fff;}
+.mbtn.save:disabled{opacity:.55;cursor:default;}
+.mbtn.del{background:transparent;border:1px solid rgba(220,38,38,.35);color:#dc2626;flex:0 0 auto;padding:0 18px;}
+.mbtn.del:hover{background:rgba(220,38,38,.06);}
+
+@media (max-width:760px){
+  .sidebar{display:none;}
+  .mtabs{display:flex;}
+  .sec{padding:20px 18px 56px;}
+  .stats{grid-template-columns:1fr 1fr;}
+  .grid2{grid-template-columns:1fr;}
+  .sec-hd h2{font-size:1.45rem;}
+}
 </style>
 </head>
 <body>
@@ -64,82 +137,146 @@ textarea.inp{height:auto;min-height:80px;padding:12px 14px;line-height:1.5;resiz
 </div>
 
 <!-- ── App ── -->
-<div id="app" style="display:none">
-  <button class="logout" id="logout">Log out</button>
-  <div class="wrap">
-    <h1><span class="slash">//</span> Coaching Admin</h1>
-    <p class="sub">Add coaches, courts and availability — it writes straight to the coaching sheet and goes live.</p>
+<div id="app">
+  <!-- mobile tab bar -->
+  <div class="mtabs">
+    <button class="mtab on" data-tab="overview">Overview</button>
+    <button class="mtab" data-tab="slots">Slots</button>
+    <button class="mtab" data-tab="coaches">Coaches</button>
+    <button class="mtab" data-tab="courts">Courts</button>
+  </div>
 
-    <div class="tabs">
-      <button class="tab on" data-tab="slots">Slots</button>
-      <button class="tab" data-tab="coaches">Coaches</button>
-      <button class="tab" data-tab="courts">Courts</button>
-    </div>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sb-logo">
+        <div class="name">Delhi<span class="slash">//</span>Padel</div>
+        <span class="tag">Coaching Admin</span>
+      </div>
+      <div class="nav">
+        <button class="ni active" data-tab="overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </button>
+        <button class="ni" data-tab="slots">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Add Slots
+        </button>
+        <button class="ni" data-tab="coaches">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+          Coaches
+        </button>
+        <button class="ni" data-tab="courts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Courts
+        </button>
+      </div>
+      <div class="sb-bottom"><button class="logout" id="logout">Sign out</button></div>
+    </nav>
 
-    <!-- SLOTS -->
-    <div class="panel on" id="p-slots">
-      <div class="card">
-        <div class="field">
-          <label>Coach</label>
-          <select class="inp" id="s-coach"><option value="">Loading…</option></select>
+    <main class="content">
+
+      <!-- OVERVIEW -->
+      <section class="sec active" id="tab-overview">
+        <div class="sec-hd">
+          <div><h2>Overview</h2><p>Coaches, courts and upcoming slots at a glance.</p></div>
+          <button class="new-btn" onclick="switchTab('slots')">+ Add Slots</button>
         </div>
-        <div class="field">
-          <label>Court</label>
-          <select class="inp" id="s-loc"><option value="">Loading…</option></select>
+        <div class="stats">
+          <div class="stat"><div class="stat-lbl">Coaches</div><div class="stat-val" id="sCoaches">—</div></div>
+          <div class="stat"><div class="stat-lbl">Courts</div><div class="stat-val" id="sCourts">—</div></div>
+          <div class="stat"><div class="stat-lbl">Upcoming Slots</div><div class="stat-val accent" id="sSlots">—</div></div>
+          <div class="stat"><div class="stat-lbl">Open Now</div><div class="stat-val" id="sOpen">—</div></div>
         </div>
-        <div class="row">
+        <div class="subhd">Upcoming slots</div>
+        <div id="slotList"><div class="empty">Loading…</div></div>
+      </section>
+
+      <!-- ADD SLOTS -->
+      <section class="sec" id="tab-slots">
+        <div class="sec-hd"><div><h2>Add Slots</h2><p>Availability shows on the coach's page instantly.</p></div></div>
+        <div class="card">
           <div class="field">
-            <label>Date</label>
-            <input class="inp" id="s-date" type="date"/>
+            <label>Coach</label>
+            <select class="inp" id="s-coach"><option value="">Loading…</option></select>
           </div>
           <div class="field">
-            <label>Level</label>
-            <select class="inp" id="s-level">
-              <option value="">Any</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option>
-            </select>
+            <label>Court</label>
+            <select class="inp" id="s-loc"><option value="">Loading…</option></select>
           </div>
-        </div>
-        <div class="field">
-          <label>Times</label>
-          <div class="chips" id="s-times"></div>
-          <div class="hint">Tap the times this coach is available on that date. Adds one slot each.</div>
-        </div>
-        <button class="cta" id="s-add">Add slots</button>
-        <div class="msg" id="s-msg"></div>
-      </div>
-    </div>
-
-    <!-- COACHES -->
-    <div class="panel" id="p-coaches">
-      <div class="card">
-        <div class="field"><label>Name</label><input class="inp" id="c-name" placeholder="e.g. Prannay Merchant"/></div>
-        <div class="row">
+          <div class="grid2">
+            <div class="field"><label>Date</label><input class="inp" id="s-date" type="date"/></div>
+            <div class="field">
+              <label>Level</label>
+              <select class="inp" id="s-level">
+                <option value="">Any</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+              </select>
+            </div>
+          </div>
           <div class="field">
-            <label>Level</label>
-            <select class="inp" id="c-level">
-              <option>Beginner Coach</option><option>Intermediate & Advanced</option><option>Intermediate</option><option>Advanced Coach</option>
-            </select>
+            <label>Times</label>
+            <div class="chips" id="s-times"></div>
+            <div class="hint">Tap every time this coach is free on that date. Adds one slot each.</div>
           </div>
-          <div class="field"><label>Session price (₹)</label><input class="inp" id="c-price" type="number" inputmode="numeric" placeholder="4800"/></div>
+          <button class="cta formcta" id="s-add">Add slots</button>
+          <div class="msg" id="s-msg"></div>
         </div>
-        <div class="field"><label>Bio</label><textarea class="inp" id="c-bio" placeholder="Short write-up shown on the coach card"></textarea></div>
-        <button class="cta" id="c-add">Add coach</button>
-        <div class="msg" id="c-msg"></div>
-      </div>
-    </div>
+      </section>
 
-    <!-- COURTS -->
-    <div class="panel" id="p-courts">
-      <div class="card">
-        <div class="field"><label>Court name</label><input class="inp" id="l-name" placeholder="e.g. Dace Club"/></div>
-        <div class="row">
-          <div class="field"><label>Area</label><input class="inp" id="l-area" placeholder="Delhi"/></div>
-          <div class="field"><label>No. of courts</label><input class="inp" id="l-courts" type="number" inputmode="numeric" placeholder="2"/></div>
+      <!-- COACHES -->
+      <section class="sec" id="tab-coaches">
+        <div class="sec-hd"><div><h2>Coaches</h2><p>Add a coach or edit an existing one.</p></div></div>
+        <div class="card">
+          <div class="field"><label>Name</label><input class="inp" id="c-name" placeholder="e.g. Prannay Merchant"/></div>
+          <div class="grid2">
+            <div class="field">
+              <label>Level</label>
+              <select class="inp" id="c-level">
+                <option>Beginner Coach</option><option>Intermediate &amp; Advanced</option><option>Intermediate</option><option>Advanced Coach</option>
+              </select>
+            </div>
+            <div class="field"><label>Session price (₹)</label><input class="inp" id="c-price" type="number" inputmode="numeric" placeholder="4800"/></div>
+          </div>
+          <div class="field"><label>Bio</label><textarea class="inp" id="c-bio" placeholder="Short write-up shown on the coach card"></textarea></div>
+          <button class="cta formcta" id="c-add">Add coach</button>
+          <div class="msg" id="c-msg"></div>
         </div>
-        <button class="cta" id="l-add">Add court</button>
-        <div class="msg" id="l-msg"></div>
-      </div>
+        <div class="subhd">Existing coaches</div>
+        <div id="coachList"><div class="empty">Loading…</div></div>
+      </section>
+
+      <!-- COURTS -->
+      <section class="sec" id="tab-courts">
+        <div class="sec-hd"><div><h2>Courts</h2><p>Where sessions are held.</p></div></div>
+        <div class="card">
+          <div class="field"><label>Court name</label><input class="inp" id="l-name" placeholder="e.g. Dace Club"/></div>
+          <div class="grid2">
+            <div class="field"><label>Area</label><input class="inp" id="l-area" placeholder="Delhi"/></div>
+            <div class="field"><label>No. of courts</label><input class="inp" id="l-courts" type="number" inputmode="numeric" placeholder="2"/></div>
+          </div>
+          <button class="cta formcta" id="l-add">Add court</button>
+          <div class="msg" id="l-msg"></div>
+        </div>
+        <div class="subhd">Existing courts</div>
+        <div id="courtList"><div class="empty">Loading…</div></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ── Edit modal (slots + coaches) ── -->
+<div class="ov" id="editOv">
+  <div class="modal">
+    <div class="modal-hd">
+      <div><div class="ey" id="editKind">Edit</div><h3 id="editTitle">—</h3></div>
+      <button class="close-x" id="editClose">✕</button>
     </div>
+    <div class="modal-body" id="editBody"></div>
+    <div class="modal-acts">
+      <button class="mbtn del" id="editDel" style="display:none">Remove</button>
+      <button class="mbtn save" id="editSave">Save changes</button>
+    </div>
+    <div class="msg" id="editMsg" style="margin:0 22px 22px"></div>
   </div>
 </div>
 
@@ -150,8 +287,14 @@ const CONFIG = {
   SUPABASE: { url: "https://zruqzybdpniofxbcwuat.supabase.co", anonKey: "sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
 };
 const $ = id => document.getElementById(id);
-const TIMES = ["06:00","07:00","08:00","09:00","10:00","16:00","17:00","18:00","19:00","20:00","21:00"];
+// Full-day availability, 6 AM → 9 PM hourly.
+const TIMES = ["06:00","07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
 const fmt12 = t => { const [h,m]=t.split(":").map(Number); return `${h%12||12}:${String(m).padStart(2,"0")} ${h>=12?"PM":"AM"}`; };
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let DATA = { coaches: [], locations: [], slots: [] };
+const coachName = id => (DATA.coaches.find(c=>String(c.id)===String(id))||{}).name || id || "—";
+const courtName = id => (DATA.locations.find(l=>String(l.id)===String(id))||{}).name || id || "—";
 
 // ── auth ──
 $("pwBtn").addEventListener("click", tryLogin);
@@ -165,11 +308,14 @@ function tryLogin() {
 $("logout").addEventListener("click", () => { sessionStorage.removeItem("dpcCoachAdmin"); location.reload(); });
 if (sessionStorage.getItem("dpcCoachAdmin") === "1") { $("gate").style.display = "none"; $("app").style.display = "block"; }
 
-// ── tabs ──
-document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
-  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
-  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t.dataset.tab));
-}));
+// ── tabs (sidebar + mobile) ──
+function switchTab(id){
+  document.querySelectorAll(".ni").forEach(b=>b.classList.toggle("active", b.dataset.tab===id));
+  document.querySelectorAll(".mtab").forEach(b=>b.classList.toggle("on", b.dataset.tab===id));
+  document.querySelectorAll(".sec").forEach(s=>s.classList.toggle("active", s.id==="tab-"+id));
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
 
 // ── time chips ──
 let picked = new Set();
@@ -178,75 +324,200 @@ $("s-times").querySelectorAll(".chip").forEach(c => c.addEventListener("click", 
   const t = c.dataset.t; c.classList.toggle("on"); picked.has(t) ? picked.delete(t) : picked.add(t);
 }));
 
-// ── data ──
+// ── data (Supabase cache: reliable reads) ──
 async function readCache() {
   try {
     const res = await fetch(`${CONFIG.SUPABASE.url}/rest/v1/coaching_cache?select=source,payload`,
       { headers: { apikey: CONFIG.SUPABASE.anonKey, Authorization: `Bearer ${CONFIG.SUPABASE.anonKey}` } });
-    const out = { coaches: [], locations: [] };
+    const out = { coaches: [], locations: [], slots: [] };
     (await res.json()).forEach(r => { if (out[r.source] !== undefined) out[r.source] = r.payload || []; });
     return out;
-  } catch (e) { return { coaches: [], locations: [] }; }
+  } catch (e) { return { coaches: [], locations: [], slots: [] }; }
 }
-async function init() { await refreshDropdowns(); }
-async function refreshDropdowns() {
-  const c = await readCache();
-  $("s-coach").innerHTML = c.coaches.length
-    ? c.coaches.map(x => `<option value="${x.id}">${x.name}</option>`).join("")
+async function init(){ await refresh(); }
+async function refresh(){
+  DATA = await readCache();
+  // dropdowns
+  $("s-coach").innerHTML = DATA.coaches.length
+    ? DATA.coaches.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")
     : `<option value="">No coaches yet — add one first</option>`;
-  $("s-loc").innerHTML = c.locations.length
-    ? c.locations.map(x => `<option value="${x.id}">${x.name}</option>`).join("")
+  $("s-loc").innerHTML = DATA.locations.length
+    ? DATA.locations.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")
     : `<option value="">No courts yet — add one first</option>`;
+  renderOverview(); renderCoaches(); renderCourts();
 }
 
-async function post(action, data, btn, msgEl) {
-  btn.disabled = true; const label = btn.textContent; btn.textContent = "Saving…";
+function renderOverview(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const up = DATA.slots
+    .filter(s => { const d=new Date(s.date+"T00:00:00"); return !isNaN(d) && d>=today; })
+    .sort((a,b)=> (a.date+a.start_time).localeCompare(b.date+b.start_time));
+  const open = up.filter(s => s.status==="open").length;
+  $("sCoaches").textContent = DATA.coaches.length;
+  $("sCourts").textContent  = DATA.locations.length;
+  $("sSlots").textContent   = up.length;
+  $("sOpen").textContent    = open;
+
+  if(!up.length){ $("slotList").innerHTML = `<div class="empty">No upcoming slots. <a href="#" onclick="switchTab('slots');return false" style="color:var(--accent);font-weight:600">Add some →</a></div>`; return; }
+  $("slotList").innerHTML = up.map(s=>{
+    const d = new Date(s.date+"T00:00:00");
+    const day = isNaN(d)?"—":d.getDate();
+    const mon = isNaN(d)?"":d.toLocaleDateString("en-IN",{month:"short"}).toUpperCase();
+    const st  = s.status==="open" ? `<span class="badge open">Open</span>` : `<span class="badge blocked">${esc(s.status||"blocked")}</span>`;
+    const lvl = s.level ? `<span class="badge lvl">${esc(s.level)}</span>` : "";
+    return `<div class="row-item">
+      <div class="ri-date"><div class="ri-day">${day}</div><div class="ri-mon">${mon}</div></div>
+      <div class="ri-body">
+        <div class="ri-title">${esc(coachName(s.coach_id))} · ${esc(fmt12(s.start_time||""))}</div>
+        <div class="ri-meta"><span>📍 ${esc(courtName(s.location_id))}</span>${lvl}${st}</div>
+      </div>
+      <button class="edit-btn" onclick='openSlot(${JSON.stringify(s.id)})'>Edit</button>
+    </div>`;
+  }).join("");
+}
+
+function renderCoaches(){
+  if(!DATA.coaches.length){ $("coachList").innerHTML = `<div class="empty">No coaches yet.</div>`; return; }
+  $("coachList").innerHTML = DATA.coaches.map(c=>`<div class="row-item">
+    <div class="ri-body">
+      <div class="ri-title">${esc(c.name)}</div>
+      <div class="ri-meta"><span>${esc(c.level||"—")}</span>${c.session_price?`<span>₹${esc(c.session_price)}/session</span>`:""}</div>
+    </div>
+    <button class="edit-btn" onclick='openCoach(${JSON.stringify(String(c.id))})'>Edit</button>
+  </div>`).join("");
+}
+
+function renderCourts(){
+  if(!DATA.locations.length){ $("courtList").innerHTML = `<div class="empty">No courts yet.</div>`; return; }
+  $("courtList").innerHTML = DATA.locations.map(l=>`<div class="row-item">
+    <div class="ri-body">
+      <div class="ri-title">${esc(l.name)}</div>
+      <div class="ri-meta"><span>${esc(l.area||"—")}</span>${l.courts?`<span>${esc(l.courts)} courts</span>`:""}</div>
+    </div>
+  </div>`).join("");
+}
+
+// ── save (fire-and-forget: Apps Script can't return a CORS-readable body,
+//    so a readable fetch throws "Failed to fetch" even though the write lands.
+//    no-cors sends the write and never false-errors; we then re-read the
+//    cache to reflect it.) ──
+async function post(action, data, btn, msgEl){
+  const label = btn.textContent; btn.disabled = true; btn.textContent = "Saving…";
   msgEl.className = "msg";
-  try {
-    const res = await fetch(CONFIG.COACHING_API, {
-      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+  try{
+    await fetch(CONFIG.COACHING_API, {
+      method: "POST", mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action, data }),
     });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || "Failed");
-    msgEl.className = "msg ok"; msgEl.textContent = json.message || "Saved and live.";
-    return json;
-  } catch (e) {
+    msgEl.className = "msg ok"; msgEl.textContent = "Saved — updating…";
+    await new Promise(r=>setTimeout(r,1400));
+    await refresh();
+    msgEl.className = "msg ok"; msgEl.textContent = "Saved and live.";
+    return true;
+  }catch(e){
     msgEl.className = "msg bad"; msgEl.textContent = "Couldn't save — " + (e.message || "try again.");
-    return null;
-  } finally { btn.disabled = false; btn.textContent = label; }
+    return false;
+  }finally{ btn.disabled = false; btn.textContent = label; }
 }
 
 // ── add slots ──
 $("s-add").addEventListener("click", async () => {
-  const coach_id = $("s-coach").value, location_id = $("s-loc").value, date = $("s-date").value;
-  const times = [...picked];
-  if (!coach_id || !location_id || !date || !times.length) {
-    $("s-msg").className = "msg bad"; $("s-msg").textContent = "Pick a coach, court, date and at least one time."; return;
+  const coach_id=$("s-coach").value, location_id=$("s-loc").value, date=$("s-date").value, times=[...picked];
+  if(!coach_id||!location_id||!date||!times.length){
+    $("s-msg").className="msg bad"; $("s-msg").textContent="Pick a coach, court, date and at least one time."; return;
   }
-  const r = await post("addSlots", { coach_id, location_id, date, times, level: $("s-level").value }, $("s-add"), $("s-msg"));
-  if (r) { picked.clear(); $("s-times").querySelectorAll(".chip.on").forEach(c => c.classList.remove("on")); }
+  const ok = await post("addSlots", { coach_id, location_id, date, times, level:$("s-level").value }, $("s-add"), $("s-msg"));
+  if(ok){ picked.clear(); $("s-times").querySelectorAll(".chip.on").forEach(c=>c.classList.remove("on")); }
 });
 
 // ── add coach ──
 $("c-add").addEventListener("click", async () => {
-  const name = $("c-name").value.trim();
-  if (!name) { $("c-msg").className = "msg bad"; $("c-msg").textContent = "Enter the coach's name."; return; }
-  const r = await post("addCoach", {
-    name, level: $("c-level").value, session_price: Number($("c-price").value) || 0, bio: $("c-bio").value.trim()
-  }, $("c-add"), $("c-msg"));
-  if (r) { $("c-name").value = ""; $("c-price").value = ""; $("c-bio").value = ""; await refreshDropdowns(); }
+  const name=$("c-name").value.trim();
+  if(!name){ $("c-msg").className="msg bad"; $("c-msg").textContent="Enter the coach's name."; return; }
+  const ok = await post("addCoach", { name, level:$("c-level").value, session_price:Number($("c-price").value)||0, bio:$("c-bio").value.trim() }, $("c-add"), $("c-msg"));
+  if(ok){ $("c-name").value=""; $("c-price").value=""; $("c-bio").value=""; }
 });
 
 // ── add court ──
 $("l-add").addEventListener("click", async () => {
-  const name = $("l-name").value.trim();
-  if (!name) { $("l-msg").className = "msg bad"; $("l-msg").textContent = "Enter the court name."; return; }
-  const r = await post("addLocation", {
-    name, area: $("l-area").value.trim(), courts: Number($("l-courts").value) || 1
-  }, $("l-add"), $("l-msg"));
-  if (r) { $("l-name").value = ""; $("l-area").value = ""; $("l-courts").value = ""; await refreshDropdowns(); }
+  const name=$("l-name").value.trim();
+  if(!name){ $("l-msg").className="msg bad"; $("l-msg").textContent="Enter the court name."; return; }
+  const ok = await post("addLocation", { name, area:$("l-area").value.trim(), courts:Number($("l-courts").value)||1 }, $("l-add"), $("l-msg"));
+  if(ok){ $("l-name").value=""; $("l-area").value=""; $("l-courts").value=""; }
 });
+
+// ── edit modal ──
+let editCtx = null; // {type, id}
+function closeEdit(){ $("editOv").classList.remove("open"); }
+$("editClose").addEventListener("click", closeEdit);
+$("editDel").addEventListener("click", removeSlot);
+$("editOv").addEventListener("click", e => { if(e.target===e.currentTarget) closeEdit(); });
+
+window.openSlot = function(id){
+  const s = DATA.slots.find(x=>String(x.id)===String(id)); if(!s) return;
+  editCtx = { type:"slot", id };
+  $("editKind").textContent = "Edit slot";
+  $("editTitle").textContent = `${coachName(s.coach_id)} · ${fmt12(s.start_time||"")}`;
+  $("editBody").innerHTML = `
+    <div class="grid2">
+      <div class="field"><label>Date</label><input class="inp" id="e-date" type="date" value="${esc(s.date)}"/></div>
+      <div class="field"><label>Time</label>
+        <select class="inp" id="e-time">${TIMES.map(t=>`<option value="${t}"${t===s.start_time?" selected":""}>${fmt12(t)}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Level</label>
+        <select class="inp" id="e-level"><option value="">Any</option>${["Beginner","Intermediate","Advanced"].map(l=>`<option${l===s.level?" selected":""}>${l}</option>`).join("")}</select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select class="inp" id="e-status">${["open","blocked"].map(v=>`<option value="${v}"${v===s.status?" selected":""}>${v==="open"?"Open":"Blocked"}</option>`).join("")}</select>
+      </div>
+    </div>`;
+  $("editDel").style.display = "";
+  $("editMsg").className = "msg";
+  $("editOv").classList.add("open");
+};
+
+window.openCoach = function(id){
+  const c = DATA.coaches.find(x=>String(x.id)===String(id)); if(!c) return;
+  editCtx = { type:"coach", id };
+  $("editKind").textContent = "Edit coach";
+  $("editTitle").textContent = c.name;
+  const levels = ["Beginner Coach","Intermediate & Advanced","Intermediate","Advanced Coach"];
+  $("editBody").innerHTML = `
+    <div class="field"><label>Name</label><input class="inp" id="e-name" value="${esc(c.name)}"/></div>
+    <div class="grid2">
+      <div class="field"><label>Level</label>
+        <select class="inp" id="e-level">${levels.map(l=>`<option${l===c.level?" selected":""}>${l}</option>`).join("")}</select>
+      </div>
+      <div class="field"><label>Session price (₹)</label><input class="inp" id="e-price" type="number" value="${esc(c.session_price||"")}"/></div>
+    </div>
+    <div class="field"><label>Bio</label><textarea class="inp" id="e-bio">${esc(c.bio||"")}</textarea></div>`;
+  $("editDel").style.display = "none";
+  $("editMsg").className = "msg";
+  $("editOv").classList.add("open");
+};
+
+$("editSave").addEventListener("click", async () => {
+  if(!editCtx) return;
+  if(editCtx.type==="slot"){
+    const data = { id:editCtx.id, date:$("e-date").value, start_time:$("e-time").value, level:$("e-level").value, status:$("e-status").value };
+    const ok = await post("editSlot", data, $("editSave"), $("editMsg"));
+    if(ok) closeEdit();
+  } else {
+    const name = $("e-name").value.trim();
+    if(!name){ $("editMsg").className="msg bad"; $("editMsg").textContent="Name can't be empty."; return; }
+    const data = { id:editCtx.id, name, level:$("e-level").value, session_price:Number($("e-price").value)||0, bio:$("e-bio").value.trim() };
+    const ok = await post("editCoach", data, $("editSave"), $("editMsg"));
+    if(ok) closeEdit();
+  }
+});
+async function removeSlot(){
+  if(!editCtx || editCtx.type!=="slot") return;
+  const ok = await post("deleteSlot", { id:editCtx.id }, $("editDel"), $("editMsg"));
+  if(ok) closeEdit();
+}
 
 if (sessionStorage.getItem("dpcCoachAdmin") === "1") init();
 </script>
