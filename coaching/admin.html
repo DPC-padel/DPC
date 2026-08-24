@@ -82,6 +82,21 @@ textarea.inp{height:auto;min-height:80px;padding:12px 14px;line-height:1.5;resiz
 .edit-btn:hover{border-color:var(--accent);color:var(--accent);}
 .empty{color:var(--muted2,#64748b);font-size:.85rem;padding:22px 0;}
 
+/* students table */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.filt{height:42px;flex:1;min-width:150px;max-width:280px;font-size:.85rem;}
+.tbl-wrap{background:#fff;border:1px solid var(--line,rgba(15,23,42,.08));border-radius:14px;overflow-x:auto;}
+.stbl{width:100%;border-collapse:collapse;min-width:640px;}
+.stbl th{background:var(--bg);padding:11px 16px;font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2,#64748b);text-align:left;border-bottom:1px solid var(--line,rgba(15,23,42,.08));white-space:nowrap;}
+.stbl td{padding:12px 16px;font-size:.82rem;border-bottom:1px solid var(--line,rgba(15,23,42,.06));vertical-align:top;}
+.stbl tr:last-child td{border-bottom:none;}
+.stbl tr:hover td{background:var(--bg);}
+.stbl .nm{font-weight:700;}
+.st-badge{font-size:.58rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:100px;white-space:nowrap;}
+.st-requested{background:var(--accent-soft,rgba(46,78,142,.1));color:var(--accent);}
+.st-confirmed{background:rgba(74,140,66,.12);color:#3a6f2f;}
+.st-declined,.st-cancelled{background:rgba(100,116,139,.14);color:#64748b;}
+
 /* form */
 .card{background:#fff;border:1px solid var(--line,rgba(15,23,42,.08));border-radius:16px;padding:22px;box-shadow:var(--shadow,0 1px 3px rgba(0,0,0,.04));max-width:620px;}
 .field{margin-bottom:15px;}
@@ -141,6 +156,7 @@ label{display:block;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-tr
   <!-- mobile tab bar -->
   <div class="mtabs">
     <button class="mtab on" data-tab="overview">Overview</button>
+    <button class="mtab" data-tab="students">Students</button>
     <button class="mtab" data-tab="slots">Slots</button>
     <button class="mtab" data-tab="coaches">Coaches</button>
     <button class="mtab" data-tab="courts">Courts</button>
@@ -156,6 +172,10 @@ label{display:block;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-tr
         <button class="ni active" data-tab="overview">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           Overview
+        </button>
+        <button class="ni" data-tab="students">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Students
         </button>
         <button class="ni" data-tab="slots">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -189,6 +209,22 @@ label{display:block;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-tr
         </div>
         <div class="subhd">Upcoming slots</div>
         <div id="slotList"><div class="empty">Loading…</div></div>
+      </section>
+
+      <!-- STUDENTS -->
+      <section class="sec" id="tab-students">
+        <div class="sec-hd"><div><h2>Students</h2><p>Everyone who has requested a session.</p></div></div>
+        <div class="filters">
+          <select class="inp filt" id="f-coach"><option value="all">All coaches</option></select>
+          <select class="inp filt" id="f-status">
+            <option value="all">All statuses</option>
+            <option value="requested">Requested</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="declined">Declined</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div id="studentList"><div class="empty">Loading…</div></div>
       </section>
 
       <!-- ADD SLOTS -->
@@ -313,6 +349,7 @@ function switchTab(id){
   document.querySelectorAll(".ni").forEach(b=>b.classList.toggle("active", b.dataset.tab===id));
   document.querySelectorAll(".mtab").forEach(b=>b.classList.toggle("on", b.dataset.tab===id));
   document.querySelectorAll(".sec").forEach(s=>s.classList.toggle("active", s.id==="tab-"+id));
+  if(id==="students" && !studentsLoaded) loadStudents();
   window.scrollTo(0,0);
 }
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
@@ -344,8 +381,54 @@ async function refresh(){
   $("s-loc").innerHTML = DATA.locations.length
     ? DATA.locations.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")
     : `<option value="">No courts yet — add one first</option>`;
+  // coach filter for the Students tab
+  $("f-coach").innerHTML = `<option value="all">All coaches</option>` +
+    DATA.coaches.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("");
   renderOverview(); renderCoaches(); renderCourts();
 }
+
+// ── students (all coaching requests) ──
+let STUDENTS = [], studentsLoaded = false;
+async function loadStudents(){
+  studentsLoaded = true;
+  $("studentList").innerHTML = `<div class="empty">Loading…</div>`;
+  try{
+    const res = await fetch(`${CONFIG.COACHING_API}?action=getAllRequests`);
+    const data = await res.json();
+    STUDENTS = Array.isArray(data) ? data : [];
+    renderStudents();
+  }catch(e){
+    studentsLoaded = false;
+    $("studentList").innerHTML = `<div class="empty">Couldn't load — tap Students again to retry.</div>`;
+  }
+}
+function renderStudents(){
+  const fc = $("f-coach").value, fs = $("f-status").value;
+  let list = STUDENTS.slice();
+  if(fc!=="all") list = list.filter(r=>String(r.coach_id)===String(fc));
+  if(fs!=="all") list = list.filter(r=>String(r.status||"requested").toLowerCase()===fs);
+  if(!list.length){ $("studentList").innerHTML = `<div class="empty">No students for this selection.</div>`; return; }
+  const when = r => { if(!r.date) return "—"; const d=new Date(r.date+"T00:00:00"); const ds=isNaN(d)?r.date:d.toLocaleDateString("en-IN",{day:"numeric",month:"short"}); return r.start_time?`${ds} · ${fmt12(r.start_time)}`:ds; };
+  const asked = r => { if(!r.created_at) return "—"; const d=new Date(r.created_at); return isNaN(d)?"—":d.toLocaleDateString("en-IN",{day:"numeric",month:"short"}); };
+  $("studentList").innerHTML = `<div class="tbl-wrap"><table class="stbl">
+    <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Coach</th><th>When</th><th>Type</th><th>Status</th><th>Requested</th></tr></thead>
+    <tbody>${list.map((r,i)=>{
+      const s = String(r.status||"requested").toLowerCase();
+      return `<tr>
+        <td style="color:var(--muted2,#64748b)">${i+1}</td>
+        <td class="nm">${esc(r.player_name||"—")}</td>
+        <td>${esc(r.phone||"—")}</td>
+        <td>${esc(r.coach_name||"—")}</td>
+        <td>${esc(when(r))}</td>
+        <td>${esc(r.session_type||"—")}</td>
+        <td><span class="st-badge st-${s}">${esc(s)}</span></td>
+        <td style="color:var(--muted2,#64748b)">${esc(asked(r))}</td>
+      </tr>`;
+    }).join("")}</tbody>
+  </table></div>`;
+}
+$("f-coach").addEventListener("change", renderStudents);
+$("f-status").addEventListener("change", renderStudents);
 
 function renderOverview(){
   const today = new Date(); today.setHours(0,0,0,0);
