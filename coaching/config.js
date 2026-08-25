@@ -133,7 +133,7 @@ async function loadCoachingCache() {
   const res = await fetch(`${SUPABASE.url}/rest/v1/coaching_cache?select=source,payload`,
     { headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}` } });
   if (!res.ok) throw new Error("cache read failed");
-  const c = { locations: [], coaches: [], slots: [] };
+  const c = { locations: [], coaches: [], slots: [], open_sessions: [] };
   (await res.json()).forEach(r => { if (c[r.source] !== undefined) c[r.source] = r.payload || []; });
   _coachCache = c;
   return c;
@@ -247,6 +247,16 @@ const API = {
       });
     } catch (e) { /* fire-and-forget; the request is best-effort */ }
     return booking;
+  },
+
+  // Group sessions with open spots — read from the cache so the box shows up
+  // together with the coach list (no slow live call). Falls back to live.
+  async fetchOpenSessions() {
+    try { return (await loadCoachingCache()).open_sessions || []; }
+    catch (e) {
+      try { const d = await getJSON(`${COACHING_API}?action=getOpenSessions`); return Array.isArray(d) ? d : []; }
+      catch (_) { return []; }
+    }
   },
 
   // Look up requests by phone (for "My Requests")
