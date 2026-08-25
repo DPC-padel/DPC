@@ -8,7 +8,7 @@
 <link rel="icon" type="image/svg+xml" href="../logo.svg?v=1">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="config.js?v=9"></script>
+<script src="config.js?v=10"></script>
 <style>
 @font-face { font-family:'Berling'; src:url('../Berling Bold.otf') format('opentype'); font-weight:700; font-display:swap; }
 :root{
@@ -153,6 +153,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);-webkit-font-
 .type-price{text-align:right;}
 .type-price .amt{font-family:var(--display);font-size:1.05rem;font-weight:700;}
 .type-price .per{font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;}
+.type-price .spots{font-size:.58rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);display:block;margin-top:2px;}
+.type-price .spots.sold{color:var(--muted2);}
+.type-card.disabled{opacity:.5;cursor:not-allowed;}
+.type-card.disabled:hover{border-color:var(--line);}
+.slot-btn .sub.full{color:var(--muted2);}
 .type-total{font-size:.82rem;color:var(--muted2);margin-top:16px;text-align:right;}
 .type-total strong{font-family:var(--display);font-size:1.2rem;color:var(--ink);margin-left:8px;}
 .join-banner{background:var(--accent-soft);border:1px solid rgba(46,78,142,.28);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px;font-size:.8rem;color:var(--muted2);line-height:1.65;}
@@ -521,7 +526,7 @@ async function loadSlots() {
       try { res = await API.fetchSlots(S.coach.id, loc.id); } catch (e) { res = {}; }
       Object.keys(res).forEach(d => {
         res[d].forEach(slot => {
-          if (slot.status !== "open") return;
+          if (slot.status === "blocked") return;       // keep open + full; drop blocked only
           (byDate[d] = byDate[d] || []).push({ ...slot, location_id: loc.id, location_name: loc.name });
         });
       });
@@ -566,8 +571,17 @@ function renderDateSlots(dateStr) {
   const multiLoc = S.locations.length > 1;
   (S.slotsByDate[dateStr] || []).forEach(slot => {
     const b = document.createElement("button");
+    // A slot is fully gone only when booked private, or 3 players are in (1:3 full).
+    const full = slot.has_private || (Number(slot.signups) || 0) >= 3 || slot.status === "full";
     b.className = "slot-btn";
-    const sub = multiLoc ? `<span class="sub">${slot.location_name}</span>` : "";
+    const locSub = multiLoc ? `<span class="sub">${slot.location_name}</span>` : "";
+    if (full) {
+      b.disabled = true;
+      b.innerHTML = formatTime12(slot.start_time) + locSub + `<span class="sub full">Full</span>`;
+      $("slotGrid").appendChild(b);
+      return;
+    }
+    const sub = locSub;
     b.innerHTML = formatTime12(slot.start_time) + sub;
     if (S.slots.some(x => slotKey(x) === slotKey(slot))) b.classList.add("selected");
     b.addEventListener("click", () => {
@@ -603,7 +617,25 @@ function renderSelected() {
 $("toStep4").addEventListener("click", () => { renderTypes(); goTo(4); });
 
 // ── Step 4: session type ────────────────────────────────────
+// Worst-case load across the picked slots: n = people already signed up,
+// priv = someone booked it as a private 1:1 (locks the whole slot).
+function slotLoad() {
+  let n = 0, priv = false;
+  S.slots.forEach(s => { n = Math.max(n, Number(s.signups) || 0); if (s.has_private) priv = true; });
+  return { n, priv };
+}
+// Availability + spots left for a session type given the slot's current load.
+// 1:1 needs an empty slot; 1:2 caps at 2; 1:3 caps at 3.
+function typeAvail(typeId) {
+  const { n, priv } = slotLoad();
+  const cap = (SESSION_TYPES.find(t => t.id === typeId) || {}).players || 1;
+  if (priv) return { avail: false, left: 0 };
+  if (typeId === "1:1") return { avail: n === 0, left: n === 0 ? 1 : 0 };
+  const left = cap - n;
+  return { avail: left > 0, left: Math.max(0, left) };
+}
 function selectType(t, card) {
+  if (card.classList.contains("disabled")) return;
   S.type = { ...t, price: typePrice(S.coach, t.id), total: typeTotal(S.coach, t.id) };
   document.querySelectorAll(".type-card").forEach(c => c.classList.remove("selected"));
   card.classList.add("selected");
@@ -613,11 +645,16 @@ function selectType(t, card) {
 function typeCard(t) {
   const price = typePrice(S.coach, t.id);
   const total = typeTotal(S.coach, t.id);
+  const a = typeAvail(t.id);
   const card = document.createElement("button");
-  card.className = "type-card";
+  card.className = "type-card" + (a.avail ? "" : " disabled");
+  let tag;
+  if (!a.avail) tag = `<span class="spots sold">${t.id === "1:1" ? "Unavailable" : "Sold out"}</span>`;
+  else if (t.players > 1) tag = `<span class="spots">${a.left} spot${a.left > 1 ? "s" : ""} left</span>`;
+  else tag = `<span class="per">full session</span>`;
   card.innerHTML = `
     <div><h3>${t.label}</h3><div class="meta">${t.players} player${t.players > 1 ? "s" : ""} · 60 min · session ₹${total.toLocaleString("en-IN")}</div></div>
-    <div class="type-price"><span class="amt">₹${price.toLocaleString("en-IN")}</span><span class="per">${t.players > 1 ? "per person" : "full session"}</span></div>`;
+    <div class="type-price"><span class="amt">₹${price.toLocaleString("en-IN")}</span>${tag}</div>`;
   return card;
 }
 function renderTypes() {

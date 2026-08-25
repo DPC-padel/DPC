@@ -211,11 +211,13 @@ const API = {
       const c = await loadCoachingCache();
       const byDate = {};
       c.slots
-        .filter(s => String(s.coach_id) === String(coachId) && String(s.location_id) === String(locationId) && s.status === "open")
+        .filter(s => String(s.coach_id) === String(coachId) && String(s.location_id) === String(locationId) && s.status !== "blocked")
         .forEach(s => {
           (byDate[s.date] = byDate[s.date] || []).push({
             id: s.id, date: s.date, start_time: s.start_time, end_time: s.end_time,
-            level: s.level, session_type: null, capacity: 0, spots_taken: 0, status: "open",
+            level: s.level, session_type: null,
+            signups: Number(s.signups) || 0, has_private: !!s.has_private,
+            capacity: 0, spots_taken: Number(s.signups) || 0, status: s.status || "open",
           });
         });
       return byDate;
