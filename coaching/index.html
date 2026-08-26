@@ -657,7 +657,7 @@ function typeCard(t) {
     <div class="type-price"><span class="amt">₹${price.toLocaleString("en-IN")}</span>${tag}</div>`;
   return card;
 }
-function renderTypes() {
+function renderTypes(preselectId) {
   S.type = null;
   $("toStep5").disabled = true;
   $("typeTotal").textContent = "";
@@ -665,11 +665,18 @@ function renderTypes() {
   $("joinBanner").innerHTML = "";
   $("typeTitle").textContent = "Session type";
   $("typeSub").textContent = "The session price splits across the group — you pay only your share.";
+  let preCard = null, preType = null;
   SESSION_TYPES.forEach(t => {
     const card = typeCard(t);
     card.addEventListener("click", () => selectType(t, card));
     $("typeList").appendChild(card);
+    if (preselectId && t.id === preselectId) { preCard = card; preType = t; }
   });
+  // When joining an existing session, pre-highlight its type so the price shows.
+  if (preCard && !preCard.classList.contains("disabled")) {
+    selectType(preType, preCard);
+    preCard.scrollIntoView({ block: "nearest" });
+  }
 }
 $("toStep5").addEventListener("click", () => goTo(5));
 
@@ -849,12 +856,16 @@ async function renderOpenBox() {
     b.addEventListener("click", () => joinSession(list[+b.dataset.i])));
 }
 function joinSession(s) {
-  const t = SESSION_TYPES.find(x => x.id === s.typeId);
+  // people already in this slot = capacity of its type − spots left, so the
+  // type step shows the right "N left" and prices for the joiner.
+  const cap = ({ "1:1": 1, "1:2": 2, "1:3": 3 })[s.typeId] || 1;
+  const n = Math.max(0, cap - (Number(s.spotsLeft) || 0));
   S.coach = s.coach;
   S.locations = [s.location];
-  S.slots = [{ location_id: s.location.id, location_name: s.location.name, date: s.date, start_time: s.start_time, level: "" }];
-  S.type = { ...t, price: typePrice(s.coach, t.id), total: typeTotal(s.coach, t.id) };
-  goTo(5);
+  S.slots = [{ location_id: s.location.id, location_name: s.location.name, date: s.date, start_time: s.start_time, level: "", signups: n, has_private: false }];
+  S.type = null;
+  renderTypes(s.typeId);   // land on the type step with that type pre-selected + priced
+  goTo(4);
 }
 
 // ── Init ────────────────────────────────────────────────────
