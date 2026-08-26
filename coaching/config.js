@@ -216,7 +216,7 @@ const API = {
           (byDate[s.date] = byDate[s.date] || []).push({
             id: s.id, date: s.date, start_time: s.start_time, end_time: s.end_time,
             level: s.level, session_type: null,
-            signups: Number(s.signups) || 0, has_private: !!s.has_private,
+            signups: Number(s.signups) || 0, has_private: !!s.has_private, no_trio: !!s.no_trio,
             capacity: 0, spots_taken: Number(s.signups) || 0, status: s.status || "open",
           });
         });
