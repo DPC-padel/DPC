@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Apply to Join — Delhi//PadelCollective</title>
+<title>Join Community — Delhi//PadelCollective</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap" rel="stylesheet"/>
 <style>
@@ -175,8 +175,21 @@
   .success-icon { font-size: 48px; margin-bottom: 24px; }
   .success-screen h2 { font-family: var(--font-heading); font-size: clamp(36px, 6vw, 60px); font-style: normal; font-weight: 400; margin-bottom: 14px; color: var(--text); }
   .success-screen p { font-size: 15px; color: var(--muted); max-width: 400px; line-height: 1.7; margin-bottom: 32px; }
-  .back-link { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); text-decoration: none; }
+  .back-link { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); text-decoration: none; margin-top: 28px; }
   .back-link:hover { color: var(--accent); }
+  .success-screen p { margin-bottom: 20px; }
+  .group-links { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 360px; margin-bottom: 8px; }
+  .group-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--accent); color: #fff; text-decoration: none; border-radius: 100px; padding: 14px 22px; font-size: 13px; font-weight: 600; letter-spacing: .04em; box-shadow: 0 6px 18px var(--accent-glow); transition: transform .15s; }
+  .group-link:hover { transform: translateY(-1px); }
+  .group-link .arw { opacity: .85; }
+  .success-divider { width: 60px; height: 1px; background: var(--border-dk); margin: 26px 0 22px; }
+  .success-sub { font-size: 13px; color: var(--muted); max-width: 360px; line-height: 1.6; margin-bottom: 18px !important; }
+  .success-cta { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 360px; }
+  .sc-btn { display: block; width: 100%; text-align: center; border-radius: 100px; padding: 14px; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; text-decoration: none; transition: all .15s; }
+  .sc-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 18px var(--accent-glow); }
+  .sc-primary:hover { background: var(--accent-hover); }
+  .sc-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border-dk); }
+  .sc-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
   .err-msg { background: rgba(46,78,142,.08); color: var(--accent); border: 1px solid rgba(46,78,142,.2); border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-top: 16px; display: none; }
   .err-msg.show { display: block; }
@@ -247,7 +260,7 @@
 <div id="formPage">
   <div class="hero">
     <div class="hero-eyebrow">Membership Application</div>
-    <h1>Apply to Join</h1>
+    <h1>Join Community</h1>
     <p>Tell us a little about yourself and your game. We'll be in touch via WhatsApp.</p>
   </div>
 
@@ -301,9 +314,21 @@
       </div>
       <div class="q-divider"></div>
 
-      <!-- 04 Experience -->
+      <!-- 04 Community -->
       <div class="q-block">
-        <div class="q-label">04 — Experience</div>
+        <div class="q-label">04 — You</div>
+        <div class="q-title">Which community do you play in?</div>
+        <div class="q-sub">We run separate men's and women's groups so you're matched with the right players.</div>
+        <div class="options-grid cols-2">
+          <label><input type="radio" name="gender" value="Male" class="opt-label"/><span class="opt-btn">Men's</span></label>
+          <label><input type="radio" name="gender" value="Female" class="opt-label"/><span class="opt-btn">Women's</span></label>
+        </div>
+      </div>
+      <div class="q-divider"></div>
+
+      <!-- 05 Experience -->
+      <div class="q-block">
+        <div class="q-label">05 — Experience</div>
         <div class="q-title">How long have you played padel?</div>
         <div class="options-grid cols-2">
           <label><input type="radio" name="experience" value="Never played" class="opt-label" id="exp_never"/><span class="opt-btn">Never played</span></label>
@@ -316,7 +341,7 @@
 
       <!-- Racquet sport -->
       <div class="q-block">
-        <div class="q-label">05 — Racquet sport</div>
+        <div class="q-label">06 — Racquet sport</div>
         <div class="q-title">Have you played any racquet sport before?</div>
         <div class="q-sub">Tennis, badminton, squash, table tennis — it transfers to padel.</div>
         <div class="options-grid cols-1">
@@ -329,7 +354,7 @@
 
       <!-- 06 Skill Level -->
       <div class="q-block">
-        <div class="q-label">06 — Skill Level</div>
+        <div class="q-label">07 — Skill Level</div>
         <div class="q-title">How would you describe your level?</div>
         <div class="options-grid cols-2" id="levelOptions">
           <label id="label_beginner"><input type="radio" name="level" value="Beginner" class="opt-label" id="level_beginner"/><span class="opt-btn">Beginner</span></label>
@@ -493,13 +518,36 @@
 
 <div class="success-screen" id="successScreen">
   <div class="success-icon">🎾</div>
-  <h2>You're on the list.</h2>
-  <p>Thanks for applying! We'll review your application and reach out on WhatsApp within 48 hours. See you on court.</p>
+  <h2>You're in — almost.</h2>
+  <p>Thanks for joining! Tap your group link below to request to join — an admin confirms within <strong>24–48 hours</strong>.</p>
+  <div id="groupLinks" class="group-links"></div>
+  <div class="success-divider"></div>
+  <p class="success-sub">Meanwhile, register to access your dashboard — your rating, matches and rank all live there.</p>
+  <div class="success-cta">
+    <a class="sc-btn sc-primary" href="../login/?tab=register">Register</a>
+    <a class="sc-btn sc-secondary" href="../login/">Log in</a>
+  </div>
   <a class="back-link" href="https://dpc-padel.github.io/DPC/">← Back to Delhi//PadelCollective</a>
 </div>
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAqRDFOA8gS2P6vBIQpONcjXlh8f64wdAcRE8xuEpPrlrRIX02KgOScVrpM3AcLugy/exec";
+
+// Render the group link button(s) the backend returned for this applicant.
+function renderGroupLinks(groups) {
+  const box = document.getElementById("groupLinks");
+  if (!box) return;
+  if (!groups || !groups.length) {                 // backend hasn't returned links → soften copy
+    box.innerHTML = ""; box.style.display = "none";
+    const p = document.querySelector("#successScreen > p");
+    if (p) p.innerHTML = "Thanks for applying! We'll add you to your community group(s) and confirm within <strong>24–48 hours</strong>.";
+    return;
+  }
+  box.style.display = "flex";
+  box.innerHTML = groups.map(g =>
+    `<a class="group-link" href="${g.link}" target="_blank" rel="noopener"><span>Join ${g.name}</span><span class="arw">→</span></a>`
+  ).join("");
+}
 
 // ── "Other" toggles ──────────────────────────────────────────
 document.getElementById("locationOtherCheck").addEventListener("change", e => {
@@ -735,6 +783,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
   const phone     = document.getElementById("q_phone").value.trim();
   const locations = [...document.querySelectorAll('input[name="location"]:checked')].map(c => c.value);
   const locOther  = document.getElementById("locationOtherText").value.trim();
+  const gender    = document.querySelector('input[name="gender"]:checked')?.value || "";
   const exp       = document.querySelector('input[name="experience"]:checked')?.value || "";
   const level     = document.querySelector('input[name="level"]:checked')?.value || "";
   const values    = [...document.querySelectorAll('input[name="value"]:checked')].map(c => c.value);
@@ -755,6 +804,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
     { ok: !!name,               label: "your name",             el: document.getElementById("q_name") },
     { ok: !!phone,              label: "your WhatsApp number",  el: document.getElementById("q_phone") },
     { ok: locations.length > 0, label: "at least one location", el: document.querySelector('input[name="location"]') },
+    { ok: !!gender,             label: "your community (men's/women's)", el: document.querySelector('input[name="gender"]') },
     { ok: !!exp,                label: "your experience",       el: document.querySelector('input[name="experience"]') },
     { ok: !!level,              label: "your level",            el: document.querySelector('input[name="level"]') },
     { ok: values.length > 0,    label: "what you value",        el: document.querySelector('input[name="value"]') },
@@ -823,19 +873,32 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
     doublesCoord:       isAdv ? doublesLabels[parseInt(doubles)] : "N/A",
     returnOfServe:      isAdv ? retLabels[parseInt(ret)] : "N/A",
     onboardingRating:   ratingStr,
+    gender,
+    rating:             parseFloat(ratingStr) || 0,   // numeric self-rating for group routing
     communityValue:     finalValues.join(", "),
     instagram,
     instagramFollowing: igFollow ? "Yes" : "No",
     vision,
   };
 
+  // Readable POST so the backend can hand back this person's group link(s)
+  // (the link->criteria mapping lives server-side, never in this page). If the
+  // response can't be read (backend not yet returning CORS/JSON), we still show
+  // success — the server received the submission either way.
+  let groups = [];
   try {
-    await fetch(SCRIPT_URL, {
+    const res  = await fetch(SCRIPT_URL, {
       method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload),
     });
+    const data = await res.json();
+    if (data && Array.isArray(data.groups)) groups = data.groups;
+  } catch (err) {
+    /* opaque/CORS or hiccup — submission still went through; show success without links */
+  }
+  try {
+    renderGroupLinks(groups);
     document.getElementById("formPage").style.display = "none";
     document.getElementById("successScreen").classList.add("show");
     window.scrollTo(0, 0);
