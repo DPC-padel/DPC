@@ -317,11 +317,12 @@
       <!-- 04 Community -->
       <div class="q-block">
         <div class="q-label">04 — You</div>
-        <div class="q-title">Are you a girl or a boy?</div>
+        <div class="q-title">Gender</div>
         <div class="q-sub">This just helps us add you to the right community group.</div>
-        <div class="options-grid cols-2">
-          <label><input type="radio" name="gender" value="Male" class="opt-label"/><span class="opt-btn">Boy</span></label>
-          <label><input type="radio" name="gender" value="Female" class="opt-label"/><span class="opt-btn">Girl</span></label>
+        <div class="options-grid cols-1">
+          <label><input type="radio" name="gender" value="Male" class="opt-label"/><span class="opt-btn">Male</span></label>
+          <label><input type="radio" name="gender" value="Female" class="opt-label"/><span class="opt-btn">Female</span></label>
+          <label><input type="radio" name="gender" value="Prefer not to say" class="opt-label"/><span class="opt-btn">Prefer not to say</span></label>
         </div>
       </div>
       <div class="q-divider"></div>
@@ -804,7 +805,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
     { ok: !!name,               label: "your name",             el: document.getElementById("q_name") },
     { ok: !!phone,              label: "your WhatsApp number",  el: document.getElementById("q_phone") },
     { ok: locations.length > 0, label: "at least one location", el: document.querySelector('input[name="location"]') },
-    { ok: !!gender,             label: "whether you're a girl or a boy", el: document.querySelector('input[name="gender"]') },
+    { ok: !!gender,             label: "your gender", el: document.querySelector('input[name="gender"]') },
     { ok: !!exp,                label: "your experience",       el: document.querySelector('input[name="experience"]') },
     { ok: !!level,              label: "your level",            el: document.querySelector('input[name="level"]') },
     { ok: values.length > 0,    label: "what you value",        el: document.querySelector('input[name="value"]') },
