@@ -317,11 +317,11 @@
       <!-- 04 Community -->
       <div class="q-block">
         <div class="q-label">04 — You</div>
-        <div class="q-title">Which community do you play in?</div>
-        <div class="q-sub">We run separate men's and women's groups so you're matched with the right players.</div>
+        <div class="q-title">Are you a girl or a boy?</div>
+        <div class="q-sub">This just helps us add you to the right community group.</div>
         <div class="options-grid cols-2">
-          <label><input type="radio" name="gender" value="Male" class="opt-label"/><span class="opt-btn">Men's</span></label>
-          <label><input type="radio" name="gender" value="Female" class="opt-label"/><span class="opt-btn">Women's</span></label>
+          <label><input type="radio" name="gender" value="Male" class="opt-label"/><span class="opt-btn">Boy</span></label>
+          <label><input type="radio" name="gender" value="Female" class="opt-label"/><span class="opt-btn">Girl</span></label>
         </div>
       </div>
       <div class="q-divider"></div>
@@ -804,7 +804,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
     { ok: !!name,               label: "your name",             el: document.getElementById("q_name") },
     { ok: !!phone,              label: "your WhatsApp number",  el: document.getElementById("q_phone") },
     { ok: locations.length > 0, label: "at least one location", el: document.querySelector('input[name="location"]') },
-    { ok: !!gender,             label: "your community (men's/women's)", el: document.querySelector('input[name="gender"]') },
+    { ok: !!gender,             label: "whether you're a girl or a boy", el: document.querySelector('input[name="gender"]') },
     { ok: !!exp,                label: "your experience",       el: document.querySelector('input[name="experience"]') },
     { ok: !!level,              label: "your level",            el: document.querySelector('input[name="level"]') },
     { ok: values.length > 0,    label: "what you value",        el: document.querySelector('input[name="value"]') },
@@ -874,6 +874,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
     returnOfServe:      isAdv ? retLabels[parseInt(ret)] : "N/A",
     onboardingRating:   ratingStr,
     gender,
+    girl:               gender === "Female",   // Col C tick — TRUE for girls, FALSE otherwise
     rating:             parseFloat(ratingStr) || 0,   // numeric self-rating for group routing
     communityValue:     finalValues.join(", "),
     instagram,
