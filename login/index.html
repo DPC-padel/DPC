@@ -603,6 +603,12 @@ function switchTab(tab) {
   clearAlerts();
 }
 
+// Open a specific tab from ?tab= (e.g. the apply confirmation's "Register" button).
+(function () {
+  const t = new URLSearchParams(location.search).get('tab');
+  if (t === 'register' || t === 'forgot') switchTab(t);
+})();
+
 function clearAlerts() {
   document.querySelectorAll('.alert').forEach(a => a.classList.remove('show'));
 }
