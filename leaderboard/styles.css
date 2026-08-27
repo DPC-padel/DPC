@@ -210,7 +210,7 @@ tbody tr:has(td[colspan]) td { text-align: center; }
 }
 .player-info { min-width: 0; display: flex; flex-direction: column; }
 .nmrow { display: flex; align-items: center; min-width: 0; }
-.player-name { font-size: 0.9rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.player-name { font-size: 0.9rem; font-weight: 600; line-height: 1.2; white-space: normal; overflow-wrap: anywhere; min-width: 0; }
 .player-sub { font-size: 0.72rem; color: var(--muted2); margin-top: 1px; }
 
 .vbadge {
@@ -236,7 +236,7 @@ tbody tr:has(td[colspan]) td { text-align: center; }
 .podium-item.second .podium-avatar, .podium-item.third .podium-avatar { width: 52px; height: 52px; font-size: 1rem; }
 .podium-badge { display: none; }
 .podium-name { display: flex; align-items: center; justify-content: center; gap: 4px; max-width: 100%; font-size: 0.8rem; font-weight: 600; }
-.podium-name span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.podium-name span { white-space: normal; overflow-wrap: anywhere; }
 .podium-item.first .podium-name { font-size: 0.85rem; }
 .podium-value { font-family: var(--title); font-size: 1.15rem; font-weight: 700; margin-top: 4px; line-height: 1; }
 .podium-item.first .podium-value { font-size: 1.3rem; color: var(--gold); }
