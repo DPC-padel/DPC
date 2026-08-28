@@ -371,7 +371,8 @@ async function readCache() {
     return out;
   } catch (e) { return { coaches: [], locations: [], slots: [] }; }
 }
-async function init(){ await refresh(); }
+const TODAY_STR = new Date().toISOString().slice(0, 10);
+async function init(){ $("s-date").min = TODAY_STR; await refresh(); }
 async function refresh(){
   DATA = await readCache();
   // dropdowns
@@ -510,6 +511,9 @@ $("s-add").addEventListener("click", async () => {
   if(!coach_id||!location_id||!date||!times.length){
     $("s-msg").className="msg bad"; $("s-msg").textContent="Pick a coach, court, date and at least one time."; return;
   }
+  if(date < TODAY_STR){
+    $("s-msg").className="msg bad"; $("s-msg").textContent="That date is in the past — past slots won't show. Pick today or later."; return;
+  }
   const ok = await post("addSlots", { coach_id, location_id, date, times, level:$("s-level").value }, $("s-add"), $("s-msg"));
   if(ok){ picked.clear(); $("s-times").querySelectorAll(".chip.on").forEach(c=>c.classList.remove("on")); }
 });
@@ -544,7 +548,7 @@ window.openSlot = function(id){
   $("editTitle").textContent = `${coachName(s.coach_id)} · ${fmt12(s.start_time||"")}`;
   $("editBody").innerHTML = `
     <div class="grid2">
-      <div class="field"><label>Date</label><input class="inp" id="e-date" type="date" value="${esc(s.date)}"/></div>
+      <div class="field"><label>Date</label><input class="inp" id="e-date" type="date" min="${TODAY_STR}" value="${esc(s.date)}"/></div>
       <div class="field"><label>Time</label>
         <select class="inp" id="e-time">${TIMES.map(t=>`<option value="${t}"${t===s.start_time?" selected":""}>${fmt12(t)}</option>`).join("")}</select>
       </div>
