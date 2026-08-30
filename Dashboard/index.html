@@ -615,12 +615,27 @@ async function fetchLeaderboardStats(name,venue){
 }
 async function fetchFromAPI(phone){
   let player=currentPlayer||{},matches=[],gotSupabase=false;
-  if(SUPABASE_READY){try{const res=await fetch(`${SUPABASE.url}/rest/v1/dashboard_cache?phone=eq.${encodeURIComponent(phone)}&select=player,matches`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});if(res.ok){const rows=await res.json();if(rows.length&&rows[0].player){player={...player,...rows[0].player};matches=rows[0].matches||[];gotSupabase=true;}}}catch(e){}}
+  // A stale session can carry a country code (e.g. 91XXXXXXXXXX) while the
+  // cache/Master keys are the bare 10-digit number. Query both keys and keep
+  // the richer row, so an old 91-prefixed login still lands on the clean data.
+  const ph10=String(phone||'').replace(/\D/g,'').slice(-10);
+  const keys=[...new Set([String(phone),ph10].filter(Boolean))];
+  if(SUPABASE_READY){try{
+    const filter=keys.length>1
+      ?`or=(${keys.map(k=>`phone.eq.${encodeURIComponent(k)}`).join(',')})`
+      :`phone=eq.${encodeURIComponent(keys[0])}`;
+    const res=await fetch(`${SUPABASE.url}/rest/v1/dashboard_cache?${filter}&select=phone,player,matches`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});
+    if(res.ok){
+      const rows=(await res.json()).filter(r=>r&&r.player);
+      rows.sort((a,b)=>((b.matches||[]).length-(a.matches||[]).length)||((b.player.ranking?1:0)-(a.player.ranking?1:0)));
+      if(rows.length){player={...player,...rows[0].player};matches=rows[0].matches||[];gotSupabase=true;}
+    }
+  }catch(e){}}
   let ok=gotSupabase; // did we reach a source and get a definitive answer?
   if(!gotSupabase){
     // Master getPlayer: rating (falls back to self-rating), ranking + rating/ranking history
-    try{const r=await fetch(`${MATCHES_API}?action=getPlayer&phone=${encodeURIComponent(phone)}`);const d=await r.json();if(d&&d.success&&d.player){player={...player,...d.player};ok=true;}}catch(e){}
-    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(phone)}`);const d=await r.json();ok=true;if(d&&d.success)matches=d.matches||[];}catch(e){matches=allMatches;}
+    try{const r=await fetch(`${MATCHES_API}?action=getPlayer&phone=${encodeURIComponent(ph10)}`);const d=await r.json();if(d&&d.success&&d.player){player={...player,...d.player};ok=true;}}catch(e){}
+    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(ph10)}`);const d=await r.json();ok=true;if(d&&d.success)matches=d.matches||[];}catch(e){matches=allMatches;}
   }
   // phone→canonical name+board come from the matches DB; rating/ranking live only in leaderboard_cache (keyed by that name)
   const canonName=matches?.[0]?.playerName||player.name;
