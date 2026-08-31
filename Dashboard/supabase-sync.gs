@@ -7,9 +7,10 @@
  *    3. upsert one row per phone into dashboard_cache
  *    4. delete any cache row NOT in the current roster (prune orphans)
  *
- *  Runs on CHANGE, not on a timer: an onChange trigger on the Master
- *  spreadsheet schedules a single debounced sync ~1 min after the last
- *  edit, so a burst of edits collapses into one rebuild.
+ *  Change-driven: an onChange trigger on the Master spreadsheet catches
+ *  manual edits, and a ping endpoint ( <exec-url>?action=sync ) lets any
+ *  writer (API or function) trigger a rebuild after it writes. A 60-min
+ *  timer is kept as a safety net.
  *
  *  IMPORTANT: use the LEGACY service_role key (a JWT starting with
  *  "eyJ"), NOT an "sb_secret_..." key (those are rejected from
@@ -23,6 +24,34 @@ const MASTER_SHEET_ID = '1oOWAnf-dTq_-DX6fTS9i9Pa6yN_pl6p6IsRcrLXRckA';
 
 const PLAYERS_API = 'https://script.google.com/macros/s/AKfycbyRmqF7c8OU7YxeSYG_EgwH4xR4ir_m6fL6M9Ds8XG7GpPZfB19op-qIDv_1YwLFkmw/exec';
 const MATCHES_API = 'https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec';
+
+// ── Ping endpoint: any writer hits  ?action=sync  to trigger a rebuild ──
+function doGet(e) {
+  const a = e && e.parameter && e.parameter.action;
+  if (a === 'sync') return json_(syncNow_());
+  return json_({ ok: true, hint: 'add ?action=sync to trigger a rebuild' });
+}
+function doPost(e) { return doGet(e); }
+function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+
+// Locked + debounced entry used by the ping and the onChange timer.
+function syncNow_() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(1000)) return { ok: true, skipped: 'a sync is already running' };
+  try {
+    const props = PropertiesService.getScriptProperties();
+    if (Date.now() - Number(props.getProperty('lastSyncAt') || 0) < 15000) {
+      return { ok: true, skipped: 'synced <15s ago' };
+    }
+    syncDashboard();
+    props.setProperty('lastSyncAt', String(Date.now()));
+    return { ok: true, synced: true };
+  } catch (err) {
+    return { ok: false, error: String(err) };
+  } finally {
+    lock.releaseLock();
+  }
+}
 
 /** Build the per-player cache and upsert it into dashboard_cache. */
 function syncDashboard() {
@@ -109,15 +138,11 @@ function onMasterChange(e) {
   ScriptApp.newTrigger('runSyncNow').timeBased().after(60 * 1000).create();
 }
 
-function runSyncNow() {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(1000)) return;   // a sync is already running
-  try { syncDashboard(); } finally { lock.releaseLock(); }
-}
+function runSyncNow() { syncNow_(); }
 
-/** Run ONCE to switch from the timer to change-driven sync. */
+/** Run ONCE: change-driven (onChange) + a 60-min safety-net timer. */
 function installChangeTrigger() {
-  // remove the old time-based trigger and any of ours, then attach onChange
+  // remove old triggers of ours, then reinstall
   ScriptApp.getProjectTriggers().forEach(function (t) {
     const f = t.getHandlerFunction();
     if (f === 'syncDashboard' || f === 'onMasterChange' || f === 'runSyncNow') ScriptApp.deleteTrigger(t);
@@ -126,5 +151,6 @@ function installChangeTrigger() {
     .forSpreadsheet(SpreadsheetApp.openById(MASTER_SHEET_ID))
     .onChange()
     .create();
-  Logger.log('Change-driven sync installed on the Master spreadsheet.');
+  ScriptApp.newTrigger('runSyncNow').timeBased().everyHours(1).create();   // safety net
+  Logger.log('Installed: onChange sync + 60-min safety-net timer.');
 }
