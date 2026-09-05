@@ -70,6 +70,7 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
 .grid{display:grid;gap:14px;}
 .g3{grid-template-columns:repeat(3,1fr);}
 .g2{grid-template-columns:repeat(2,1fr);}
+.g4{grid-template-columns:repeat(4,1fr);}
 
 .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
 .tile .lbl{font-size:.6rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px;}
@@ -164,9 +165,10 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
 .col-item .de{font-size:.72rem;color:var(--muted2);margin-top:2px;}
 .drive-cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;text-decoration:none;border-radius:100px;padding:12px 20px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 6px 18px var(--accent-glow);}
 
+@media (max-width:1150px){ .g4{grid-template-columns:repeat(2,1fr);} }
 @media (max-width:900px){
   .sidebar{display:none;} .mtabs{display:flex;}
-  .g3{grid-template-columns:1fr;} .g2{grid-template-columns:1fr;}
+  .g3{grid-template-columns:1fr;} .g2{grid-template-columns:1fr;} .g4{grid-template-columns:1fr;}
   .wrap{padding:22px 16px 60px;} .top h1{font-size:1.6rem;}
 }
 </style>
@@ -261,7 +263,7 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
         <h2>Growth &amp; efficiency</h2><span class="ov" id="ov-gro">Custom</span>
         <div class="sec-filter"><select class="mini" id="f-gro"></select></div>
       </div>
-      <div class="grid g3" id="groGrid"></div>
+      <div class="grid g4" id="groGrid"></div>
       <div class="grid g3" id="groGrid2" style="margin-top:14px"></div>
     </div>
 
@@ -643,9 +645,12 @@ function renderGrowth(){
     <div class="tile"><div class="edge"></div><div class="lbl">Revenue per event</div>
       <div class="val sm">${f&&a.events?inr(f.revenue/a.events):NA}</div>
       <div class="note">${a.events?`across <b>${a.events}</b> events`:"—"}</div></div>
-    <div class="tile"><div class="edge"></div><div class="lbl">Revenue per player</div>
-      <div class="val sm">${f&&a.played?inr(f.revenue/a.played):NA}</div>
-      <div class="note">${a.played?`over <b>${a.played}</b> player-slots`:"—"}</div></div>`;
+    <div class="tile"><div class="edge"></div><div class="lbl">Avg ticket</div>
+      <div class="val sm">${f&&a.played?inr(f.players/a.played):NA}</div>
+      <div class="note">player revenue over <b>${a.played}</b> attendances</div></div>
+    <div class="tile"><div class="edge"></div><div class="lbl">Spend per player</div>
+      <div class="val sm">${f&&a.unique?inr(f.players/a.unique):NA}</div>
+      <div class="note">average across <b>${a.unique}</b> players this period</div></div>`;
 
   const tot=a.unique||1;
   const seg=(n,c)=>`<i style="width:${(n/tot*100).toFixed(1)}%;background:${c}"></i>`;
