@@ -143,6 +143,15 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
 .ax{font-size:9px;fill:var(--muted);font-family:var(--body);}
 .bl{font-size:9.5px;fill:var(--muted2);font-family:var(--body);}
 
+/* add-link modal */
+.ovl{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:400;display:none;align-items:center;justify-content:center;padding:20px;}
+.ovl.open{display:flex;}
+.mdl{background:#fff;border-radius:18px;width:100%;max-width:440px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.mdl h3{font-size:1.2rem;font-weight:700;margin-bottom:16px;}
+.fld{margin-bottom:12px;}
+.fld label{display:block;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px;}
+.mdl-acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;align-items:center;}
+
 /* collaterals */
 .col-group{margin-bottom:26px;}
 .col-group h3{font-size:1rem;font-weight:700;margin-bottom:3px;}
@@ -275,13 +284,32 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
        <div class="top">
          <div><h1><span class="slash">//</span> Collaterals</h1>
            <div class="sub">Brand assets, decks and templates — everything in one place.</div></div>
-         <div class="top-actions"><a class="drive-cta" id="driveTop" target="_blank" rel="noopener">Open Drive folder ↗</a></div>
+         <div class="top-actions">
+           <button class="icon-btn" id="addColBtn">+ Add link</button>
+           <a class="drive-cta" id="driveTop" target="_blank" rel="noopener">Open Drive folder ↗</a>
+         </div>
        </div>
        <div id="colBody" style="margin-top:22px"></div>
      </div>
    </div>
   </main>
  </div>
+</div>
+
+<div class="ovl" id="addOvl">
+  <div class="mdl">
+    <h3>Add a link</h3>
+    <div class="fld"><label>Link</label><input class="inp" id="acUrl" placeholder="https://drive.google.com/..."/></div>
+    <div class="fld"><label>Title</label><input class="inp" id="acTitle" placeholder="e.g. Sponsorship deck"/></div>
+    <div class="fld"><label>Note <span style="opacity:.6">(optional)</span></label><input class="inp" id="acDesc" placeholder="Short description"/></div>
+    <div class="fld"><label>Section</label><select class="inp" id="acSection"></select></div>
+    <div class="fld" id="acNewWrap" style="display:none"><label>New section name</label><input class="inp" id="acNew" placeholder="e.g. Pitch decks"/></div>
+    <div class="err" id="acErr"></div>
+    <div class="mdl-acts">
+      <button class="icon-btn" id="acCancel">Cancel</button>
+      <button class="cta" id="acSave" style="width:auto;padding:0 26px">Save</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -722,7 +750,8 @@ function renderCharts(){
 }
 
 // ── collaterals ──
-const F = id => "https://drive.google.com/drive/folders/" + id;
+const F  = id => "https://drive.google.com/drive/folders/" + id;
+const SH = id => "https://docs.google.com/spreadsheets/d/" + id + "/edit";
 const COLLATERALS = {
   drive: F("1MzlFzft2HmeU7OeWr4FfEYE7RBkpZyCj"),
   groups: [
@@ -740,9 +769,18 @@ const COLLATERALS = {
       { title:"DPC Sunday · 19 Jul",   desc:"Session shoot",        icon:"📅", url:F("1V3C_VOyZdNmcE3u5bVnDjxvfsUj96953") },
       { title:"DPC Sunday · 31 May",   desc:"Session shoot",        icon:"📅", url:F("1pXfc7COzRrzfLuuwQMZcJgqvxbnpPHeq") },
     ]},
-    { name:"Business", desc:"Finance and working data. Founder eyes only.", items:[
+    { name:"Sheets", desc:"The spreadsheets everything runs on.", items:[
+      { title:"Master sheet",  desc:"Players, ratings, rankings", icon:"🗃", url:SH("1oOWAnf-dTq_-DX6fTS9i9Pa6yN_pl6p6IsRcrLXRckA") },
+      { title:"Break Point",   desc:"Match rows · Break Point",   icon:"🎾", url:SH("1mWt2hAx8Uf4Ww_UJmOP61ZrWQzHSDumb1oVxLfgyqM8") },
+      { title:"First Serve",   desc:"Match rows · First Serve",   icon:"🎾", url:SH("1vCnhs9U427R3-T4JiPuopIWN8TqV7SIizJDWNwNC08M") },
+      { title:"Costing sheet", desc:"Monthly P&L — feeds this page", icon:"💰", url:SH("11tDTQSb3DixUaPTBOTE1DHPGA8ToWd0y81bbP_bZPDI") },
+      { title:"Event Roster",  desc:"Session rosters",            icon:"📋", url:SH("1IkE240teeBb6sGGNO4tF23wZ-Y4ulWyNhhkWNoc7jbM") },
+      { title:"Player Data",   desc:"Player records",             icon:"👤", url:SH("1N_7Q6NGh6gIXBiqeBa7Yrrg1ni4xa4QkrjQCO88j4yU") },
+      { title:"Response",      desc:"Join-form submissions",      icon:"📝", url:SH("1Ctwwu2jnkTu0lBPv62l2Tt2NXNl4--jtcnkdaBs3XA8") },
+      { title:"All sheets",    desc:"Parent folder",              icon:"📁", url:F("1dSYhs6Jt93RKKJyrbdolhxYMvpolNocR") },
+    ]},
+    { name:"Business", desc:"Finance records. Founder eyes only.", items:[
       { title:"DPC Invoices", desc:"Billing records", icon:"🧾", url:F("1-SyPRuVxbDo3KdXLTJabUhdD5v9tsaHG") },
-      { title:"Sheets",       desc:"Working spreadsheets", icon:"📊", url:F("1dSYhs6Jt93RKKJyrbdolhxYMvpolNocR") },
     ]},
     { name:"Automation", desc:"The Apps Script projects behind the live syncs.", items:[
       { title:"DPC Dashboard Sync",   desc:"Player cache sync",     icon:"⚙️", url:"https://script.google.com/home/projects/1euJ29MmkON-7qRRuI_FUA1xTeT8xWg2D_lC3WdubZtlds-HBwwgbDu4y" },
@@ -750,9 +788,72 @@ const COLLATERALS = {
     ]},
   ]
 };
-function renderCollaterals(){
+// Custom links live in a Collaterals tab on the costing sheet, so all three
+// founders see the same list on any device.
+let CUSTOM = [], CUSTOM_LOADED = false;
+async function loadCustomCollaterals(){
+  try{
+    const r = await fetch(CONFIG.FIN_API + "?action=getCollaterals&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json());
+    CUSTOM = (r && r.ok && Array.isArray(r.items)) ? r.items : [];
+  }catch(e){ CUSTOM = []; }
+  CUSTOM_LOADED = true;
+}
+function allGroups(){
+  const groups = COLLATERALS.groups.map(g=>({ ...g, items:[...g.items] }));
+  for(const c of CUSTOM){
+    if(!c || !c.url) continue;
+    const sec = String(c.section||"Other").trim();
+    let g = groups.find(x=>x.name.toLowerCase()===sec.toLowerCase());
+    if(!g){ g = { name:sec, desc:"", items:[] }; groups.push(g); }
+    g.items.push({ title:c.title||c.url, desc:c.desc||"", icon:c.icon||"🔗", url:c.url });
+  }
+  return groups;
+}
+
+// ── add-link modal ──
+function openAdd(){
+  const sel=$("acSection");
+  sel.innerHTML = allGroups().map(g=>`<option>${g.name}</option>`).join("")
+                + `<option value="__new">＋ New section…</option>`;
+  $("acNewWrap").style.display="none";
+  ["acUrl","acTitle","acDesc","acNew"].forEach(id=>$(id).value="");
+  $("acErr").classList.remove("show");
+  $("addOvl").classList.add("open");
+  $("acUrl").focus();
+}
+function closeAdd(){ $("addOvl").classList.remove("open"); }
+$("addColBtn").addEventListener("click", openAdd);
+$("acCancel").addEventListener("click", closeAdd);
+$("addOvl").addEventListener("click", e=>{ if(e.target===$("addOvl")) closeAdd(); });
+$("acSection").addEventListener("change", ()=>{
+  $("acNewWrap").style.display = $("acSection").value==="__new" ? "block" : "none";
+  if($("acSection").value==="__new") $("acNew").focus();
+});
+$("acSave").addEventListener("click", async ()=>{
+  const url=$("acUrl").value.trim();
+  const title=$("acTitle").value.trim();
+  const section = $("acSection").value==="__new" ? $("acNew").value.trim() : $("acSection").value;
+  const err=m=>{ $("acErr").textContent=m; $("acErr").classList.add("show"); };
+  if(!/^https?:\/\//i.test(url)) return err("Paste a full link starting with https://");
+  if(!title) return err("Give it a title.");
+  if(!section) return err("Name the new section.");
+  const btn=$("acSave"); btn.disabled=true; btn.textContent="Saving…";
+  try{
+    const q = new URLSearchParams({ action:"addCollateral", token:CONFIG.FIN_TOKEN,
+                                    section, title, url, desc:$("acDesc").value.trim() });
+    const r = await fetch(CONFIG.FIN_API + "?" + q).then(r=>r.json());
+    if(!r || !r.ok) throw new Error((r&&r.error) || "save failed");
+    CUSTOM.push({ section, title, url, desc:$("acDesc").value.trim() });
+    closeAdd(); renderCollaterals();
+  }catch(e){ err("Couldn't save — " + e.message); }
+  finally{ btn.disabled=false; btn.textContent="Save"; }
+});
+
+async function renderCollaterals(){
   $("driveTop").href = COLLATERALS.drive;
-  if(!COLLATERALS.groups.length){
+  if(!CUSTOM_LOADED){ await loadCustomCollaterals(); }
+  const GROUPS = allGroups();
+  if(!GROUPS.length){
     $("colBody").innerHTML = `
       <div class="chartcard" style="text-align:center;padding:40px 22px">
         <h3>Nothing linked yet</h3>
@@ -761,7 +862,7 @@ function renderCollaterals(){
       </div>`;
     return;
   }
-  $("colBody").innerHTML = COLLATERALS.groups.map(g=>`
+  $("colBody").innerHTML = GROUPS.map(g=>`
     <div class="col-group"><h3>${g.name}</h3><div class="gs">${g.desc||""}</div>
       <div class="col-grid">${g.items.map(i=>`
         <a class="col-item" href="${i.url}" target="_blank" rel="noopener">
