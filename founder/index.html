@@ -114,7 +114,52 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
 .na{color:var(--muted);font-weight:400;font-family:var(--body);font-size:1.1rem;}
 .warn{font-size:.72rem;color:var(--muted2);background:var(--bg);border:1px dashed var(--line2);border-radius:10px;padding:9px 12px;margin-top:10px;}
 
-@media (max-width:860px){ .g3{grid-template-columns:1fr;} .g2{grid-template-columns:1fr;} .wrap{padding:22px 16px 60px;} .top h1{font-size:1.6rem;} }
+/* shell w/ sidebar */
+.layout{display:flex;min-height:100dvh;}
+.sidebar{width:216px;background:#0b1220;display:flex;flex-direction:column;position:sticky;top:0;height:100dvh;flex-shrink:0;}
+.sb-brand{padding:26px 22px 20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-brand .n{font-family:var(--title);font-size:1.1rem;font-weight:700;color:#fff;}
+.sb-brand .n .slash{color:#7ea2e0;}
+.sb-brand .t{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:#6d80a6;display:block;margin-top:5px;}
+.sb-nav{padding:14px 0;flex:1;}
+.ni{display:flex;align-items:center;gap:11px;padding:12px 22px;font-size:.85rem;font-weight:600;color:#8ea0c4;background:transparent;border:none;font-family:inherit;width:100%;text-align:left;cursor:pointer;transition:.15s;}
+.ni:hover{color:#cdd8ec;}
+.ni.on{color:#fff;background:rgba(255,255,255,.06);box-shadow:inset 3px 0 0 var(--accent);}
+.ni svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+.sb-foot{padding:18px;border-top:1px solid rgba(255,255,255,.08);}
+.sb-foot button{width:100%;background:transparent;border:1px solid rgba(255,255,255,.14);color:#8ea0c4;border-radius:100px;padding:9px;font-family:inherit;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;}
+.content{flex:1;min-width:0;}
+.view{display:none;} .view.on{display:block;}
+.mtabs{display:none;gap:8px;padding:14px 16px 0;}
+.mtab{flex:1;padding:10px;border-radius:100px;border:1px solid var(--line);background:#fff;font-family:inherit;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted2);cursor:pointer;}
+.mtab.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* charts */
+.chartcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 18px 12px;margin-bottom:14px;}
+.chartcard h3{font-size:.95rem;font-weight:700;margin-bottom:2px;}
+.chartcard .cs{font-size:.74rem;color:var(--muted2);margin-bottom:14px;}
+.chartcard svg{width:100%;height:auto;display:block;overflow:visible;}
+.gl{stroke:var(--line);stroke-width:1;}
+.ax{font-size:9px;fill:var(--muted);font-family:var(--body);}
+.bl{font-size:9.5px;fill:var(--muted2);font-family:var(--body);}
+
+/* collaterals */
+.col-group{margin-bottom:26px;}
+.col-group h3{font-size:1rem;font-weight:700;margin-bottom:3px;}
+.col-group .gs{font-size:.76rem;color:var(--muted2);margin-bottom:12px;}
+.col-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}
+.col-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;text-decoration:none;color:inherit;box-shadow:var(--shadow);transition:.15s;}
+.col-item:hover{border-color:var(--accent);transform:translateY(-1px);}
+.col-ic{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.col-item .ti{font-weight:600;font-size:.87rem;}
+.col-item .de{font-size:.72rem;color:var(--muted2);margin-top:2px;}
+.drive-cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;text-decoration:none;border-radius:100px;padding:12px 20px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 6px 18px var(--accent-glow);}
+
+@media (max-width:900px){
+  .sidebar{display:none;} .mtabs{display:flex;}
+  .g3{grid-template-columns:1fr;} .g2{grid-template-columns:1fr;}
+  .wrap{padding:22px 16px 60px;} .top h1{font-size:1.6rem;}
+}
 </style>
 </head>
 <body>
@@ -131,6 +176,27 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
 
 <!-- ── App ── -->
 <div id="app">
+ <div class="mtabs">
+   <button class="mtab on" data-v="overview">Dashboard</button>
+   <button class="mtab" data-v="collaterals">Collaterals</button>
+ </div>
+ <div class="layout">
+  <nav class="sidebar">
+    <div class="sb-brand"><div class="n">Delhi<span class="slash">//</span>Padel</div><span class="t">Founders</span></div>
+    <div class="sb-nav">
+      <button class="ni on" data-v="overview">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="ni" data-v="collaterals">
+        <svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
+        DPC Collaterals
+      </button>
+    </div>
+    <div class="sb-foot"><button id="logout2">Sign out</button></div>
+  </nav>
+  <main class="content">
+   <div class="view on" id="view-overview">
   <div class="wrap">
     <div class="top">
       <div>
@@ -180,12 +246,42 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
       <div class="grid g2" id="revGrid"></div>
     </div>
 
+    <!-- C2 · growth & efficiency -->
+    <div class="sec">
+      <div class="sec-head">
+        <h2>Growth &amp; efficiency</h2><span class="ov" id="ov-gro">Custom</span>
+        <div class="sec-filter"><select class="mini" id="f-gro"></select></div>
+      </div>
+      <div class="grid g3" id="groGrid"></div>
+      <div class="grid g3" id="groGrid2" style="margin-top:14px"></div>
+    </div>
+
+    <!-- C3 · trends -->
+    <div class="sec">
+      <div class="sec-head"><h2>Trends · full financial year</h2></div>
+      <div id="charts"></div>
+    </div>
+
     <!-- D · upcoming -->
     <div class="sec">
       <div class="sec-head"><h2>Upcoming events</h2></div>
       <div id="upcoming"><div class="empty">Loading…</div></div>
     </div>
   </div>
+   </div>
+
+   <div class="view" id="view-collaterals">
+     <div class="wrap">
+       <div class="top">
+         <div><h1><span class="slash">//</span> Collaterals</h1>
+           <div class="sub">Brand assets, decks and templates — everything in one place.</div></div>
+         <div class="top-actions"><a class="drive-cta" id="driveTop" target="_blank" rel="noopener">Open Drive folder ↗</a></div>
+       </div>
+       <div id="colBody" style="margin-top:22px"></div>
+     </div>
+   </div>
+  </main>
+ </div>
 </div>
 
 <script>
@@ -204,6 +300,7 @@ const CONFIG = {
   FIN_TOKEN:  "dpcfin_sl4cp0IQNa8OW5Y-t5s4t5MFqkqpu-Qh",   // must match API_TOKEN in the Apps Script
   FIN_API:    "https://script.google.com/macros/s/AKfycbwC3oiTPKu_A1VVwp2tcHOkPftOoBbcbPYUojzJGGSbNKuYWsETsO1K3Z0pIKKbFNLJ/exec",
   EVENTS_API: "https://script.google.com/macros/s/AKfycbxiOz2Wyc4cnsrDlYdNyb9vw7q4kcqpvMkwIa03N4MRWcKr7E6IZ__721lJoB_ihavZFA/exec",
+  MASTER_API: "https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec",
   SUPABASE:   { url:"https://zruqzybdpniofxbcwuat.supabase.co", key:"sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
   SESSION:    "dpcFounder",
 };
@@ -234,21 +331,25 @@ function delta(p, label){
 }
 
 // ── state ──
-let FIN=null, MATCHES=[], EVENTS=[], PERIODS={}, GRAN="month", SEL=null;
-const SECS = { act:{sel:null,el:"f-act",ov:"ov-act"}, pl:{sel:null,el:"f-pl",ov:"ov-pl"}, rev:{sel:null,el:"f-rev",ov:"ov-rev"} };
+let FIN=null, MATCHES=[], EVENTS=[], PERIODS={}, GRAN="month", SEL=null, FIRST_SEEN={}, NAME_BASED=false;
+const SECS = { act:{sel:null,el:"f-act",ov:"ov-act"}, pl:{sel:null,el:"f-pl",ov:"ov-pl"}, rev:{sel:null,el:"f-rev",ov:"ov-rev"}, gro:{sel:null,el:"f-gro",ov:"ov-gro"} };
 
 // ── load ──
 async function load(){
   $("refresh").classList.add("spin");
   try{
-    const [fin, cache, events] = await Promise.all([
+    const [fin, all, cache, events] = await Promise.all([
       fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json()).catch(()=>null),
+      fetch(CONFIG.MASTER_API + "?action=getAllMatches").then(r=>r.json()).catch(()=>null),
       fetch(`${CONFIG.SUPABASE.url}/rest/v1/dashboard_cache?select=phone,matches`,
         { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(()=>[]),
       fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(()=>null),
     ]);
     FIN = fin && fin.ok ? fin : null;
-    MATCHES = flattenMatches(cache);
+    // Names are the source of truth — not every player has a phone in Master.
+    MATCHES = (all && all.success && all.matches) ? fromAllMatches(all.matches) : flattenMatches(cache);
+    NAME_BASED = !!(all && all.success);
+    computeFirstSeen();
     EVENTS = (events && (events.data || events.events)) || [];
     buildPeriods();
     renderAll();
@@ -273,6 +374,31 @@ function flattenMatches(rows){
     }
   }
   return out;
+}
+
+/** Preferred source: every venue match row, keyed by PLAYER NAME. */
+function fromAllMatches(rows){
+  const seen=new Set(), out=[];
+  for (const r of rows||[]){
+    const id=r.matchId, d=parseDate(r.date), nm=String(r.name||"").trim();
+    if(!id || !d || !nm) continue;
+    const key=nm.toLowerCase();
+    const k=id+"|"+key;
+    if(seen.has(k)) continue;
+    seen.add(k);
+    out.push({ id, key, name:nm, phone:String(r.phone||""), date:d, type:r.type || "Other" });
+  }
+  return out;
+}
+
+/** Earliest appearance per player — powers new vs returning. */
+function computeFirstSeen(){
+  FIRST_SEEN = {};
+  for (const m of MATCHES){
+    const k = m.key || m.phone;
+    if (!k) continue;
+    if (!FIRST_SEEN[k] || m.date < FIRST_SEEN[k]) FIRST_SEEN[k] = m.date;
+  }
 }
 /** "19 Apr 2026" (and ISO) → Date */
 function parseDate(s){
@@ -361,18 +487,31 @@ function finFor(p){
 // ── activity for a period ──
 function actFor(p){
   const inR = MATCHES.filter(m=>m.date>=p.start && m.date<=p.end);
-  const ev=new Set(), ph=new Set(), byType={};
+  const ev=new Set(), who=new Set(), byType={}, perPlayer={};
   for(const m of inR){
-    ev.add(m.id); ph.add(m.phone);
+    const k = m.key || m.phone;
+    ev.add(m.id); if(k) who.add(k);
+    perPlayer[k] = (perPlayer[k]||0) + 1;                       // events attended in this period
     (byType[m.type] = byType[m.type] || {ev:new Set(),n:0});
     byType[m.type].ev.add(m.id); byType[m.type].n++;
   }
-  return { events:ev.size, played:inR.length, unique:ph.size,
+  // frequency buckets — how often people play with us
+  const freq={one:0,two:0,three:0,more:0};
+  for(const k of who){
+    const n=perPlayer[k];
+    if(n===1) freq.one++; else if(n===2) freq.two++; else if(n===3) freq.three++; else freq.more++;
+  }
+  // new vs returning (first ever appearance inside this period = new)
+  let fresh=0;
+  for(const k of who){ const f=FIRST_SEEN[k]; if(f && f>=p.start && f<=p.end) fresh++; }
+  return { events:ev.size, played:inR.length, unique:who.size,
+           freq, newPlayers:fresh, returning:who.size-fresh,
+           repeatRate: who.size ? (who.size-freq.one)/who.size : 0,
            types:Object.entries(byType).map(([t,v])=>({t,ev:v.ev.size,n:v.n})).sort((a,b)=>b.ev-a.ev) };
 }
 
 // ── render ──
-function renderAll(){ renderActivity(); renderPL(); renderRev(); renderUpcoming(); }
+function renderAll(){ renderActivity(); renderPL(); renderRev(); renderGrowth(); renderCharts(); renderUpcoming(); }
 
 function renderActivity(){
   const p=periodFor("act"); const a=actFor(p);
@@ -450,6 +589,169 @@ function renderUpcoming(){
     </div>`;
   }).join("");
 }
+
+// ── growth & efficiency ──
+function renderGrowth(){
+  const p=periodFor("gro"); const a=actFor(p); const f=finFor(p);
+  const d=f&&f.single;
+  // player-revenue growth needs the previous month's player revenue
+  let playerGrowth=null;
+  if(FIN && p.monthKey){
+    const idx=FIN.months.findIndex(m=>m.key===p.monthKey);
+    const cur=FIN.months[idx], prev=FIN.months.slice(0,idx).filter(m=>m.hasData).pop();
+    if(cur&&cur.hasData&&prev&&prev.revenuePlayers) playerGrowth=(cur.revenuePlayers-prev.revenuePlayers)/Math.abs(prev.revenuePlayers);
+  }
+  $("groGrid").innerHTML = `
+    <div class="tile accent"><div class="edge"></div><div class="lbl">Player revenue</div>
+      <div class="val sm">${f?inr(f.players):NA}</div>
+      ${delta(playerGrowth,"vs prev month")}
+      <div class="note">${d&&d.incRevenuePct!=null&&playerGrowth!=null&&playerGrowth<d.incRevenuePct
+        ? `Growing <b>slower</b> than total revenue (${pctS(d.incRevenuePct)})`
+        : "Revenue from players only — excludes brands"}</div></div>
+    <div class="tile"><div class="edge"></div><div class="lbl">Revenue per event</div>
+      <div class="val sm">${f&&a.events?inr(f.revenue/a.events):NA}</div>
+      <div class="note">${a.events?`across <b>${a.events}</b> events`:"—"}</div></div>
+    <div class="tile"><div class="edge"></div><div class="lbl">Revenue per player</div>
+      <div class="val sm">${f&&a.played?inr(f.revenue/a.played):NA}</div>
+      <div class="note">${a.played?`over <b>${a.played}</b> player-slots`:"—"}</div></div>`;
+
+  const tot=a.unique||1;
+  const seg=(n,c)=>`<i style="width:${(n/tot*100).toFixed(1)}%;background:${c}"></i>`;
+  $("groGrid2").innerHTML = `
+    <div class="tile good"><div class="edge"></div><div class="lbl">New players</div>
+      <div class="val sm">${a.newPlayers}</div>
+      <div class="note">first time with DPC · <b>${a.returning}</b> returning</div></div>
+    <div class="tile"><div class="edge"></div><div class="lbl">Repeat rate</div>
+      <div class="val sm">${pctS(a.repeatRate)}</div>
+      <div class="note">played more than once this period</div></div>
+    <div class="tile" style="grid-column:span 1"><div class="edge"></div>
+      <div class="lbl">How often they play</div>
+      <div class="splitbar" style="background:transparent">
+        ${seg(a.freq.one,"#c1614f")}${seg(a.freq.two,"#b1793f")}${seg(a.freq.three,"#4f7cc1")}${seg(a.freq.more,"#2f8f83")}
+      </div>
+      <div class="legend" style="gap:10px">
+        <span><i class="dot" style="background:#c1614f"></i> 1 · ${a.freq.one}</span>
+        <span><i class="dot" style="background:#b1793f"></i> 2 · ${a.freq.two}</span>
+        <span><i class="dot" style="background:#4f7cc1"></i> 3 · ${a.freq.three}</span>
+        <span><i class="dot" style="background:#2f8f83"></i> 4+ · ${a.freq.more}</span>
+      </div></div>`;
+}
+
+// ── charts (dependency-free SVG) ──
+function fyRows(){
+  if(!FIN) return [];
+  return FIN.months.map(m=>{
+    const per=(PERIODS.month||[]).find(x=>x.monthKey===m.key);
+    const a=per?actFor(per):{events:0,unique:0};
+    return { label:m.label.slice(0,3), hasData:m.hasData,
+             players:m.revenuePlayers||0, sponsor:m.sponsor||0, cost:m.cost||0,
+             marginPct:m.marginPct, events:a.events, unique:a.unique };
+  });
+}
+function svgFrame(rows, H, pad){
+  const W=760, P={l:52,r:14,t:12,b:26, ...pad};
+  const n=rows.length||1, iw=W-P.l-P.r, bw=iw/n;
+  return {W,H,P,n,iw,bw};
+}
+function chartMoney(rows){
+  const live=rows.filter(r=>r.hasData); if(!live.length) return "";
+  const {W,H,P,bw}=svgFrame(rows,230,{});
+  const max=Math.max(...rows.map(r=>Math.max(r.players+r.sponsor, r.cost)))*1.12 || 1;
+  const y=v=>P.t+(H-P.t-P.b)*(1-v/max), base=H-P.b;
+  let g="",bars="",costPts=[];
+  for(let i=0;i<=4;i++){ const v=max*i/4, yy=y(v);
+    g+=`<line class="gl" x1="${P.l}" x2="${W-P.r}" y1="${yy}" y2="${yy}"/><text class="ax" x="${P.l-8}" y="${yy+3}" text-anchor="end">₹${Math.round(v/1000)}k</text>`; }
+  rows.forEach((r,i)=>{
+    const x=P.l+i*bw+bw*0.22, w=bw*0.56;
+    if(r.hasData){
+      const hp=base-y(r.players), hs=base-y(r.players+r.sponsor)-hp;
+      bars+=`<rect x="${x}" y="${y(r.players)}" width="${w}" height="${Math.max(hp,0)}" fill="var(--accent)" rx="2"/>`;
+      if(r.sponsor>0) bars+=`<rect x="${x}" y="${y(r.players+r.sponsor)}" width="${w}" height="${Math.max(hs,0)}" fill="var(--brand)" rx="2"/>`;
+      costPts.push([P.l+i*bw+bw/2, y(r.cost)]);
+    }
+    bars+=`<text class="bl" x="${P.l+i*bw+bw/2}" y="${base+15}" text-anchor="middle">${r.label}</text>`;
+  });
+  const line=costPts.map((p,i)=>(i?"L":"M")+p[0]+","+p[1]).join(" ");
+  const dots=costPts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#fff" stroke="var(--bad)" stroke-width="2"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}">${g}${bars}<path d="${line}" fill="none" stroke="var(--bad)" stroke-width="2"/>${dots}</svg>
+    <div class="legend"><span><i class="dot a"></i> Player revenue</span><span><i class="dot b"></i> Brand revenue</span><span><i class="dot" style="background:var(--bad)"></i> Cost</span></div>`;
+}
+function chartMargin(rows){
+  const live=rows.filter(r=>r.hasData); if(!live.length) return "";
+  const {W,H,P,bw}=svgFrame(rows,180,{});
+  const base=H-P.b, y=v=>P.t+(H-P.t-P.b)*(1-v/0.6);
+  let g="";
+  for(let i=0;i<=3;i++){ const v=0.6*i/3, yy=y(v);
+    g+=`<line class="gl" x1="${P.l}" x2="${W-P.r}" y1="${yy}" y2="${yy}"/><text class="ax" x="${P.l-8}" y="${yy+3}" text-anchor="end">${Math.round(v*100)}%</text>`; }
+  const pts=[]; let lbl="";
+  rows.forEach((r,i)=>{
+    const cx=P.l+i*bw+bw/2;
+    if(r.hasData&&r.marginPct!=null){ pts.push([cx,y(r.marginPct),r.marginPct]); }
+    lbl+=`<text class="bl" x="${cx}" y="${base+15}" text-anchor="middle">${r.label}</text>`;
+  });
+  const line=pts.map((p,i)=>(i?"L":"M")+p[0]+","+p[1]).join(" ");
+  const dots=pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="var(--good)"/><text class="bl" x="${p[0]}" y="${p[1]-9}" text-anchor="middle" style="font-weight:700">${Math.round(p[2]*100)}%</text>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}">${g}${lbl}<path d="${line}" fill="none" stroke="var(--good)" stroke-width="2.5"/>${dots}</svg>`;
+}
+function chartActivity(rows){
+  const {W,H,P,bw}=svgFrame(rows,200,{});
+  const max=Math.max(...rows.map(r=>r.unique),1)*1.2, base=H-P.b, y=v=>P.t+(H-P.t-P.b)*(1-v/max);
+  let g="",bars="",pts=[];
+  for(let i=0;i<=4;i++){ const v=max*i/4, yy=y(v);
+    g+=`<line class="gl" x1="${P.l}" x2="${W-P.r}" y1="${yy}" y2="${yy}"/><text class="ax" x="${P.l-8}" y="${yy+3}" text-anchor="end">${Math.round(v)}</text>`; }
+  rows.forEach((r,i)=>{
+    const x=P.l+i*bw+bw*0.24, w=bw*0.52, cx=P.l+i*bw+bw/2;
+    if(r.unique>0){ bars+=`<rect x="${x}" y="${y(r.unique)}" width="${w}" height="${Math.max(base-y(r.unique),0)}" fill="var(--accent)" opacity=".85" rx="2"/>`; pts.push([cx,y(r.events*(max/Math.max(...rows.map(z=>z.events),1))*0.55)]); }
+    bars+=`<text class="bl" x="${cx}" y="${base+15}" text-anchor="middle">${r.label}</text>`;
+  });
+  const line=pts.map((p,i)=>(i?"L":"M")+p[0]+","+p[1]).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}">${g}${bars}<path d="${line}" fill="none" stroke="#b1793f" stroke-width="2" stroke-dasharray="4 3"/></svg>
+    <div class="legend"><span><i class="dot a"></i> Unique players</span><span><i class="dot" style="background:#b1793f"></i> Events (scaled)</span></div>`;
+}
+function renderCharts(){
+  const rows=fyRows();
+  if(!rows.length){ $("charts").innerHTML=`<div class="empty">No financial data to chart yet.</div>`; return; }
+  $("charts").innerHTML = `
+    <div class="chartcard"><h3>Revenue vs cost</h3><div class="cs">Player and brand revenue stacked; cost as the red line.</div>${chartMoney(rows)}</div>
+    <div class="chartcard"><h3>Margin %</h3><div class="cs">Margin as a share of revenue, month by month.</div>${chartMargin(rows)}</div>
+    <div class="chartcard"><h3>Players &amp; events</h3><div class="cs">Unique players each month, with event volume overlaid.</div>${chartActivity(rows)}</div>`;
+}
+
+// ── collaterals ──
+const COLLATERALS = {
+  drive: "https://drive.google.com/drive/u/0/folders/1MzlFzft2HmeU7OeWr4FfEYE7RBkpZyCj",
+  groups: []          // ← fill from the Drive folder
+};
+function renderCollaterals(){
+  $("driveTop").href = COLLATERALS.drive;
+  if(!COLLATERALS.groups.length){
+    $("colBody").innerHTML = `
+      <div class="chartcard" style="text-align:center;padding:40px 22px">
+        <h3>Nothing linked yet</h3>
+        <div class="cs" style="margin-bottom:18px">The Drive folder is private, so its contents can't be listed automatically.<br/>Open it below, or send the list and these get organised into sections here.</div>
+        <a class="drive-cta" href="${COLLATERALS.drive}" target="_blank" rel="noopener">Open Drive folder ↗</a>
+      </div>`;
+    return;
+  }
+  $("colBody").innerHTML = COLLATERALS.groups.map(g=>`
+    <div class="col-group"><h3>${g.name}</h3><div class="gs">${g.desc||""}</div>
+      <div class="col-grid">${g.items.map(i=>`
+        <a class="col-item" href="${i.url}" target="_blank" rel="noopener">
+          <div class="col-ic">${i.icon||"📄"}</div>
+          <div><div class="ti">${i.title}</div><div class="de">${i.desc||""}</div></div>
+        </a>`).join("")}</div></div>`).join("");
+}
+
+$("logout2").addEventListener("click", () => { sessionStorage.removeItem(CONFIG.SESSION); location.reload(); });
+
+// ── view switching ──
+function showView(v){
+  document.querySelectorAll(".ni,.mtab").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+  document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on", x.id==="view-"+v));
+  window.scrollTo(0,0);
+  if (v==="collaterals") renderCollaterals();
+}
+document.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.v)));
 
 if (CONFIG.ALLOWED.map(last10).includes(sessionStorage.getItem(CONFIG.SESSION)||"")) unlock();
 </script>
