@@ -122,9 +122,10 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
 <!-- ── Gate ── -->
 <div id="gate">
   <h1><span class="slash">//</span> Founders</h1>
-  <p>This view shows revenue, cost and margin. Enter the passcode.</p>
-  <input class="inp" id="pw" type="password" placeholder="••••••••" autocomplete="current-password"/>
-  <div class="err" id="pwErr">Incorrect passcode.</div>
+  <p>This view shows revenue, cost and margin. Sign in with your number.</p>
+  <input class="inp" id="ph" type="tel" inputmode="numeric" placeholder="Your number" autocomplete="username" style="margin-bottom:10px"/>
+  <input class="inp" id="pw" type="password" placeholder="Password" autocomplete="current-password"/>
+  <div class="err" id="pwErr">Not authorised — check your number and password.</div>
   <button class="cta" id="pwBtn" style="margin-top:16px">Enter</button>
 </div>
 
@@ -196,7 +197,11 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
    Financials are monthly, so Week is disabled for money sections.
    ============================================================ */
 const CONFIG = {
-  PASSCODE:   "dpc-founder-2026",   // ← CHANGE THIS
+  // Access: one of these numbers + the shared password. Numbers are compared
+  // on their last 10 digits, so a +91 prefix is fine.
+  ALLOWED:    ["9599216261", "9211264111", "9818886723"],
+  PASSWORD:   "Padel@2024",
+  FIN_TOKEN:  "dpcfin_sl4cp0IQNa8OW5Y-t5s4t5MFqkqpu-Qh",   // must match API_TOKEN in the Apps Script
   FIN_API:    "https://script.google.com/macros/s/AKfycbwC3oiTPKu_A1VVwp2tcHOkPftOoBbcbPYUojzJGGSbNKuYWsETsO1K3Z0pIKKbFNLJ/exec",
   EVENTS_API: "https://script.google.com/macros/s/AKfycbxiOz2Wyc4cnsrDlYdNyb9vw7q4kcqpvMkwIa03N4MRWcKr7E6IZ__721lJoB_ihavZFA/exec",
   SUPABASE:   { url:"https://zruqzybdpniofxbcwuat.supabase.co", key:"sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
@@ -206,12 +211,15 @@ const $ = id => document.getElementById(id);
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 // ── auth ──
+const last10 = v => String(v||"").replace(/\D/g,"").slice(-10);
 function unlock(){ $("gate").style.display="none"; $("app").style.display="block"; load(); }
 $("pwBtn").addEventListener("click", () => {
-  if ($("pw").value === CONFIG.PASSCODE){ sessionStorage.setItem(CONFIG.SESSION,"1"); unlock(); }
+  const ok = CONFIG.ALLOWED.map(last10).includes(last10($("ph").value))
+          && $("pw").value === CONFIG.PASSWORD;
+  if (ok){ sessionStorage.setItem(CONFIG.SESSION, last10($("ph").value)); unlock(); }
   else $("pwErr").classList.add("show");
 });
-$("pw").addEventListener("keydown", e => { if(e.key==="Enter") $("pwBtn").click(); });
+["ph","pw"].forEach(id => $(id).addEventListener("keydown", e => { if(e.key==="Enter") $("pwBtn").click(); }));
 $("logout").addEventListener("click", () => { sessionStorage.removeItem(CONFIG.SESSION); location.reload(); });
 
 // ── formatting ──
@@ -234,7 +242,7 @@ async function load(){
   $("refresh").classList.add("spin");
   try{
     const [fin, cache, events] = await Promise.all([
-      fetch(CONFIG.FIN_API + "?action=getFinancials").then(r=>r.json()).catch(()=>null),
+      fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json()).catch(()=>null),
       fetch(`${CONFIG.SUPABASE.url}/rest/v1/dashboard_cache?select=phone,matches`,
         { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(()=>[]),
       fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(()=>null),
@@ -443,7 +451,7 @@ function renderUpcoming(){
   }).join("");
 }
 
-if (sessionStorage.getItem(CONFIG.SESSION)==="1") unlock();
+if (CONFIG.ALLOWED.map(last10).includes(sessionStorage.getItem(CONFIG.SESSION)||"")) unlock();
 </script>
 </body>
 </html>
