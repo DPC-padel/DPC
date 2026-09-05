@@ -340,7 +340,11 @@ async function load(){
   try{
     const [fin, all, cache, events] = await Promise.all([
       fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json()).catch(()=>null),
-      fetch(CONFIG.MASTER_API + "?action=getAllMatches").then(r=>r.json()).catch(()=>null),
+      // one token-protected API serves both feeds; fall back to the Master script
+      fetch(CONFIG.FIN_API + "?action=getAllMatches&token=" + encodeURIComponent(CONFIG.FIN_TOKEN))
+        .then(r=>r.json())
+        .then(d => (d && d.success) ? d : fetch(CONFIG.MASTER_API + "?action=getAllMatches").then(r=>r.json()))
+        .catch(()=>null),
       fetch(`${CONFIG.SUPABASE.url}/rest/v1/dashboard_cache?select=phone,matches`,
         { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(()=>[]),
       fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(()=>null),
