@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Founders · Delhi//PadelCollective</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="icon" type="image/svg+xml" href="../logo.svg?v=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../tokens.css?v=3">
+<style>
+@font-face{font-family:'Berling';src:url('../Berling Bold.otf') format('opentype');font-weight:700;font-display:swap;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#f2f4f8; --card:#fff; --ink:#0f172a; --muted:#94a3b8; --muted2:#64748b;
+  --line:rgba(15,23,42,.08); --line2:rgba(15,23,42,.14);
+  --accent:#2e4e8e; --accent-soft:rgba(46,78,142,.10); --accent-glow:rgba(46,78,142,.18);
+  --good:#3a6f2f; --good-soft:rgba(74,140,66,.12);
+  --bad:#b42318; --bad-soft:rgba(220,38,38,.09);
+  --brand:#a15b2d; --brand-soft:rgba(161,91,45,.10);
+  --title:'Berling',Georgia,serif; --body:'Inter',system-ui,sans-serif;
+  --radius:16px; --shadow:0 1px 3px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.03);
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+h1,h2,h3{font-family:var(--title);letter-spacing:-.5px;}
+.slash{color:var(--accent);}
+
+/* gate */
+#gate{max-width:360px;margin:16vh auto 0;padding:0 20px;text-align:center;}
+#gate h1{font-size:1.8rem;font-weight:700;margin-bottom:6px;}
+#gate p{font-size:.85rem;color:var(--muted2);margin-bottom:20px;}
+.inp{width:100%;height:48px;border:1.5px solid var(--line2);border-radius:12px;padding:0 14px;font-family:inherit;font-size:1rem;outline:none;background:#fff;color:var(--ink);}
+.inp:focus{border-color:var(--accent);}
+.err{color:var(--bad);font-size:.8rem;margin-top:10px;display:none;}
+.err.show{display:block;}
+.cta{width:100%;height:50px;border:none;border-radius:100px;background:var(--accent);color:#fff;font-family:inherit;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 18px var(--accent-glow);}
+
+/* shell */
+#app{display:none;}
+.wrap{max-width:1120px;margin:0 auto;padding:30px 22px 70px;}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px;}
+.top h1{font-size:1.9rem;font-weight:700;}
+.sub{font-size:.83rem;color:var(--muted2);margin-top:4px;}
+.top-actions{display:flex;align-items:center;gap:8px;}
+.icon-btn{background:#fff;border:1px solid var(--line);border-radius:100px;padding:9px 14px;font-family:inherit;font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);cursor:pointer;box-shadow:var(--shadow);}
+.icon-btn:hover{color:var(--ink);border-color:var(--line2);}
+.icon-btn.spin{opacity:.5;pointer-events:none;}
+
+/* filter bar */
+.filterbar{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin:20px 0 26px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.fb-label{font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);}
+.pills{display:flex;gap:6px;background:var(--bg);padding:4px;border-radius:100px;}
+.pill{border:none;background:transparent;font-family:inherit;font-size:.72rem;font-weight:600;color:var(--muted2);padding:7px 14px;border-radius:100px;cursor:pointer;transition:.15s;}
+.pill.on{background:var(--accent);color:#fff;}
+.pill:disabled{opacity:.35;cursor:not-allowed;}
+select.period{height:38px;border:1px solid var(--line2);border-radius:10px;background:#fff;padding:0 12px;font-family:inherit;font-size:.84rem;color:var(--ink);outline:none;cursor:pointer;}
+select.period:focus{border-color:var(--accent);}
+.spacer{flex:1;}
+
+/* sections */
+.sec{margin-bottom:30px;}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.sec-head h2{font-size:1.05rem;font-weight:700;}
+.sec-head .ov{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:4px 9px;border-radius:100px;display:none;}
+.sec-head .ov.show{display:inline-block;}
+.sec-filter{margin-left:auto;display:flex;align-items:center;gap:6px;}
+select.mini{height:32px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 9px;font-family:inherit;font-size:.74rem;color:var(--muted2);outline:none;cursor:pointer;}
+select.mini:focus{border-color:var(--accent);color:var(--ink);}
+
+.grid{display:grid;gap:14px;}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g2{grid-template-columns:repeat(2,1fr);}
+
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.tile .lbl{font-size:.6rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px;}
+.tile .val{font-family:var(--title);font-size:2.3rem;font-weight:700;line-height:1;letter-spacing:-1px;}
+.tile .val.sm{font-size:1.9rem;}
+.tile .note{font-size:.74rem;color:var(--muted2);margin-top:9px;line-height:1.5;}
+.tile .note b{color:var(--ink);font-weight:600;}
+.tile.accent .val{color:var(--accent);}
+.tile.good .val{color:var(--good);}
+.tile.bad  .val{color:var(--bad);}
+.tile.brandc .val{color:var(--brand);}
+.tile .edge{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.85;}
+.tile.good .edge{background:var(--good);} .tile.bad .edge{background:var(--bad);} .tile.brandc .edge{background:var(--brand);}
+
+.delta{display:inline-flex;align-items:center;gap:3px;font-size:.66rem;font-weight:700;letter-spacing:.02em;padding:3px 8px;border-radius:100px;margin-top:10px;}
+.delta.up{background:var(--good-soft);color:var(--good);}
+.delta.down{background:var(--bad-soft);color:var(--bad);}
+.delta.flat{background:rgba(100,116,139,.12);color:var(--muted2);}
+
+/* split bar */
+.splitbar{height:9px;border-radius:100px;background:var(--brand);overflow:hidden;display:flex;margin-top:6px;}
+.splitbar i{display:block;height:100%;background:var(--accent);}
+.legend{display:flex;gap:16px;margin-top:10px;font-size:.72rem;color:var(--muted2);flex-wrap:wrap;}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.dot{width:9px;height:9px;border-radius:3px;display:inline-block;}
+.dot.a{background:var(--accent);} .dot.b{background:var(--brand);}
+
+/* upcoming */
+.row{background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:14px;padding:13px 16px;margin-bottom:9px;}
+.row .d{width:52px;text-align:center;flex-shrink:0;}
+.row .d .dd{font-family:var(--title);font-size:1.35rem;font-weight:700;line-height:1;}
+.row .d .mm{font-size:.55rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);margin-top:2px;}
+.row .b{flex:1;min-width:0;}
+.row .t{font-weight:700;font-size:.94rem;}
+.row .m{font-size:.74rem;color:var(--muted2);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;}
+.row .r{text-align:right;flex-shrink:0;}
+.row .r .n{font-family:var(--title);font-size:1.15rem;font-weight:700;}
+.row .r .s{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);}
+.badge{font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:100px;background:var(--accent-soft);color:var(--accent);}
+
+.empty{color:var(--muted2);font-size:.85rem;padding:20px 0;}
+.na{color:var(--muted);font-weight:400;font-family:var(--body);font-size:1.1rem;}
+.warn{font-size:.72rem;color:var(--muted2);background:var(--bg);border:1px dashed var(--line2);border-radius:10px;padding:9px 12px;margin-top:10px;}
+
+@media (max-width:860px){ .g3{grid-template-columns:1fr;} .g2{grid-template-columns:1fr;} .wrap{padding:22px 16px 60px;} .top h1{font-size:1.6rem;} }
+</style>
+</head>
+<body>
+
+<!-- ── Gate ── -->
+<div id="gate">
+  <h1><span class="slash">//</span> Founders</h1>
+  <p>This view shows revenue, cost and margin. Enter the passcode.</p>
+  <input class="inp" id="pw" type="password" placeholder="••••••••" autocomplete="current-password"/>
+  <div class="err" id="pwErr">Incorrect passcode.</div>
+  <button class="cta" id="pwBtn" style="margin-top:16px">Enter</button>
+</div>
+
+<!-- ── App ── -->
+<div id="app">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1><span class="slash">//</span> Founders</h1>
+        <div class="sub" id="sub">Loading…</div>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="refresh">↻ Refresh</button>
+        <button class="icon-btn" id="logout">Sign out</button>
+      </div>
+    </div>
+
+    <!-- universal filter -->
+    <div class="filterbar">
+      <span class="fb-label">Period</span>
+      <div class="pills" id="grans"></div>
+      <select class="period" id="period"></select>
+      <div class="spacer"></div>
+      <span class="fb-label" id="fyLabel"></span>
+    </div>
+
+    <!-- A · activity -->
+    <div class="sec">
+      <div class="sec-head">
+        <h2>Activity</h2><span class="ov" id="ov-act">Custom</span>
+        <div class="sec-filter"><select class="mini" id="f-act"></select></div>
+      </div>
+      <div class="grid g3" id="actGrid"></div>
+    </div>
+
+    <!-- B · P&L -->
+    <div class="sec">
+      <div class="sec-head">
+        <h2>Revenue · Cost · Margin</h2><span class="ov" id="ov-pl">Custom</span>
+        <div class="sec-filter"><select class="mini" id="f-pl"></select></div>
+      </div>
+      <div class="grid g3" id="plGrid"></div>
+      <div id="plWarn"></div>
+    </div>
+
+    <!-- C · revenue split -->
+    <div class="sec">
+      <div class="sec-head">
+        <h2>Where revenue comes from</h2><span class="ov" id="ov-rev">Custom</span>
+        <div class="sec-filter"><select class="mini" id="f-rev"></select></div>
+      </div>
+      <div class="grid g2" id="revGrid"></div>
+    </div>
+
+    <!-- D · upcoming -->
+    <div class="sec">
+      <div class="sec-head"><h2>Upcoming events</h2></div>
+      <div id="upcoming"><div class="empty">Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Founder dashboard — reads three live sources:
+     1. Financials  → costing sheet Apps Script (monthly P&L)
+     2. Activity    → dashboard_cache (match history: date+phone+matchId)
+     3. Upcoming    → Games/calendar Apps Script (real-time only)
+   Financials are monthly, so Week is disabled for money sections.
+   ============================================================ */
+const CONFIG = {
+  PASSCODE:   "dpc-founder-2026",   // ← CHANGE THIS
+  FIN_API:    "https://script.google.com/macros/s/AKfycbwC3oiTPKu_A1VVwp2tcHOkPftOoBbcbPYUojzJGGSbNKuYWsETsO1K3Z0pIKKbFNLJ/exec",
+  EVENTS_API: "https://script.google.com/macros/s/AKfycbxiOz2Wyc4cnsrDlYdNyb9vw7q4kcqpvMkwIa03N4MRWcKr7E6IZ__721lJoB_ihavZFA/exec",
+  SUPABASE:   { url:"https://zruqzybdpniofxbcwuat.supabase.co", key:"sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
+  SESSION:    "dpcFounder",
+};
+const $ = id => document.getElementById(id);
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// ── auth ──
+function unlock(){ $("gate").style.display="none"; $("app").style.display="block"; load(); }
+$("pwBtn").addEventListener("click", () => {
+  if ($("pw").value === CONFIG.PASSCODE){ sessionStorage.setItem(CONFIG.SESSION,"1"); unlock(); }
+  else $("pwErr").classList.add("show");
+});
+$("pw").addEventListener("keydown", e => { if(e.key==="Enter") $("pwBtn").click(); });
+$("logout").addEventListener("click", () => { sessionStorage.removeItem(CONFIG.SESSION); location.reload(); });
+
+// ── formatting ──
+const inr = n => "₹" + Math.round(n).toLocaleString("en-IN");
+const pctS = p => (p*100).toFixed(p*100 % 1 === 0 ? 0 : 2) + "%";
+const NA = '<span class="na">—</span>';
+function delta(p, label){
+  if (p === null || p === undefined) return "";
+  const cls = p > 0.0005 ? "up" : p < -0.0005 ? "down" : "flat";
+  const arrow = cls==="up" ? "▲" : cls==="down" ? "▼" : "•";
+  return `<div class="delta ${cls}">${arrow} ${pctS(Math.abs(p))} ${label}</div>`;
+}
+
+// ── state ──
+let FIN=null, MATCHES=[], EVENTS=[], PERIODS={}, GRAN="month", SEL=null;
+const SECS = { act:{sel:null,el:"f-act",ov:"ov-act"}, pl:{sel:null,el:"f-pl",ov:"ov-pl"}, rev:{sel:null,el:"f-rev",ov:"ov-rev"} };
+
+// ── load ──
+async function load(){
+  $("refresh").classList.add("spin");
+  try{
+    const [fin, cache, events] = await Promise.all([
+      fetch(CONFIG.FIN_API + "?action=getFinancials").then(r=>r.json()).catch(()=>null),
+      fetch(`${CONFIG.SUPABASE.url}/rest/v1/dashboard_cache?select=phone,matches`,
+        { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(()=>[]),
+      fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(()=>null),
+    ]);
+    FIN = fin && fin.ok ? fin : null;
+    MATCHES = flattenMatches(cache);
+    EVENTS = (events && (events.data || events.events)) || [];
+    buildPeriods();
+    renderAll();
+    $("sub").textContent = `Live · updated ${new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}`;
+    $("fyLabel").textContent = FIN ? "FY " + FIN.fy : "";
+  } finally { $("refresh").classList.remove("spin"); }
+}
+$("refresh").addEventListener("click", load);
+
+/** One row per (event, player) — de-duped, since tournaments repeat a player across rows. */
+function flattenMatches(rows){
+  const seen = new Set(), out = [];
+  for (const r of rows || []){
+    const phone = String(r.phone||"");
+    for (const m of r.matches || []){
+      const id = m.matchId, d = parseDate(m.date);
+      if (!id || !d) continue;
+      const k = id + "|" + phone;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push({ id, phone, date:d, type:m.matchType || "Other" });
+    }
+  }
+  return out;
+}
+/** "19 Apr 2026" (and ISO) → Date */
+function parseDate(s){
+  if (!s) return null;
+  const m = String(s).match(/^(\d{1,2})\s+(\w{3})\w*\s+(\d{4})$/);
+  if (m){ const i = MON.indexOf(m[2].slice(0,3)); if (i<0) return null; return new Date(+m[3], i, +m[1]); }
+  const d = new Date(s); return isNaN(d) ? null : d;
+}
+
+// ── periods ──
+function startOfWeek(d){ const x=new Date(d); const g=(x.getDay()+6)%7; x.setDate(x.getDate()-g); x.setHours(0,0,0,0); return x; }
+function buildPeriods(){
+  const fyStart = FIN ? FIN.fyStart : new Date().getFullYear();
+  const months = [], quarters = [], years = [], weeks = [];
+
+  for (let i=0;i<12;i++){
+    const mi=(3+i)%12, yr = mi>=3 ? fyStart : fyStart+1;
+    const start=new Date(yr,mi,1), end=new Date(yr,mi+1,0,23,59,59);
+    months.push({ key:`m:${yr}-${String(mi+1).padStart(2,"0")}`, label:`${MON[mi]} ${yr}`, start, end, monthKey:`${yr}-${String(mi+1).padStart(2,"0")}` });
+  }
+  for (let q=0;q<4;q++){
+    const ms=months.slice(q*3,q*3+3);
+    quarters.push({ key:`q:${q+1}`, label:`Q${q+1} · ${ms[0].label.split(" ")[0]}–${ms[2].label.split(" ")[0]}`, start:ms[0].start, end:ms[2].end, monthKeys:ms.map(m=>m.monthKey) });
+  }
+  years.push({ key:`y:${fyStart}`, label:`FY ${FIN?FIN.fy:fyStart}`, start:months[0].start, end:months[11].end, monthKeys:months.map(m=>m.monthKey) });
+
+  const last = MATCHES.length ? new Date(Math.max(...MATCHES.map(m=>m.date))) : new Date();
+  for (let i=0;i<12;i++){
+    const s=startOfWeek(last); s.setDate(s.getDate()-i*7);
+    const e=new Date(s); e.setDate(e.getDate()+6); e.setHours(23,59,59);
+    weeks.push({ key:`w:${s.toISOString().slice(0,10)}`, label:`${s.getDate()} ${MON[s.getMonth()]} – ${e.getDate()} ${MON[e.getMonth()]}`, start:s, end:e });
+  }
+  weeks.reverse();   // chronological, like the other period lists, so "latest" defaults correctly
+  PERIODS = { week:weeks, month:months, quarter:quarters, year:years };
+
+  // granularity pills
+  $("grans").innerHTML = ["week","month","quarter","year"]
+    .map(g=>`<button class="pill ${g===GRAN?"on":""}" data-g="${g}">${g[0].toUpperCase()+g.slice(1)}</button>`).join("");
+  $("grans").querySelectorAll(".pill").forEach(b=>b.addEventListener("click",()=>{
+    GRAN=b.dataset.g; SEL=null; for(const k in SECS) SECS[k].sel=null; buildPeriods(); renderAll();
+  }));
+
+  // default period = latest with data
+  const list = PERIODS[GRAN];
+  if (!SEL || !list.some(p=>p.key===SEL)){
+    const withData = list.filter(p=>MATCHES.some(m=>m.date>=p.start&&m.date<=p.end) || finFor(p));
+    SEL = (withData.length ? withData[withData.length-1] : list[list.length-1]).key;
+  }
+  $("period").innerHTML = list.map(p=>`<option value="${p.key}" ${p.key===SEL?"selected":""}>${p.label}</option>`).join("");
+  $("period").onchange = () => { SEL=$("period").value; renderAll(); };
+
+  for (const k in SECS){
+    const el=$(SECS[k].el);
+    el.innerHTML = `<option value="">Same as above</option>` + list.map(p=>`<option value="${p.key}">${p.label}</option>`).join("");
+    el.value = SECS[k].sel || "";
+    el.onchange = () => { SECS[k].sel = el.value || null; renderAll(); };
+  }
+}
+const periodByKey = k => (PERIODS[GRAN]||[]).find(p=>p.key===k);
+function periodFor(sec){
+  const s=SECS[sec];
+  const p = (s && s.sel) ? periodByKey(s.sel) : periodByKey(SEL);
+  if (s) $(s.ov).classList.toggle("show", !!(s.sel && s.sel!==SEL));
+  return p || periodByKey(SEL);
+}
+
+// ── financial lookup for a period ──
+function finFor(p){
+  if (!FIN || !p) return null;
+  const keys = p.monthKeys || (p.monthKey ? [p.monthKey] : null);
+  if (!keys) return null;                                  // week → unsupported
+  const rows = FIN.months.filter(m=>keys.includes(m.key) && m.hasData);
+  if (!rows.length) return null;
+  const s = k => rows.reduce((t,m)=>t+(m[k]||0),0);
+  const revenue=s("revenue"), cost=s("cost"), sponsor=s("sponsor");
+  const revPost = revenue/(1+FIN.gstRate);
+  return {
+    revenue, cost, sponsor, players:revenue-sponsor,
+    margin:revenue-cost, marginPct: revenue?(revenue-cost)/revenue:null,
+    revenuePostGst:revPost, marginPostGst:revPost-cost,
+    sponsorShare: revenue?sponsor/revenue:null,
+    single: rows.length===1 ? rows[0] : null, months:rows.length
+  };
+}
+
+// ── activity for a period ──
+function actFor(p){
+  const inR = MATCHES.filter(m=>m.date>=p.start && m.date<=p.end);
+  const ev=new Set(), ph=new Set(), byType={};
+  for(const m of inR){
+    ev.add(m.id); ph.add(m.phone);
+    (byType[m.type] = byType[m.type] || {ev:new Set(),n:0});
+    byType[m.type].ev.add(m.id); byType[m.type].n++;
+  }
+  return { events:ev.size, played:inR.length, unique:ph.size,
+           types:Object.entries(byType).map(([t,v])=>({t,ev:v.ev.size,n:v.n})).sort((a,b)=>b.ev-a.ev) };
+}
+
+// ── render ──
+function renderAll(){ renderActivity(); renderPL(); renderRev(); renderUpcoming(); }
+
+function renderActivity(){
+  const p=periodFor("act"); const a=actFor(p);
+  const split=a.types.length ? a.types.map(t=>`${t.ev} ${t.t}`).join(" · ") : "no events";
+  $("actGrid").innerHTML = `
+    <div class="tile accent"><div class="edge"></div><div class="lbl">Events</div>
+      <div class="val">${a.events}</div><div class="note">${split}</div></div>
+    <div class="tile"><div class="edge"></div><div class="lbl">Players played</div>
+      <div class="val">${a.played}</div><div class="note">${a.events?`<b>${(a.played/a.events).toFixed(1)}</b> avg per event`:"—"}</div></div>
+    <div class="tile"><div class="edge"></div><div class="lbl">Unique players</div>
+      <div class="val">${a.unique}</div><div class="note">${a.unique?`<b>${(a.played/a.unique).toFixed(2)}</b> events per player`:"—"}</div></div>`;
+}
+
+function renderPL(){
+  const p=periodFor("pl"); const f=finFor(p);
+  if (!f){
+    const why = (GRAN==="week")
+      ? "Financials are tracked monthly, so there's no weekly breakdown. Switch to Month, Quarter or Year."
+      : "No financial data recorded for this period yet.";
+    $("plGrid").innerHTML = `
+      <div class="tile"><div class="edge"></div><div class="lbl">Revenue</div><div class="val">${NA}</div></div>
+      <div class="tile"><div class="edge"></div><div class="lbl">Cost</div><div class="val">${NA}</div></div>
+      <div class="tile"><div class="edge"></div><div class="lbl">Margin</div><div class="val">${NA}</div></div>`;
+    $("plWarn").innerHTML = `<div class="warn">${why}</div>`;
+    return;
+  }
+  $("plWarn").innerHTML = "";
+  const d = f.single;
+  $("plGrid").innerHTML = `
+    <div class="tile accent"><div class="edge"></div><div class="lbl">Revenue</div>
+      <div class="val sm">${inr(f.revenue)}</div>
+      ${d?delta(d.incRevenuePct,"vs prev month"):""}
+      <div class="note">Ex-GST <b>${inr(f.revenuePostGst)}</b></div></div>
+    <div class="tile bad"><div class="edge"></div><div class="lbl">Cost</div>
+      <div class="val sm">${inr(f.cost)}</div>
+      <div class="note"><b>${pctS(f.cost/f.revenue)}</b> of revenue</div></div>
+    <div class="tile good"><div class="edge"></div><div class="lbl">Margin</div>
+      <div class="val sm">${inr(f.margin)}</div>
+      ${d?delta(d.incMarginPct,"vs prev month"):""}
+      <div class="note"><b>${pctS(f.marginPct)}</b> margin · post-GST <b>${inr(f.marginPostGst)}</b></div></div>`;
+}
+
+function renderRev(){
+  const p=periodFor("rev"); const f=finFor(p);
+  if (!f){ $("revGrid").innerHTML = `<div class="empty">No revenue recorded for this period.</div>`; return; }
+  const pShare = f.revenue ? f.players/f.revenue : 0;
+  $("revGrid").innerHTML = `
+    <div class="tile accent"><div class="edge"></div><div class="lbl">From players</div>
+      <div class="val sm">${inr(f.players)}</div>
+      <div class="note"><b>${pctS(pShare)}</b> of total revenue</div></div>
+    <div class="tile brandc"><div class="edge"></div><div class="lbl">From brands</div>
+      <div class="val sm">${inr(f.sponsor)}</div>
+      <div class="note"><b>${pctS(f.sponsorShare||0)}</b> of total revenue</div></div>
+    <div class="tile" style="grid-column:1/-1">
+      <div class="lbl">Revenue mix · ${inr(f.revenue)} total</div>
+      <div class="splitbar"><i style="width:${(pShare*100).toFixed(1)}%"></i></div>
+      <div class="legend">
+        <span><i class="dot a"></i> Players ${inr(f.players)}</span>
+        <span><i class="dot b"></i> Brands ${inr(f.sponsor)}</span>
+      </div></div>`;
+}
+
+function renderUpcoming(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const up=(EVENTS||[]).map(e=>({...e, d:parseDate(e.date)}))
+    .filter(e=>e.d && e.d>=today).sort((a,b)=>a.d-b.d);
+  if(!up.length){ $("upcoming").innerHTML=`<div class="empty">No upcoming events scheduled.</div>`; return; }
+  $("upcoming").innerHTML = up.map(e=>{
+    const cost=Number(String(e.cost||"").replace(/[^\d.]/g,""))||0;
+    return `<div class="row">
+      <div class="d"><div class="dd">${e.d.getDate()}</div><div class="mm">${MON[e.d.getMonth()]}</div></div>
+      <div class="b"><div class="t">${e.title||"Untitled"}</div>
+        <div class="m"><span>📍 ${e.location||"—"}</span>${e.level?`<span class="badge">${e.level}</span>`:""}${cost?`<span>${inr(cost)}/head</span>`:""}</div></div>
+      <div class="r"><div class="n">${e.totalSlots||"—"}</div><div class="s">slots</div></div>
+    </div>`;
+  }).join("");
+}
+
+if (sessionStorage.getItem(CONFIG.SESSION)==="1") unlock();
+</script>
+</body>
+</html>
