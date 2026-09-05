@@ -722,9 +722,33 @@ function renderCharts(){
 }
 
 // ── collaterals ──
+const F = id => "https://drive.google.com/drive/folders/" + id;
 const COLLATERALS = {
-  drive: "https://drive.google.com/drive/u/0/folders/1MzlFzft2HmeU7OeWr4FfEYE7RBkpZyCj",
-  groups: []          // ← fill from the Drive folder
+  drive: F("1MzlFzft2HmeU7OeWr4FfEYE7RBkpZyCj"),
+  groups: [
+    { name:"Brand collaborations", desc:"Shot and delivered work for partner brands.", items:[
+      { title:"DPC × Dcyphr",  desc:"Collab media · Apr", icon:"🤝", url:F("11ozvBFJumRKfegYOiHhG_Wny5AauX8Nk") },
+      { title:"DPC × WLB",     desc:"Collab media · May", icon:"🤝", url:F("1BM-ntZiDeUbUENqrc9hoK1YEHlBntBmc") },
+      { title:"All brand media", desc:"Parent folder",     icon:"📁", url:F("1aD_BUV1Us8KzCLSw2h_r-n7Qzave6HPK") },
+    ]},
+    { name:"Event media", desc:"Photos and video from sessions — finals first, raw footage last.", items:[
+      { title:"Final Photos",          desc:"Edited stills",        icon:"📸", url:F("14FLE096Z7i4sqVmDrAjAuajJgy6ACsoZ") },
+      { title:"Final Videos",          desc:"Edited video",         icon:"🎬", url:F("1cNGP9vQKHi-VqGr7muFt002xJVnaI9Dt") },
+      { title:"Raw",                   desc:"Unedited footage",     icon:"🗂", url:F("1gc8rhEpnf7zawblyuuFzZ16VXz-ZnPdc") },
+      { title:"DPC Americano",         desc:"Americano sessions",   icon:"🎾", url:F("1qJySwgfA24P84REMC-OlPq0qSJlBsGbn") },
+      { title:"Commons",               desc:"Commons venue",        icon:"📍", url:F("1S8B7vSUxFZ5IoUkRyEQomYul_-mClSsK") },
+      { title:"DPC Sunday · 19 Jul",   desc:"Session shoot",        icon:"📅", url:F("1V3C_VOyZdNmcE3u5bVnDjxvfsUj96953") },
+      { title:"DPC Sunday · 31 May",   desc:"Session shoot",        icon:"📅", url:F("1pXfc7COzRrzfLuuwQMZcJgqvxbnpPHeq") },
+    ]},
+    { name:"Business", desc:"Finance and working data. Founder eyes only.", items:[
+      { title:"DPC Invoices", desc:"Billing records", icon:"🧾", url:F("1-SyPRuVxbDo3KdXLTJabUhdD5v9tsaHG") },
+      { title:"Sheets",       desc:"Working spreadsheets", icon:"📊", url:F("1dSYhs6Jt93RKKJyrbdolhxYMvpolNocR") },
+    ]},
+    { name:"Automation", desc:"The Apps Script projects behind the live syncs.", items:[
+      { title:"DPC Dashboard Sync",   desc:"Player cache sync",     icon:"⚙️", url:"https://script.google.com/home/projects/1euJ29MmkON-7qRRuI_FUA1xTeT8xWg2D_lC3WdubZtlds-HBwwgbDu4y" },
+      { title:"DPC Leaderboard Sync", desc:"Leaderboard cache sync", icon:"⚙️", url:"https://script.google.com/home/projects/1OAqf5Lw7FmlC8DrXCXL-lKMhgPSgw5TYFqIGZuQXzLOB9VD9Uib4EKGp" },
+    ]},
+  ]
 };
 function renderCollaterals(){
   $("driveTop").href = COLLATERALS.drive;
