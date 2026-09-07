@@ -92,11 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initAdminMode();
   initFirstServeTabs();
   initBreakPointTabs();
-  elements.refreshButton?.addEventListener("click", async () => {
-    await config?.loader(true);
-    // Consume this fetch; a later Refresh click pulls live data again.
-    pendingFetch = null;
-  });
+  elements.refreshButton?.addEventListener("click", () => config?.loader(true));
   await config?.loader(false);
   await applyDeepLinkSearch();
   injectInfoButton();
@@ -271,8 +267,9 @@ let allData = null; // last-loaded data for every board — powers cross-board s
 
 async function getAllRankingsData(useFresh = false) {
   if (useFresh) {
-    // Refresh click: reuse the background fetch started on page open —
-    // already resolved (instant) or still in flight (await it).
+    // Refresh click means "get it now": drop the page-open fetch, whose
+    // result is a snapshot from before whatever the user wants to see.
+    pendingFetch = null;
     return (allData = await startBackgroundFetch());
   }
   const cached = readCache();
