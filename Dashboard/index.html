@@ -703,36 +703,56 @@ function parseHistory(str){
     e=e.trim();if(!e)return null;
     const lc=e.lastIndexOf(',');if(lc===-1)return null;
     const ds=e.substring(0,lc).trim(),v=parseFloat(e.substring(lc+1).trim());
-    const p=ds.split('.');if(p.length===3){
-      const mo=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      return{date:`${p[0]} ${mo[parseInt(p[1])]||p[1]}`,value:isNaN(v)?null:v};
-    }
-    return{date:ds,value:isNaN(v)?null:v};
+    const p=ds.split('.');
+    // "DD.MM.YYYY" from the sheet — keep the year so months bucket correctly.
+    const d=p.length===3?new Date(+p[2]<100?2000+ +p[2]:+p[2],+p[1]-1,+p[0]):new Date(ds);
+    return isNaN(d)?null:{d,v:isNaN(v)?null:v};
   }).filter(Boolean);
+}
+
+// A sync can run several times a month (after every Americano), so one point
+// per sync makes a spiky line. Average each calendar month, keep the last 4.
+function monthlyAvg(rows){
+  const months=new Map();
+  for(const r of rows){
+    if(!r.d||isNaN(r.d)||r.v==null||isNaN(r.v))continue;
+    const k=r.d.getFullYear()*12+r.d.getMonth();
+    const m=months.get(k)||{k,d:r.d,sum:0,n:0};
+    m.sum+=r.v;m.n++;months.set(k,m);
+  }
+  const picked=[...months.values()].sort((a,b)=>a.k-b.k).slice(-4);
+  // Only spell out the year when the window straddles one, so Aug'25 vs Aug'26
+  // can't show up as two identical labels.
+  const spansYears=new Set(picked.map(m=>m.d.getFullYear())).size>1;
+  return picked.map(m=>({
+    label:m.d.toLocaleDateString('en-IN',spansYears?{month:'short',year:'2-digit'}:{month:'short'}),
+    value:m.sum/m.n
+  }));
 }
 
 function renderChart(mode){
   const ctx=document.getElementById('perfChart');
   let labels,data,label,color='#2e4e8e',yReverse=false;
-  const mlbl=d=>{const x=new Date(d);return isNaN(x)?String(d):x.toLocaleDateString('en-IN',{month:'short'})};
-  const dedupe=arr=>{let last='';return arr.map(x=>{const l=x===last?'':x;last=x;return l;})};
   const cap=document.getElementById('chartCaption');
-  if(cap)cap.textContent=mode==='rating'?'Rating over time':mode==='ranking'?'Ranking over time':'Score per match';
+  if(cap)cap.textContent=(mode==='rating'?'Rating':mode==='ranking'?'Ranking':'Score')+' · monthly avg';
 
+  let h;
   if(mode==='rating'){
-    const h=parseHistory(currentPlayer?.ratingHistory||'');
-    if(h.length<1)return;
-    labels=dedupe(h.map(x=>mlbl(x.date)));data=h.map(x=>x.value);label='Rating';
+    h=monthlyAvg(parseHistory(currentPlayer?.ratingHistory||''));
+    if(!h.length)return;
+    data=h.map(x=>Math.round(x.value*100)/100);label='Rating';
   }else if(mode==='ranking'){
-    const h=parseHistory(currentPlayer?.rankingHistory||'');
-    if(h.length<1)return;
-    labels=dedupe(h.map(x=>mlbl(x.date)));data=h.map(x=>x.value);label='Ranking';yReverse=true;color='#7c3aed';
+    h=monthlyAvg(parseHistory(currentPlayer?.rankingHistory||''));
+    if(!h.length)return;
+    data=h.map(x=>Math.round(x.value));label='Ranking';yReverse=true;color='#7c3aed';
   }else{
-    const sorted=[...allMatches].filter(m=>m.date&&String(m.matchId).toUpperCase().includes('AM')).sort((a,b)=>new Date(a.date)-new Date(b.date));
-    if(sorted.length<1)return;
-    labels=dedupe(sorted.map(m=>mlbl(m.date)));
-    data=sorted.map(m=>Number(m.total)||0);label='Points';color='#d97706';
+    h=monthlyAvg(allMatches
+      .filter(m=>m.date&&String(m.matchId).toUpperCase().includes('AM'))
+      .map(m=>({d:new Date(m.date),v:Number(m.total)||0})));
+    if(!h.length)return;
+    data=h.map(x=>Math.round(x.value));label='Points';color='#d97706';
   }
+  labels=h.map(x=>x.label);
 
   if(perfChart){perfChart.destroy();perfChart=null;}
   perfChart=new Chart(ctx,{
