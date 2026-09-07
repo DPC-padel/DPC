@@ -819,7 +819,23 @@ function getFiltered(){
   return list;
 }
 
+// Every match in a tournament carries the same code (BPTM004), so number them
+// within it. Built from allMatches (sheet order = play order) rather than the
+// filtered list, so a match keeps its number whatever the filters are.
+let matchNos=new Map();
+function numberMatches(){
+  const seen=new Map();
+  matchNos=new Map();
+  for(const m of allMatches){
+    const id=String(m.matchId||'').toUpperCase();
+    const n=(seen.get(id)||0)+1;
+    seen.set(id,n);
+    matchNos.set(m,n);
+  }
+}
+
 function renderMatches(){
+  numberMatches();
   const list=getFiltered();
   const container=document.getElementById('matchList');
   const countEl=document.getElementById('matchCount');
@@ -841,8 +857,12 @@ function buildMatchCard(m,i){
   const scoreVal=(m.total??m.score)??'—';
   const typeKey=isAm?'am':id.includes('TM')?'tm':'ps';
   const typeLabel=isAm?'AM':id.includes('TM')?'TM':'PS';
+  const isTm=id.includes('TM');
   const codeNum=id.replace(/[^0-9]/g,'').replace(/^0+/,'');
-  const title=codeNum?`${isAm?'Americano':'Match'} ${codeNum}`:typeLabel;
+  const title=!codeNum?typeLabel
+    :isAm?`Americano ${codeNum}`
+    :isTm?`Tournament ${codeNum}, M${matchNos.get(m)||1}`
+    :`Match ${codeNum}`;
   const dateStr=formatDate(m.date);
 
   // Build inline expand content
