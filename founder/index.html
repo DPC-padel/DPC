@@ -328,7 +328,7 @@ const CONFIG = {
   ALLOWED:    ["9599216261", "9211264111", "9818886723"],
   PASSWORD:   "Padel@2024",
   FIN_TOKEN:  "dpcfin_sl4cp0IQNa8OW5Y-t5s4t5MFqkqpu-Qh",   // must match API_TOKEN in the Apps Script
-  FIN_API:    "https://script.google.com/macros/s/AKfycbwC3oiTPKu_A1VVwp2tcHOkPftOoBbcbPYUojzJGGSbNKuYWsETsO1K3Z0pIKKbFNLJ/exec",
+  FIN_API:    "https://script.google.com/macros/s/AKfycbw0tsQpAKOpNzWHOcPFaaZtwgoeZqjufCYZO7OhBzlSb0BGOOMQ8XqqMvUJDm5mf2s9fQ/exec",
   EVENTS_API: "https://script.google.com/macros/s/AKfycbxiOz2Wyc4cnsrDlYdNyb9vw7q4kcqpvMkwIa03N4MRWcKr7E6IZ__721lJoB_ihavZFA/exec",
   MASTER_API: "https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec",
   SUPABASE:   { url:"https://zruqzybdpniofxbcwuat.supabase.co", key:"sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
@@ -854,9 +854,16 @@ $("acSave").addEventListener("click", async ()=>{
   finally{ btn.disabled=false; btn.textContent="Save"; }
 });
 
+// The built-in sections are local constants, so paint them straight away and
+// let the custom links merge in when the API answers — a cold Apps Script can
+// take seconds, and the view used to sit blank for all of it.
 async function renderCollaterals(){
   $("driveTop").href = COLLATERALS.drive;
-  if(!CUSTOM_LOADED){ await loadCustomCollaterals(); }
+  paintCollaterals();
+  if(!CUSTOM_LOADED){ await loadCustomCollaterals(); paintCollaterals(); }
+}
+
+function paintCollaterals(){
   const GROUPS = allGroups();
   if(!GROUPS.length){
     $("colBody").innerHTML = `
