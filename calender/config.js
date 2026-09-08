@@ -3,7 +3,7 @@
 // ============================================================
 
 const CONFIG = {
-  SCRIPT_URL:     "https://script.google.com/macros/s/AKfycbxiOz2Wyc4cnsrDlYdNyb9vw7q4kcqpvMkwIa03N4MRWcKr7E6IZ__721lJoB_ihavZFA/exec",
+  SCRIPT_URL:     "https://script.google.com/macros/s/AKfycbzcuaikfX6twFzhGkHz6A5oh1vdUnCu-17br2YqIpzPG7D4DE1cJn9VRLt7wFSJOpQB/exec",
   ADMIN_PASSWORD: "padel2024",
 };
 
