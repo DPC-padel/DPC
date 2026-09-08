@@ -362,13 +362,20 @@ function delta(p, label){
 
 // ── state ──
 let FIN=null, MATCHES=[], EVENTS=[], PERIODS={}, GRAN="month", SEL=null, FIRST_SEEN={}, NAME_BASED=false;
+// The events feed resolves after the first paint, so tell "none" from "not yet".
+let EVENTS_READY=false;
 const SECS = { act:{sel:null,el:"f-act",ov:"ov-act"}, pl:{sel:null,el:"f-pl",ov:"ov-pl"}, rev:{sel:null,el:"f-rev",ov:"ov-rev"}, gro:{sel:null,el:"f-gro",ov:"ov-gro"} };
 
 // ── load ──
 async function load(){
   $("refresh").classList.add("spin");
   try{
-    const [fin, all, cache, events] = await Promise.all([
+    // Apps Script is slow and wildly variable — 30s+ to return 2 KB is normal.
+    // Promise.all would hold the whole page hostage to the slowest call, so the
+    // events feed (only the Upcoming list needs it) is filled in afterwards.
+    const eventsP = fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(()=>null);
+
+    const [fin, all, cache] = await Promise.all([
       fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json()).catch(()=>null),
       // one token-protected API serves both feeds; fall back to the Master script
       fetch(CONFIG.FIN_API + "?action=getAllMatches&token=" + encodeURIComponent(CONFIG.FIN_TOKEN))
@@ -377,16 +384,20 @@ async function load(){
         .catch(()=>null),
       fetch(`${CONFIG.SUPABASE.url}/rest/v1/dashboard_cache?select=phone,matches`,
         { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(()=>[]),
-      fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(()=>null),
     ]);
     FIN = fin && fin.ok ? fin : null;
     // Names are the source of truth — not every player has a phone in Master.
     MATCHES = (all && all.success && all.matches) ? fromAllMatches(all.matches) : flattenMatches(cache);
     NAME_BASED = !!(all && all.success);
     computeFirstSeen();
-    EVENTS = (events && (events.data || events.events)) || [];
     buildPeriods();
     renderAll();
+    // Upcoming events land whenever the events API gets round to answering.
+    eventsP.then(events => {
+      EVENTS = (events && (events.data || events.events)) || [];
+      EVENTS_READY = true;
+      renderAll();
+    });
     $("sub").textContent = `Live · updated ${new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}`;
     $("fyLabel").textContent = FIN ? "FY " + FIN.fy : "";
   } finally { $("refresh").classList.remove("spin"); }
@@ -612,7 +623,7 @@ function renderUpcoming(){
   const today=new Date(); today.setHours(0,0,0,0);
   const up=(EVENTS||[]).map(e=>({...e, d:parseDate(e.date)}))
     .filter(e=>e.d && e.d>=today).sort((a,b)=>a.d-b.d);
-  if(!up.length){ $("upcoming").innerHTML=`<div class="empty">No upcoming events scheduled.</div>`; return; }
+  if(!up.length){ $("upcoming").innerHTML=`<div class="empty">${EVENTS_READY?"No upcoming events scheduled.":"Loading…"}</div>`; return; }
   $("upcoming").innerHTML = up.map(e=>{
     const cost=Number(String(e.cost||"").replace(/[^\d.]/g,""))||0;
     return `<div class="row">
