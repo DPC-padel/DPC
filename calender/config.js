@@ -89,14 +89,30 @@ const Sheets = {
     return json.data;
   },
 
-  async addRSVP(rsvp) {
-    const res  = await fetch(CONFIG.SCRIPT_URL, {
-      method: "POST", headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "addRSVP", data: rsvp }),
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || json.error);
-    return json.data;
+  // Saves hit the same Apps Script hiccups as reads (HTML error page, dropped
+  // connection), so retry those. A retry after a save that did land comes back
+  // "Already registered" — the page treats that as saved. A real answer from the
+  // script (ok:false) is never retried.
+  // ponytail: no server lock — a retry racing a still-running first save can add a
+  // duplicate row; wrap addRSVP in LockService if duplicates show up.
+  async addRSVP(rsvp, tries = 3) {
+    for (let i = 0; i < tries; i++) {
+      let json;
+      try {
+        const res  = await fetch(CONFIG.SCRIPT_URL, {
+          method: "POST", headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ action: "addRSVP", data: rsvp }),
+        });
+        const text = await res.text();
+        if (text.trim().charAt(0) !== "{") throw new Error("Bad response");
+        json = JSON.parse(text);
+      } catch (e) {
+        if (i < tries - 1) { await new Promise(r => setTimeout(r, 800 * (i + 1))); continue; }
+        throw new Error("Couldn't reach the server. Please try again.");
+      }
+      if (!json.ok) throw new Error(json.error || "Couldn't save your RSVP. Please try again.");
+      return json.data;
+    }
   },
 
   async removeRSVP(eventId, phone) {

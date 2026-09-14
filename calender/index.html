@@ -6,7 +6,7 @@
 <title>Delhi//PadelCollective — Schedule</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="config.js?v=8"></script>
+<script src="config.js?v=9"></script>
 <style>
  @font-face {
   font-family: 'Berling';
@@ -1000,14 +1000,22 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
   btn.disabled=true;btn.textContent="Saving…";msgEl.innerHTML="";
   const ev=allEvents.find(e=>e.id===activeId);
   const status=activeMode==="waitlist"?"waitlist":"confirmed";
+  // Partner mode: "Already registered" means an earlier try saved that person (e.g. the
+  // reply got lost) — count it as saved so tapping again still adds the partner.
+  const isDup=e=>/already registered/i.test(e?.message||"");
+  const addOne=async(n,p)=>{
+    try{await Sheets.addRSVP({eventId:activeId,eventName:ev?ev.title:"",name:n,phone:p,status});}
+    catch(e){if(!(bookingMode==="partner"&&isDup(e)))throw e;}
+    if(!allRSVPs.some(r=>sameEventId(r.eventId,activeId)&&normalizePhone(r.phone)===normalizePhone(p)))
+      allRSVPs.push({eventId:activeId,eventName:ev?ev.title:"",name:n,phone:p,status,timestamp:new Date().toISOString()});
+  };
   try{
-    await Sheets.addRSVP({eventId:activeId,eventName:ev?ev.title:"",name,phone,status});
+    await addOne(name,phone);
     saveMyRSVP(activeId,{status,phone,name});
-    allRSVPs.push({eventId:activeId,eventName:ev?ev.title:"",name,phone,status,timestamp:new Date().toISOString()});
 
     if(bookingMode==="partner"){
-      await Sheets.addRSVP({eventId:activeId,eventName:ev?ev.title:"",name:name2,phone:phone2,status});
-      allRSVPs.push({eventId:activeId,eventName:ev?ev.title:"",name:name2,phone:phone2,status,timestamp:new Date().toISOString()});
+      try{await addOne(name2,phone2);}
+      catch(e){throw new Error("Your spot is saved, but we couldn't add your partner yet. Tap the button again to add them.");}
     }
 
     if(status==="confirmed"){
