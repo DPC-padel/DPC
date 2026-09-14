@@ -884,9 +884,9 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
   };
 
   // Readable POST so the backend can hand back this person's group link(s)
-  // (the link->criteria mapping lives server-side, never in this page). If the
-  // response can't be read (backend not yet returning CORS/JSON), we still show
-  // success — the server received the submission either way.
+  // (the link->criteria mapping lives server-side, never in this page). Only a
+  // {ok:true} reply counts as saved — a script error comes back as an HTML page,
+  // and treating that as success silently lost applications (Sep 8–14, 2026).
   let groups = [];
   try {
     const res  = await fetch(SCRIPT_URL, {
@@ -895,9 +895,15 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (data && Array.isArray(data.groups)) groups = data.groups;
+    if (!data || data.ok !== true) throw new Error("not saved");
+    if (Array.isArray(data.groups)) groups = data.groups;
   } catch (err) {
-    /* opaque/CORS or hiccup — submission still went through; show success without links */
+    btn.disabled = false;
+    btn.textContent = "Submit Application →";
+    errEl.textContent = "We couldn't save your application. Please try again in a minute.";
+    errEl.classList.add("show");
+    errEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
   }
   try {
     renderGroupLinks(groups);
