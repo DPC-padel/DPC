@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../errors.js?v=1"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Login · //PadelCollectiveIndia</title>
@@ -619,6 +620,14 @@ function showAlert(id, msg) {
   el.classList.add('show');
 }
 
+// Server answers (wrong password, number not registered) are shown as-is.
+// Network or parse failures get a plain message and are reported.
+function friendlyError(e, where) {
+  if (e && e.fromServer) return e.message;
+  window.DPC?.report(where, e);
+  return "Couldn't reach the server. Check your connection and try again.";
+}
+
 function setLoading(panel, loading) {
   const btn = document.getElementById(panel + 'Btn');
   const txt = document.getElementById(panel + 'BtnText');
@@ -694,13 +703,13 @@ async function handleLogin() {
       body: JSON.stringify({ action: 'login', phone, password })
     });
     const loginData = await loginRes.json();
-    if (!loginData.success) throw new Error(loginData.message || 'Login failed.');
+    if (!loginData.success) throw Object.assign(new Error(loginData.message || 'Login failed.'), { fromServer: true });
 
     const player = loginData.player;
     saveSessionAndRedirect(player, phone);
 } catch(e) {
 
-  showAlert('loginError', e.message);
+  showAlert('loginError', friendlyError(e, 'Login'));
 
 } finally {
 
@@ -735,13 +744,13 @@ async function handleRegister() {
       body: JSON.stringify({ action: 'register', name: `${first} ${last}`, phone, password })
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.message || 'Registration failed.');
+    if (!data.success) throw Object.assign(new Error(data.message || 'Registration failed.'), { fromServer: true });
     showAlert('registerSuccess', `Account created for ${first}! You can now log in.`);
     setTimeout(() => switchTab('login'), 2000);
 
   }  catch(e) {
 
-  showAlert('registerError', e.message);
+  showAlert('registerError', friendlyError(e, 'Register'));
 
 } finally {
 
@@ -832,11 +841,11 @@ async function handleForgotPassword() {
       body:    JSON.stringify({ action: 'updatePassword', phone, newPassword: newPass })
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.message || 'Reset failed.');
+    if (!data.success) throw Object.assign(new Error(data.message || 'Reset failed.'), { fromServer: true });
     showAlert('forgotSuccess', 'Password reset! You can now log in.');
     setTimeout(() => switchTab('login'), 2000);
   } catch(e) {
-    showAlert('forgotError', e.message);
+    showAlert('forgotError', friendlyError(e, 'Reset password'));
   } finally {
     setLoading('forgot', false);
   }

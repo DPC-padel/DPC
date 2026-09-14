@@ -142,3 +142,33 @@ test("missing/garbage signups is treated as empty, not NaN", () => {
     eq(a("1:2").left, 2, `expected a free slot for ${JSON.stringify(s)}`);
   }
 });
+
+// ── helpers ───────────────────────────────────────────────
+const h = new Function(
+  readFileSync(ROOT + "coaching/config.js", "utf8") +
+  "\nreturn { DEMO_MODE, toDateStr, formatTime12, endTimeOf, genBookingId };"
+)();
+
+suite("Coaching · live, not demo");
+
+test("the page talks to the real Apps Script, not the sample data", () => ok(!h.DEMO_MODE, "COACHING_API is unset or still a placeholder"));
+
+suite("Coaching · times, dates and request ids");
+
+test("12-hour times", () => {
+  eq([h.formatTime12("18:30"), h.formatTime12("00:15"), h.formatTime12("12:00"), h.formatTime12("07:05")], ["6:30 PM", "12:15 AM", "12:00 PM", "7:05 AM"]);
+});
+test("a slot ends an hour later, across midnight too", () => eq([h.endTimeOf("09:15"), h.endTimeOf("23:30")], ["10:15", "00:30"]));
+test("dates are YYYY-MM-DD with padding", () => eq(h.toDateStr(new Date(2026, 0, 5)), "2026-01-05"));
+test("request ids look like DPC-XXXX1234", () => {
+  for (let i = 0; i < 20; i++) { const id = h.genBookingId(); ok(/^DPC-[0-9A-Z]{4}\d{4}$/.test(id), id); }
+});
+
+suite("Coaching · failures are reported");
+
+test("coach, court, slot and lookup failures report and offer Try again", () => {
+  const page = readFileSync(ROOT + "coaching/index.html", "utf8");
+  for (const where of ["Coaching: coaches", "Coaching: locations", "Coaching: slots", "Coaching: my requests"])
+    ok(page.includes(`window.DPC?.report("${where}"`), `${where} isn't reported`);
+  for (const retry of ["onRetry: loadCoaches", "onRetry: loadLocations", "onRetry: loadSlots"]) ok(page.includes(retry), `missing ${retry}`);
+});

@@ -141,6 +141,7 @@ async function loadFirstServePage(isManualRefresh) {
     updateStatus("");
   } catch (error) {
     console.error("Failed to load First Serve rankings:", error);
+    window.DPC?.report("Leaderboard: First Serve", error);
     renderMessageRow(elements.firstServeRankingBody, "Ranking data is not available right now.", 4);
     renderMessageRow(elements.rankingBody, "Americano leaderboard is not available right now.", 4);
     renderMessageRow(elements.personalRankingBody, "Personal matches leaderboard is not available right now.", 4);
@@ -170,6 +171,7 @@ async function loadBreakPointPage(isManualRefresh) {
     updateStatus("");
   } catch (error) {
     console.error("Failed to load Break Point rankings:", error);
+    window.DPC?.report("Leaderboard: Break Point", error);
     renderMessageRow(elements.overallRankingBody, "Overall leaderboard is not available right now.", 4);
     renderMessageRow(elements.tournamentRankingBody, "Tournament leaderboard is not available right now.", 6);
     renderMessageRow(elements.americanoRankingBody, "Americano leaderboard is not available right now.", 4);
@@ -190,6 +192,7 @@ async function loadMatchPointPage(isManualRefresh) {
     updateStatus("");
   } catch (error) {
     console.error("Failed to load Match Point rankings:", error);
+    window.DPC?.report("Leaderboard: Match Point", error);
     renderMessageRow(elements.overallRankingBody, "Overall leaderboard is not available right now.", 4);
     updateStatus("Could not load the live rankings right now.", true);
   } finally {
@@ -208,6 +211,7 @@ async function loadNoidaPage(isManualRefresh) {
     updateStatus("");
   } catch (error) {
     console.error("Failed to load Noida rankings:", error);
+    window.DPC?.report("Leaderboard: Noida", error);
     renderMessageRow(elements.rankingBody, "Leaderboard data is not available right now.", 4);
     updateStatus("Could not load the live leaderboard right now.", true);
   } finally {
@@ -230,6 +234,7 @@ async function loadGirlsPage(isManualRefresh) {
     updateStatus("");
   } catch (error) {
     console.error("Failed to load Girls rankings:", error);
+    window.DPC?.report("Leaderboard: Girls", error);
     renderMessageRow(elements.rankingBody, "Leaderboard data is not available right now.", 4);
     updateStatus("Could not load the live leaderboard right now.", true);
   } finally {

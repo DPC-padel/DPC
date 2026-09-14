@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="errors.js?v=1"></script>
  <link rel="manifest" href="/manifest.json">
 
 <meta name="theme-color" content="#2e4e8e">
@@ -791,7 +792,7 @@ video::-webkit-media-controls-fullscreen-button {
   const SESSION_KEY = "dpcPlayerSession";
   const SESSION_PHONE_KEY = "dpcPlayerPhone";
   const SESSION_SAVED_AT_KEY = "dpcPlayerSessionSavedAt";
-  const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
+  const SESSION_TTL = 90 * 24 * 60 * 60 * 1000;   // same as login/Dashboard, or opening Home signs players out
   const hamburger = document.getElementById("hamburger");
   const drawer    = document.getElementById("drawer");
   const overlay   = document.getElementById("drawerOverlay");

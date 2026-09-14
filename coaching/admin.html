@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../errors.js?v=1"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Coaching Admin · Delhi//PadelCollective</title>
@@ -369,7 +370,11 @@ async function readCache() {
     const out = { coaches: [], locations: [], slots: [] };
     (await res.json()).forEach(r => { if (out[r.source] !== undefined) out[r.source] = r.payload || []; });
     return out;
-  } catch (e) { return { coaches: [], locations: [], slots: [] }; }
+  } catch (e) {
+    window.DPC?.report("Coaching admin: cache", e);
+    window.DPC?.toast("Couldn't load coaching data. Refresh to try again.");
+    return { coaches: [], locations: [], slots: [] };
+  }
 }
 const TODAY_STR = new Date().toISOString().slice(0, 10);
 async function init(){ $("s-date").min = TODAY_STR; await refresh(); }
@@ -399,6 +404,7 @@ async function loadStudents(){
     STUDENTS = Array.isArray(data) ? data : [];
     renderStudents();
   }catch(e){
+    window.DPC?.report("Coaching admin: students", e);
     studentsLoaded = false;
     $("studentList").innerHTML = `<div class="empty">Couldn't load — tap Students again to retry.</div>`;
   }
@@ -500,6 +506,7 @@ async function post(action, data, btn, msgEl){
     msgEl.className = "msg ok"; msgEl.textContent = "Saved and live.";
     return true;
   }catch(e){
+    window.DPC?.report("Coaching admin: " + action, e);
     msgEl.className = "msg bad"; msgEl.textContent = "Couldn't save — " + (e.message || "try again.");
     return false;
   }finally{ btn.disabled = false; btn.textContent = label; }

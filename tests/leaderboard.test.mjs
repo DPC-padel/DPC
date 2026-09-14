@@ -1,5 +1,6 @@
 // Leaderboard: Girls filter, ranking, qualification gate, display helpers.
-import { loadFns, suite, test, ok, eq } from "./lib/harness.mjs";
+import { readFileSync } from "node:fs";
+import { ROOT, loadFns, suite, test, ok, eq } from "./lib/harness.mjs";
 
 const L = loadFns("leaderboard/script.js",
   ["isGirl", "rankGirls", "qualifyByMatches", "addClusterRanks", "compareByScore", "initials", "avColor"],
@@ -121,4 +122,58 @@ test("avatar colour is deterministic and always a real colour", () => {
   eq(L.avColor("Karan Sehgal"), L.avColor("Karan Sehgal"));
   for (const n of ["", null, "A", "a very long player name here"])
     ok(/^#[0-9a-f]{6}$/i.test(L.avColor(n)), `bad colour for ${JSON.stringify(n)}`);
+});
+
+// ── sheet rows → board rows ──────────────────────────────
+const N = loadFns("leaderboard/script.js", ["toNumber", "toDecimal", "isVerified", "compareByScore", "addClusterRanks",
+  "normalizeOverallRankings", "normalizeNoidaRankings", "normalizeAmericanoRankings", "normalizeTournamentRankings", "pickFirstServeRankingRows"]);
+
+suite("Leaderboard · reading sheet values");
+
+test("whole numbers and ratings", () => {
+  eq([N.toNumber("12"), N.toNumber("3.7"), N.toNumber("abc"), N.toNumber(undefined)], [12, 3, 0, 0]);
+  eq([N.toDecimal("3.33"), N.toDecimal("")], [3.33, 0]);
+});
+test("Verified accepts the sheet's TRUE in any case", () => {
+  ok(N.isVerified({ Verified: "TRUE" }) && N.isVerified({ verified: true }) && N.isVerified({ Verified: " true " }));
+  ok(!N.isVerified({ Verified: "FALSE" }) && !N.isVerified({}));
+});
+
+suite("Leaderboard · board rows");
+
+test("overall: drops blank and #N/A rows, sorts by rank, reads rating and matches", () => {
+  const out = N.normalizeOverallRankings([
+    { ID: 2, Name: "B", Score: "10", Rating: "3.1", Ranking: 2, "Matches played": 4 },
+    { ID: 1, Name: "A", Score: "12", Rating: "3.3", Ranking: 1, "Matches played": "6", Verified: "TRUE" },
+    { ID: 3, Name: "", Ranking: 3 },
+    { ID: 4, Name: "#N/A", Ranking: 4 },
+  ]);
+  eq(out.map((p) => [p.name, p.rank, p.rating, p.matches, p.verified]), [["A", 1, 3.3, 6, true], ["B", 2, 3.1, 4, false]]);
+});
+test("Americano: highest score first, ties share a rank", () => {
+  const out = N.normalizeAmericanoRankings([{ "Player Name": "C", Score: 5, MP: 1 }, { "Player Name": "A", Score: 9, MP: 2 }, { "Player Name": "B", Score: 9, MP: 2 }]);
+  eq(out.map((p) => [p.name, p.rank]), [["A", 1], ["B", 1], ["C", 3]]);
+});
+test("tournament: score first, then wins", () => {
+  const out = N.normalizeTournamentRankings([{ "Player Name": "A", Score: 10, won: 1, MP: 3 }, { "Player Name": "B", Score: 10, won: 2, MP: 3 }]);
+  eq(out.map((p) => p.name), ["B", "A"]);
+});
+test("Noida: the sheet's ranking when every row has one, else score", () => {
+  eq(N.normalizeNoidaRankings([{ playerName: "B", ranking: 2, score: 50 }, { playerName: "A", ranking: 1, score: 10 }]).map((p) => p.name), ["A", "B"]);
+  eq(N.normalizeNoidaRankings([{ playerName: "B", score: 5 }, { playerName: "A", score: 9 }]).map((p) => p.name), ["A", "B"]);
+});
+test("First Serve overall rows: the 'rankings' key, else any array with name, rating and score", () => {
+  const rows = [{ Name: "A", Rating: 3, Score: 1 }];
+  eq(N.pickFirstServeRankingRows({ rankings: rows, firstServe: [] }), rows);
+  eq(N.pickFirstServeRankingRows({ someSheet: rows }), rows);
+  eq(N.pickFirstServeRankingRows({ firstServe: rows, pmMatchScores: rows, tournamentScores: rows }), []);
+  eq(N.pickFirstServeRankingRows({}), []);
+});
+
+suite("Leaderboard · failures are reported");
+
+test("every board reports a failed load", () => {
+  const js = readFileSync(ROOT + "leaderboard/script.js", "utf8");
+  for (const b of ["First Serve", "Break Point", "Match Point", "Noida", "Girls"])
+    ok(js.includes(`window.DPC?.report("Leaderboard: ${b}"`), `${b} failures aren't reported`);
 });

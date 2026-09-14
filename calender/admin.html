@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../errors.js?v=1"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Delhi//PadelCollective — Admin</title>
@@ -421,7 +422,10 @@ async function init(){
     });
     renderOverview(); renderRSVPs(); buildFilter();
   }catch(e){
-    document.getElementById("overviewList").innerHTML=`<div class="loading-row" style="color:var(--red)">Error: ${e.message}</div>`;
+    window.DPC?.report("Games admin: load",e);
+    const box=document.getElementById("overviewList");
+    if(window.DPC)DPC.loadError(box,{title:"Couldn't load sessions",onRetry:init});
+    else box.innerHTML=`<div class="loading-row" style="color:var(--red)">Couldn't load sessions. Refresh to try again.</div>`;
   }
   document.getElementById("evDate").min=new Date().toISOString().split("T")[0];
 }
@@ -564,6 +568,7 @@ document.getElementById("createBtn").addEventListener("click",async()=>{
     ["evTitle","evDate","evStartTime","evEndTime","evLoc","evSlots","evLevel","evCost","evLink1","evLink2"].forEach(id=>document.getElementById(id).value="");
     document.getElementById("evGame").selectedIndex=0;
   }catch(err){
+    window.DPC?.report("Games admin: create session",err);
     btn.disabled=false;btn.textContent="Create Session →";
     msgEl.innerHTML=`<div class="fmsg err">Error: ${err.message}</div>`;
   }
@@ -631,6 +636,7 @@ document.getElementById("editSave").addEventListener("click",async()=>{
     btn.textContent="Save Changes →"; btn.disabled=false;
     setTimeout(()=>closeEditModal(),1200);
   }catch(err){
+    window.DPC?.report("Games admin: edit session",err);
     btn.disabled=false;btn.textContent="Save Changes →";
     msgEl.innerHTML=`<div class="fmsg err">Error: ${err.message}</div>`;
   }
@@ -655,7 +661,8 @@ async function markPaid(btn, eventId, phone) {
   } catch(err) {
     btn.textContent = "Mark Paid";
     btn.disabled = false;
-    alert("Error: " + err.message);
+    window.DPC?.report("Games admin: mark paid", err);
+    window.DPC ? DPC.toast("Couldn't mark as paid. Try again.") : alert("Couldn't mark as paid. Try again.");
   }
 }
 </script>

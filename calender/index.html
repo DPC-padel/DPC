@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../errors.js?v=1"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Delhi//PadelCollective — Schedule</title>
@@ -856,7 +857,10 @@ async function load(){
     });
     render();
   }catch(e){
-    document.getElementById("eventsContainer").innerHTML=`<div class="state-msg"><h3>Couldn't load</h3><p>${e.message}</p></div>`;
+    window.DPC?.report("Games: load",e);
+    const box=document.getElementById("eventsContainer");
+    if(window.DPC)DPC.loadError(box,{title:"Couldn't load games",onRetry:load});
+    else box.innerHTML=`<div class="state-msg"><h3>Couldn't load games</h3><p>Check your connection and try again.</p></div>`;
   }
 }
 
@@ -1054,6 +1058,7 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
     const hasPayLink=status==="confirmed"&&(bookingMode==="partner"?ev?.link2:ev?.link1);
     setTimeout(()=>{closeModal();render();showToast(bookingMode==="partner"?"Both players registered!":status==="waitlist"?"Added to waitlist!":"RSVP saved — see you on court!");},hasPayLink?12000:5000);
   }catch(err){
+    if(!isDup(err))window.DPC?.report("Games: register",err);
     btn.disabled=false;btn.textContent=activeMode==="waitlist"?"Join Waitlist →":"I'm In →";
     msgEl.innerHTML=`<div class="mbox err">${err.message}</div>`;
   }
@@ -1079,7 +1084,7 @@ document.getElementById("confirmRemove").addEventListener("click",async()=>{
     await Sheets.removeRSVP(pendingRemoveId,pendingRemovePhone);
     allRSVPs=allRSVPs.filter(r=>!(sameEventId(r.eventId,pendingRemoveId)&&normalizePhone(r.phone)===normalizePhone(pendingRemovePhone)));
     clearMyRSVP(pendingRemoveId);closeConfirm();render();showToast("Removed from session.");
-  }catch(err){btn.disabled=false;btn.textContent="Yes, remove me";alert("Error: "+err.message);}
+  }catch(err){btn.disabled=false;btn.textContent="Yes, remove me";window.DPC?.report("Games: remove",err);window.DPC?DPC.toast("Couldn't remove you. Try again."):alert("Couldn't remove you. Try again.");}
 });
 
 document.querySelector(".filter-bar").addEventListener("click",e=>{

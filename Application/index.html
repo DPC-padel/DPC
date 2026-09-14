@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../errors.js?v=1"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Join Community — Delhi//PadelCollective</title>
@@ -898,6 +899,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
     if (!data || data.ok !== true) throw new Error("not saved");
     if (Array.isArray(data.groups)) groups = data.groups;
   } catch (err) {
+    window.DPC?.report("Application: submit", err);
     btn.disabled = false;
     btn.textContent = "Submit Application →";
     errEl.textContent = "We couldn't save your application. Please try again in a minute.";

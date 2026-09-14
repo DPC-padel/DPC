@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../errors.js?v=1"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Delhi//PadelCollective — Coaching</title>
@@ -492,7 +493,9 @@ async function loadCoaches() {
       $("coachList").appendChild(btn);
     });
   } catch (e) {
-    $("coachList").innerHTML = `<p class="empty-note">Couldn't load coaches — please refresh.</p>`;
+    window.DPC?.report("Coaching: coaches", e);
+    if (window.DPC) DPC.loadError($("coachList"), { title: "Couldn't load coaches", onRetry: loadCoaches });
+    else $("coachList").innerHTML = `<p class="empty-note">Couldn't load coaches — please refresh.</p>`;
   }
 }
 
@@ -517,7 +520,9 @@ async function loadLocations() {
       $("locationGrid").appendChild(btn);
     });
   } catch (e) {
-    $("locationGrid").innerHTML = `<p class="empty-note">Couldn't load locations — please refresh.</p>`;
+    window.DPC?.report("Coaching: locations", e);
+    if (window.DPC) DPC.loadError($("locationGrid"), { title: "Couldn't load courts", onRetry: loadLocations });
+    else $("locationGrid").innerHTML = `<p class="empty-note">Couldn't load locations — please refresh.</p>`;
   }
 }
 $("toStep3").addEventListener("click", () => { loadSlots(); goTo(3); });
@@ -535,7 +540,7 @@ async function loadSlots() {
     const byDate = {};
     for (const loc of S.locations) {
       let res = {};
-      try { res = await API.fetchSlots(S.coach.id, loc.id); } catch (e) { res = {}; }
+      try { res = await API.fetchSlots(S.coach.id, loc.id); } catch (e) { window.DPC?.report("Coaching: slots at " + loc.name, e); res = {}; }
       Object.keys(res).forEach(d => {
         res[d].forEach(slot => {
           if (slot.status === "blocked") return;       // keep open + full; drop blocked only
@@ -567,7 +572,9 @@ async function loadSlots() {
       if (i === 0) selectDate(dateStr, chip);
     });
   } catch (e) {
-    $("slotGrid").innerHTML = `<p class="empty-note" style="grid-column:1/-1">Couldn't load slots — please refresh.</p>`;
+    window.DPC?.report("Coaching: slots", e);
+    if (window.DPC) DPC.loadError($("slotGrid"), { title: "Couldn't load times", onRetry: loadSlots });
+    else $("slotGrid").innerHTML = `<p class="empty-note" style="grid-column:1/-1">Couldn't load slots — please refresh.</p>`;
   }
 }
 
@@ -835,6 +842,7 @@ $("lookupBtn").addEventListener("click", async () => {
         <div class="detail">Request ${b.booking_id}</div>
       </div>`).join("");
   } catch (e) {
+    window.DPC?.report("Coaching: my requests", e);
     list.innerHTML = `<p class="empty-note">Couldn't fetch requests — try again.</p>`;
   }
 });

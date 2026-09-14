@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../errors.js?v=1"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Founders · Delhi//PadelCollective</title>
@@ -373,18 +374,22 @@ async function load(){
     // Apps Script is slow and wildly variable — 30s+ to return 2 KB is normal.
     // Promise.all would hold the whole page hostage to the slowest call, so the
     // events feed (only the Upcoming list needs it) is filled in afterwards.
-    const eventsP = fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(()=>null);
+    // A source that fails is reported and left out, so the rest of the page still paints.
+    let failed = false;
+    const miss = (where, fallback) => e => { failed = true; window.DPC?.report("Founder: " + where, e); return fallback; };
+    const eventsP = fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(miss("events", null));
 
     const [fin, all, cache] = await Promise.all([
-      fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json()).catch(()=>null),
+      fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json()).catch(miss("financials", null)),
       // one token-protected API serves both feeds; fall back to the Master script
       fetch(CONFIG.FIN_API + "?action=getAllMatches&token=" + encodeURIComponent(CONFIG.FIN_TOKEN))
         .then(r=>r.json())
         .then(d => (d && d.success) ? d : fetch(CONFIG.MASTER_API + "?action=getAllMatches").then(r=>r.json()))
-        .catch(()=>null),
+        .catch(miss("all matches", null)),
       fetch(`${CONFIG.SUPABASE.url}/rest/v1/dashboard_cache?select=phone,matches`,
-        { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(()=>[]),
+        { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(miss("dashboard cache", [])),
     ]);
+    if (fin && !fin.ok) miss("financials", null)(new Error(fin.error || "getFinancials answered ok:false"));
     FIN = fin && fin.ok ? fin : null;
     // Names are the source of truth — not every player has a phone in Master.
     MATCHES = (all && all.success && all.matches) ? fromAllMatches(all.matches) : flattenMatches(cache);
@@ -392,6 +397,7 @@ async function load(){
     computeFirstSeen();
     buildPeriods();
     renderAll();
+    if (failed) window.DPC?.toast("Some numbers couldn't load. Tap refresh to try again.");
     // Upcoming events land whenever the events API gets round to answering.
     eventsP.then(events => {
       EVENTS = (events && (events.data || events.events)) || [];
@@ -400,6 +406,9 @@ async function load(){
     });
     $("sub").textContent = `Live · updated ${new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}`;
     $("fyLabel").textContent = FIN ? "FY " + FIN.fy : "";
+  } catch (e) {
+    window.DPC?.report("Founder: load", e);
+    window.DPC?.toast("Couldn't load the dashboard. Tap refresh to try again.");
   } finally { $("refresh").classList.remove("spin"); }
 }
 $("refresh").addEventListener("click", load);

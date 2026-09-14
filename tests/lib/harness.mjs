@@ -31,25 +31,35 @@ export function loadFns(file, names, preamble = "") {
 }
 
 // ── runner ──
+// Tests run one at a time in the order they're declared (async ones are awaited),
+// so a test that stubs fetch or localStorage can't leak into the next one.
 const results = [];
 let current = "";
+let queue = Promise.resolve();
 
 export function suite(name) { current = name; }
 export function test(name, fn) {
-  try {
-    fn();
-    results.push({ suite: current, name, ok: true });
-  } catch (e) {
-    results.push({ suite: current, name, ok: false, err: e.message });
-  }
+  const r = { suite: current, name, ok: true };
+  results.push(r);
+  queue = queue.then(async () => {
+    try { await fn(); } catch (e) { r.ok = false; r.err = e.message; }
+  });
 }
 export function ok(cond, msg) { if (!cond) throw new Error(msg || "expected truthy"); }
 export function eq(a, b, msg) {
   const A = JSON.stringify(a), B = JSON.stringify(b);
   if (A !== B) throw new Error(`${msg || "not equal"} — got ${A}, want ${B}`);
 }
+export async function rejects(promise, re, msg) {
+  try { await promise; } catch (e) {
+    if (re && !re.test(e.message)) throw new Error(`${msg || "wrong error"} — got "${e.message}"`);
+    return;
+  }
+  throw new Error(msg || "expected it to fail");
+}
 
-export function report() {
+export async function report() {
+  await queue;
   const bySuite = new Map();
   for (const r of results) {
     if (!bySuite.has(r.suite)) bySuite.set(r.suite, []);
