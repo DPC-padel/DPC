@@ -32,7 +32,7 @@ node tests/health.mjs                     # live health check — writes to the 
 
 1. the unit tests
 2. every public page loads
-3. every Apps Script answers (games, matches, players, coaching, founder financials, 4 leaderboards), and the caches are fresh: games ≤ 15 min, leaderboard ≤ 2 h, dashboard ≤ 2 h
+3. every Apps Script answers (games, matches, players, coaching, founder financials, 4 leaderboards); the games (≤ 15 min) and leaderboard (≤ 2 h) caches are fresh; and every recorded match is on a dashboard (the dashboard sync runs when Master is edited, not on a timer, so its age alone means nothing)
 4. two real saves, both as `DPC HEALTHCHECK`, phone `1000000001`:
    - a **waitlist registration** on the next upcoming game, removed straight after
    - an **application** — the Application script can't delete, so each run leaves one row in the response sheet to clear. Master only ever gets one row (it skips duplicate phones).

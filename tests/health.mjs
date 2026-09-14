@@ -138,12 +138,16 @@ await Promise.all([
     if (old > 120) throw new Error(`last updated ${old} min ago`);
     return `${old} min old`;
   }),
-  check("Dashboard cache is fresh (hourly)", async () => {
-    const rows = await sb("dashboard_cache?select=updated_at&order=updated_at.desc&limit=1");
-    if (!rows.length) throw new Error("empty");
-    const old = minutesOld(rows[0].updated_at);
-    if (old > 120) throw new Error(`last updated ${Math.round(old / 60)} h ago — the hourly dashboard sync isn't running`);
-    return `${old} min old`;
+  // The dashboard sync runs when Master is edited, not on a timer, so its age means
+  // nothing. What matters: every recorded match is on a dashboard.
+  check("Dashboards have every recorded match", async () => {
+    const all = await getJSON(`${FIN_API}?action=getAllMatches&token=${encodeURIComponent(FIN_TOKEN)}`);
+    if (!all.success || !Array.isArray(all.matches)) throw new Error("couldn't read all matches");
+    const rows = await sb("dashboard_cache?select=matches");
+    const shown = new Set(rows.flatMap((r) => (r.matches || []).map((m) => m.matchId)));
+    const missing = [...new Set(all.matches.map((m) => m.matchId).filter(Boolean))].filter((id) => !shown.has(id));
+    if (missing.length) throw new Error(`${missing.length} match(es) on no dashboard yet: ${missing.slice(0, 5).join(", ")}. Editing Master (or running syncDashboard) refreshes them`);
+    return `all ${all.matches.length} match rows shown`;
   }),
   check("Coaching cache has coaches and slots", async () => {
     const rows = await sb("coaching_cache?select=source");
