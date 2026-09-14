@@ -42,7 +42,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const notJSON = (text) => new Error("not JSON: " + text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 120));
 
 // Apps Script sometimes answers with an HTML error page — retry reads before calling a source down.
-async function getJSON(url, { tries = 3, headers } = {}) {
+async function getJSON(url, { tries = 4, headers } = {}) {
   let last;
   for (let i = 0; i < tries; i++) {
     try {
@@ -50,7 +50,7 @@ async function getJSON(url, { tries = 3, headers } = {}) {
       const text = await res.text();
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       try { return JSON.parse(text); } catch { throw notJSON(text); }
-    } catch (e) { last = e; if (i < tries - 1) await sleep(2000 * (i + 1)); }
+    } catch (e) { last = e; if (i < tries - 1) await sleep(5000 * (i + 1)); }   // Apps Script blips last a while (a 404 streak on Sep 14)
   }
   throw last;
 }
@@ -189,13 +189,22 @@ if (failed.length) {
   if (!ERRORS_URL) console.log("No alert sent: DPC_ERRORS_URL in errors.js is empty.");
   else {
     try {
-      await postJSON(ERRORS_URL, {
-        kind: "health", page: "health check",
-        message: `${failed.length} of ${results.length} checks failed: ${failed.map((f) => f.name).join(", ")}`.slice(0, 900),
-        detail: failed.map((f) => `✗ ${f.name}: ${f.note}`).join("\n"),
-        userAgent: `node ${process.version} on ${process.platform}`,
+      // Don't follow Google's redirect: its first reply is enough. A 302 to
+      // googleusercontent means the script ran (and emailed); following it from
+      // Node can land on a Google HTML page instead of the {ok:true} reply.
+      const res = await fetch(ERRORS_URL, {
+        method: "POST", redirect: "manual", signal: AbortSignal.timeout(90000),
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          kind: "health", page: "health check",
+          message: `${failed.length} of ${results.length} checks failed: ${failed.map((f) => f.name).join(", ")}`.slice(0, 900),
+          detail: failed.map((f) => `✗ ${f.name}: ${f.note}`).join("\n"),
+          userAgent: `node ${process.version} on ${process.platform}`,
+        }),
       });
-      console.log("Alert emailed.");
+      const loc = res.headers.get("location") || "";
+      if (res.status === 302 && /googleusercontent\.com\/macros\/echo/.test(loc)) console.log("Alert emailed.");
+      else throw new Error(`the alert script answered HTTP ${res.status}${loc ? " → " + loc.slice(0, 80) : ""}`);
     } catch (e) { console.log("Couldn't send the alert: " + e.message); }
   }
 }
