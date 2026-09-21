@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script src="../errors.js?v=1"></script>
+<script src="../calender/config.js?v=9"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Founders · Delhi//PadelCollective</title>
@@ -132,8 +133,37 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
 .sb-foot button{width:100%;background:transparent;border:1px solid rgba(255,255,255,.14);color:#8ea0c4;border-radius:100px;padding:9px;font-family:inherit;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;}
 .content{flex:1;min-width:0;}
 .view{display:none;} .view.on{display:block;}
-#gamesFrame{display:block;width:100%;height:100dvh;border:0;}
-@media (max-width:900px){ #gamesFrame{height:calc(100dvh - 56px);} }
+/* games */
+.sb-sub{display:none;padding:0 0 8px;}
+body.in-games .sb-sub{display:block;}
+.si{display:block;width:100%;text-align:left;background:none;border:none;font-family:inherit;font-size:.78rem;font-weight:500;color:#6d80a6;padding:8px 22px 8px 49px;cursor:pointer;transition:.15s;}
+.si:hover{color:#cdd8ec;} .si.on{color:#fff;font-weight:600;}
+.gpane{display:none;} .gpane.on{display:block;}
+.gsub{display:none;margin-top:18px;}
+.gsub .pill{flex:1;}
+.gcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;max-width:660px;margin-top:22px;}
+.gcard h2{font-size:1.05rem;font-weight:700;}
+.gcard .gs{font-size:.76rem;color:var(--muted2);margin:3px 0 20px;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;}
+.fgrid .ff{grid-column:1/-1;}
+.fgrid .hint{font-size:.7rem;color:var(--muted2);margin-top:5px;}
+.fgrid .fsd{grid-column:1/-1;font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);border-top:1px solid var(--line);padding-top:16px;margin:6px 0 12px;}
+select.inp{cursor:pointer;}
+.gmsg{font-size:.8rem;padding:10px 14px;border-radius:10px;margin-top:10px;}
+.gmsg.ok{background:var(--good-soft);color:var(--good);} .gmsg.err{background:var(--bad-soft);color:var(--bad);}
+.badge.good{background:var(--good-soft);color:var(--good);} .badge.brand{background:var(--brand-soft);color:var(--brand);}
+.row .r .w{font-size:.66rem;font-weight:600;color:var(--brand);margin-top:2px;}
+.row .r .icon-btn{margin-top:8px;padding:6px 12px;}
+.gtbl-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow-x:auto;}
+.gtbl{width:100%;border-collapse:collapse;min-width:620px;}
+.gtbl th{font-size:.58rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted2);text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);}
+.gtbl td{font-size:.84rem;padding:12px 16px;border-bottom:1px solid var(--line);}
+.gtbl tr:last-child td{border-bottom:none;}
+.gtbl td.mu{color:var(--muted2);font-size:.76rem;}
+.gtbl .icon-btn{padding:6px 12px;}
+.mdl.wide{max-width:620px;max-height:90vh;overflow-y:auto;}
+@media (max-width:900px){ .gsub{display:flex;} .g4.gstats{grid-template-columns:1fr 1fr;} .gstats .val{font-size:1.9rem;} }
+@media (max-width:600px){ .fgrid{grid-template-columns:1fr;} .row .d{width:40px;} }
 .mtabs{display:none;gap:8px;padding:14px 16px 0;}
 .mtab{flex:1;padding:10px;border-radius:100px;border:1px solid var(--line);background:#fff;font-family:inherit;font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted2);cursor:pointer;}
 .mtab.on{background:var(--accent);color:#fff;border-color:var(--accent);}
@@ -207,6 +237,11 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Games
       </button>
+      <div class="sb-sub">
+        <button class="si" data-v="games">Overview</button>
+        <button class="si" data-v="games-new">New session</button>
+        <button class="si" data-v="games-rsvps">RSVPs</button>
+      </div>
       <button class="ni" data-v="collaterals">
         <svg viewBox="0 0 24 24"><path d="M4 4h6l2 2h8v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg>
         DPC Collaterals
@@ -289,8 +324,62 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
   </div>
    </div>
 
-   <!-- Games admin: the calendar admin page, same Apps Script + Sheet -->
-   <div class="view" id="view-games"><iframe id="gamesFrame" title="Games admin"></iframe></div>
+   <!-- Games admin — same Apps Script + Sheet as /calender/admin.html -->
+   <div class="view" id="view-games">
+     <div class="wrap">
+       <div class="top">
+         <div><h1><span class="slash">//</span> Games</h1>
+           <div class="sub">Sessions on the public calendar.</div></div>
+         <div class="top-actions">
+           <button class="icon-btn" id="gRefresh">↻ Refresh</button>
+           <button class="cta" data-v="games-new" style="width:auto;height:40px;padding:0 20px">+ New session</button>
+         </div>
+       </div>
+       <div class="pills gsub">
+         <button class="pill" data-v="games">Overview</button>
+         <button class="pill" data-v="games-new">New session</button>
+         <button class="pill" data-v="games-rsvps">RSVPs</button>
+       </div>
+
+       <div class="gpane" id="gp-games">
+         <div class="grid g4 gstats" style="margin-top:22px">
+           <div class="tile accent"><div class="edge"></div><div class="lbl">Upcoming sessions</div><div class="val" id="gUp">—</div></div>
+           <div class="tile good"><div class="edge"></div><div class="lbl">Confirmed RSVPs</div><div class="val" id="gConf">—</div></div>
+           <div class="tile"><div class="edge"></div><div class="lbl">Open slots</div><div class="val" id="gOpen">—</div></div>
+           <div class="tile brandc"><div class="edge"></div><div class="lbl">On waitlist</div><div class="val" id="gWait">—</div></div>
+         </div>
+         <div class="sec" style="margin-top:28px">
+           <div class="sec-head"><h2>Upcoming sessions</h2></div>
+           <div id="gList"><div class="empty">Loading…</div></div>
+         </div>
+       </div>
+
+       <div class="gpane" id="gp-games-new">
+         <div class="gcard">
+           <h2>New session</h2>
+           <div class="gs">Goes live on the public calendar instantly.</div>
+           <div class="fgrid" id="gnForm"></div>
+           <div id="gnMsg"></div>
+           <div class="mdl-acts" style="justify-content:flex-start">
+             <button class="cta" id="gnCreate" style="width:auto;padding:0 26px">Create session</button>
+             <button class="icon-btn" id="gnReset">Reset</button>
+           </div>
+         </div>
+       </div>
+
+       <div class="gpane" id="gp-games-rsvps">
+         <div class="filterbar">
+           <span class="fb-label">Session</span>
+           <select class="period" id="gEvFilter"><option value="all">All sessions</option></select>
+           <span class="fb-label">Status</span>
+           <select class="period" id="gStFilter">
+             <option value="all">All</option><option value="confirmed">Confirmed</option><option value="waitlist">Waitlist</option>
+           </select>
+         </div>
+         <div id="gRsvps"><div class="empty">Loading…</div></div>
+       </div>
+     </div>
+   </div>
 
    <div class="view" id="view-collaterals">
      <div class="wrap">
@@ -307,6 +396,19 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
    </div>
   </main>
  </div>
+</div>
+
+<div class="ovl" id="gEditOvl">
+  <div class="mdl wide">
+    <h3>Edit session</h3>
+    <input type="hidden" id="geId"/>
+    <div class="fgrid" id="geForm"></div>
+    <div id="geMsg"></div>
+    <div class="mdl-acts">
+      <button class="icon-btn" id="geCancel">Cancel</button>
+      <button class="cta" id="geSave" style="width:auto;padding:0 26px">Save changes</button>
+    </div>
+  </div>
 </div>
 
 <div class="ovl" id="addOvl">
@@ -333,7 +435,8 @@ select.mini:focus{border-color:var(--accent);color:var(--ink);}
      3. Upcoming    → Games/calendar Apps Script (real-time only)
    Financials are monthly, so Week is disabled for money sections.
    ============================================================ */
-const CONFIG = {
+// CONFIG comes from calender/config.js (games Apps Script); founder keys added here.
+Object.assign(CONFIG, {
   // Access: one of these numbers + the shared password. Numbers are compared
   // on their last 10 digits, so a +91 prefix is fine.
   ALLOWED:    ["9599216261", "9211264111", "9818886723"],
@@ -344,7 +447,7 @@ const CONFIG = {
   MASTER_API: "https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec",
   SUPABASE:   { url:"https://zruqzybdpniofxbcwuat.supabase.co", key:"sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
   SESSION:    "dpcFounder",
-};
+});
 const $ = id => document.getElementById(id);
 const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -915,15 +1018,200 @@ function paintCollaterals(){
 
 $("logout2").addEventListener("click", () => { sessionStorage.removeItem(CONFIG.SESSION); location.reload(); });
 
+// ── games admin — same Apps Script + Sheet as /calender/admin.html ──
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const GAME_TYPES = ["Padel","Padel – Beginners","Padel – Advanced","Padel Tournament","Girls Only Padel","Warm-Up Session","Pickleball","Tennis","Mixed Racket"];
+let G_EVENTS=[], G_RSVPS=[], G_LOADED=false;
+const gConfirmed = id => G_RSVPS.filter(r=>r.eventId===id && r.status!=="waitlist").length;
+const gWaitlist  = id => G_RSVPS.filter(r=>r.eventId===id && r.status==="waitlist").length;
+const byDate = (a,b) => (parseSheetDate(a.date)||0) - (parseSheetDate(b.date)||0);
+const isoDay = d => d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}` : "";
+
+// one field set, used by the New session form (gn…) and the edit modal (ge…)
+function sessionFields(p){
+  const f = (id, label, input, cls="") => `<div class="fld ${cls}"><label>${label}</label>${input}</div>`;
+  const inp = (id, type, ph="") => `<input class="inp" id="${p}${id}" type="${type}" placeholder="${ph}"/>`;
+  return f("Title","Session title",inp("Title","text","e.g. Sunday Padel Mixer"),"ff")
+    + f("Date","Date",inp("Date","date")) + f("Level","Level",inp("Level","text","e.g. Beginner, Open"))
+    + f("StartTime","Start time",inp("StartTime","time")) + f("EndTime","End time",inp("EndTime","time"))
+    + f("Loc","Location / court",inp("Loc","text","e.g. Court 2, DLF Club"))
+    + f("Game","Game type",`<select class="inp" id="${p}Game">${GAME_TYPES.map(g=>`<option>${g}</option>`).join("")}</select>`)
+    + f("Slots","Total slots",`<input class="inp" id="${p}Slots" type="number" min="1" max="100" placeholder="e.g. 8"/>`)
+    + f("Cost","Cost per person",inp("Cost","text","e.g. ₹500 per person, Free")+`<div class="hint">Shown on the event card and in the booking modal.</div>`)
+    + `<div class="fsd">Payment links</div>`
+    + f("Link1","Link 1 — single booking",inp("Link1","url","https://rzp.io/l/single…")+`<div class="hint">Shown to players who sign up solo.</div>`)
+    + f("Link2","Link 2 — partner booking",inp("Link2","url","https://rzp.io/l/partner…")+`<div class="hint">Shown to players who sign up with a partner.</div>`);
+}
+$("gnForm").innerHTML = sessionFields("gn");
+$("geForm").innerHTML = sessionFields("ge");
+$("gnDate").min = isoDay(new Date());
+
+const SESSION_KEYS = { Title:"title", Date:"date", StartTime:"startTime", EndTime:"endTime", Loc:"location", Game:"game", Level:"level", Slots:"totalSlots", Cost:"cost", Link1:"link1", Link2:"link2" };
+function readSession(p){
+  const s = {};
+  for (const [k, key] of Object.entries(SESSION_KEYS)) s[key] = $(p+k).value.trim();
+  s.totalSlots = parseInt(s.totalSlots);
+  return s;
+}
+function fillSession(p, ev){
+  for (const [k, key] of Object.entries(SESSION_KEYS)) $(p+k).value = ev ? (ev[key] ?? "") : "";
+  if (!ev){ $(p+"Game").selectedIndex = 0; return; }
+  $(p+"Date").value = isoDay(parseSheetDate(ev.date));
+  $(p+"StartTime").value = normalizeTimeValue(ev.startTime||"");
+  $(p+"EndTime").value = normalizeTimeValue(ev.endTime||"");
+}
+function sessionError(s){
+  if (!s.title||!s.date||!s.startTime||!s.location||!s.totalSlots) return "Fill in title, date, start time, location and slots.";
+  if (s.totalSlots < 1) return "Slots must be at least 1.";
+  return "";
+}
+const gMsg = (el, ok, text) => $(el).innerHTML = `<div class="gmsg ${ok?"ok":"err"}">${esc(text)}</div>`;
+
+async function loadGames(){
+  G_LOADED = true;
+  $("gRefresh").classList.add("spin");
+  try{
+    [G_EVENTS, G_RSVPS] = await Promise.all([Sheets.fetchEvents(), Sheets.fetchRSVPs()]);
+    G_EVENTS.sort(byDate);
+    renderGames();
+  }catch(e){
+    G_LOADED = false;
+    window.DPC?.report("Founder: games load", e);
+    if (window.DPC) DPC.loadError($("gList"), { title:"Couldn't load sessions", onRetry:loadGames });
+    else $("gList").innerHTML = `<div class="empty">Couldn't load sessions. Tap refresh to try again.</div>`;
+  } finally { $("gRefresh").classList.remove("spin"); }
+}
+$("gRefresh").addEventListener("click", loadGames);
+
+function renderGames(){ renderGOverview(); buildGFilter(); renderGRsvps(); }
+
+function renderGOverview(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const up=G_EVENTS.filter(e=>{ const d=parseSheetDate(e.date); return d && d>=today; });
+  $("gUp").textContent   = up.length;
+  $("gConf").textContent = G_RSVPS.filter(r=>r.status!=="waitlist").length;
+  $("gOpen").textContent = up.reduce((s,e)=>s+(Number(e.totalSlots)||0)-gConfirmed(e.id),0);
+  $("gWait").textContent = G_RSVPS.filter(r=>r.status==="waitlist").length;
+  if(!up.length){ $("gList").innerHTML=`<div class="empty">No upcoming sessions. <a href="#" data-v="games-new">Create one →</a></div>`; bindViews($("gList")); return; }
+  $("gList").innerHTML = up.map(ev=>{
+    const d=parseSheetDate(ev.date), wl=gWaitlist(ev.id), time=formatTimeRange(ev.startTime,ev.endTime);
+    return `<div class="row">
+      <div class="d"><div class="dd">${d.getDate()}</div><div class="mm">${MON[d.getMonth()]}</div></div>
+      <div class="b"><div class="t">${esc(ev.title)}</div>
+        <div class="m">${time?`<span>${esc(time)}</span>`:""}<span>📍 ${esc(ev.location)}</span><span>${esc(ev.game)}</span>
+          ${ev.level?`<span class="badge">${esc(ev.level)}</span>`:""}${ev.cost?`<span class="badge good">${esc(ev.cost)}</span>`:""}
+          ${ev.link1?`<span class="badge brand">Solo pay link</span>`:""}${ev.link2?`<span class="badge brand">Partner pay link</span>`:""}</div></div>
+      <div class="r"><div class="n">${gConfirmed(ev.id)}<span style="font-size:.8rem;color:var(--muted)"> / ${esc(ev.totalSlots)}</span></div>
+        <div class="s">confirmed</div>${wl?`<div class="w">+${wl} waitlist</div>`:""}
+        <button class="icon-btn" data-edit="${esc(ev.id)}">Edit</button></div>
+    </div>`;
+  }).join("");
+}
+$("gList").addEventListener("click", e => { const b=e.target.closest("[data-edit]"); if (b) openGEdit(b.dataset.edit); });
+
+function buildGFilter(){
+  const sel=$("gEvFilter"), keep=sel.value;
+  sel.innerHTML = `<option value="all">All sessions</option>` + G_EVENTS.map(ev=>`<option value="${esc(ev.id)}">${esc(ev.title)} — ${esc(formatDateShort(ev.date))}</option>`).join("");
+  sel.value = [...sel.options].some(o=>o.value===keep) ? keep : "all";
+}
+$("gEvFilter").addEventListener("change", renderGRsvps);
+$("gStFilter").addEventListener("change", renderGRsvps);
+
+function renderGRsvps(){
+  const ev=$("gEvFilter").value, st=$("gStFilter").value;
+  let list = ev==="all" ? G_RSVPS : G_RSVPS.filter(r=>r.eventId===ev);
+  if (st!=="all") list = list.filter(r=>r.status===st);
+  if (!list.length){ $("gRsvps").innerHTML=`<div class="empty">No RSVPs for this selection.</div>`; return; }
+  $("gRsvps").innerHTML = `<div class="gtbl-wrap"><table class="gtbl">
+    <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Session</th><th>Status</th><th>Payment</th><th>Signed up</th></tr></thead>
+    <tbody>${list.map((r,i)=>{
+      const wl = r.status==="waitlist", paid = r.paid===true || r.paid==="true" || r.paid==="Yes";
+      const ts = r.timestamp ? new Date(r.timestamp).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "—";
+      return `<tr>
+        <td class="mu">${i+1}</td><td><b>${esc(r.name)}</b></td><td>${esc(r.phone)}</td>
+        <td><span class="badge">${esc(r.eventName||r.eventId)}</span></td>
+        <td>${wl?`<span class="badge brand">Waitlist</span>`:`<span class="badge">Confirmed</span>`}</td>
+        <td>${wl?`<span class="mu">—</span>`:paid?`<span class="badge good">✓ Paid</span>`:`<button class="icon-btn" data-paid="${esc(r.eventId)}" data-phone="${esc(r.phone)}">Mark paid</button>`}</td>
+        <td class="mu">${ts}</td></tr>`;
+    }).join("")}</tbody></table></div>`;
+}
+
+$("gRsvps").addEventListener("click", async e => {
+  const btn = e.target.closest("[data-paid]"); if (!btn) return;
+  const eventId = btn.dataset.paid, phone = btn.dataset.phone;
+  btn.textContent = "Saving…"; btn.disabled = true;
+  try{
+    const res = await fetch(CONFIG.SCRIPT_URL, { method:"POST", headers:{"Content-Type":"text/plain"},
+      body: JSON.stringify({ action:"markPaid", data:{ eventId, phone } }) });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "Failed");
+    const r = G_RSVPS.find(r=>r.eventId===eventId && String(r.phone)===phone);
+    if (r) r.paid = "true";
+    btn.closest("td").innerHTML = `<span class="badge good">✓ Paid</span>`;
+  }catch(err){
+    btn.textContent = "Mark paid"; btn.disabled = false;
+    window.DPC?.report("Founder: mark paid", err);
+    window.DPC?.toast("Couldn't mark as paid. Try again.");
+  }
+});
+
+$("gnCreate").addEventListener("click", async () => {
+  const s = readSession("gn"), err = sessionError(s), btn = $("gnCreate");
+  if (err) return gMsg("gnMsg", false, err);
+  btn.disabled = true; btn.textContent = "Creating…"; $("gnMsg").innerHTML = "";
+  try{
+    const ev = { id:genId(), ...s };
+    await Sheets.addEvent(ev);
+    G_EVENTS.push(ev); G_EVENTS.sort(byDate);
+    renderGames();
+    fillSession("gn", null);
+    gMsg("gnMsg", true, `✓ "${s.title}" is now live on the public calendar.`);
+  }catch(e){
+    window.DPC?.report("Founder: create session", e);
+    gMsg("gnMsg", false, "Error: " + e.message);
+  } finally { btn.disabled = false; btn.textContent = "Create session"; }
+});
+$("gnReset").addEventListener("click", () => { fillSession("gn", null); $("gnMsg").innerHTML = ""; });
+
+function openGEdit(id){
+  const ev = G_EVENTS.find(e=>e.id===id); if (!ev) return;
+  $("geId").value = id; fillSession("ge", ev); $("geMsg").innerHTML = "";
+  $("gEditOvl").classList.add("open");
+}
+const closeGEdit = () => $("gEditOvl").classList.remove("open");
+$("geCancel").addEventListener("click", closeGEdit);
+$("gEditOvl").addEventListener("click", e => { if (e.target===e.currentTarget) closeGEdit(); });
+$("geSave").addEventListener("click", async () => {
+  const s = readSession("ge"), err = sessionError(s), btn = $("geSave");
+  if (err) return gMsg("geMsg", false, err);
+  btn.disabled = true; btn.textContent = "Saving…"; $("geMsg").innerHTML = "";
+  try{
+    const ev = { id:$("geId").value, ...s };
+    await Sheets.editEvent(ev);
+    G_EVENTS[G_EVENTS.findIndex(e=>e.id===ev.id)] = ev; G_EVENTS.sort(byDate);
+    renderGames();
+    gMsg("geMsg", true, "✓ Session updated.");
+    setTimeout(closeGEdit, 1000);
+  }catch(e){
+    window.DPC?.report("Founder: edit session", e);
+    gMsg("geMsg", false, "Error: " + e.message);
+  } finally { btn.disabled = false; btn.textContent = "Save changes"; }
+});
+
 // ── view switching ──
 function showView(v){
-  document.querySelectorAll(".ni,.mtab").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
-  document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on", x.id==="view-"+v));
+  const games = v.startsWith("games");   // games, games-new, games-rsvps share one view
+  document.body.classList.toggle("in-games", games);
+  document.querySelectorAll("[data-v]").forEach(b=>b.classList.toggle("on",
+    b.dataset.v===v || (games && b.dataset.v==="games" && b.matches(".ni,.mtab"))));
+  document.querySelectorAll(".view").forEach(x=>x.classList.toggle("on", x.id==="view-"+(games?"games":v)));
+  document.querySelectorAll(".gpane").forEach(x=>x.classList.toggle("on", x.id==="gp-"+v));
   window.scrollTo(0,0);
   if (v==="collaterals") renderCollaterals();
-  if (v==="games" && !$("gamesFrame").src) $("gamesFrame").src = "../calender/admin.html?embed=1";
+  if (games && !G_LOADED) loadGames();
 }
-document.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.v)));
+const bindViews = root => root.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",e=>{ e.preventDefault(); showView(b.dataset.v); }));
+bindViews(document);
 
 if (CONFIG.ALLOWED.map(last10).includes(sessionStorage.getItem(CONFIG.SESSION)||"")) unlock();
 </script>
