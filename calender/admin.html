@@ -400,6 +400,17 @@ document.getElementById("logoutBtn").addEventListener("click",()=>{
   document.getElementById("pwInput").value="";
 });
 
+// Founders open this inside their dashboard, already signed in there
+// (same-origin iframe shares sessionStorage) — skip the password.
+if(new URLSearchParams(location.search).has("embed")){
+  document.querySelectorAll(".sb-logo,.sb-bottom").forEach(el=>el.style.display="none");
+  if(sessionStorage.getItem("dpcFounder")){
+    document.getElementById("loginGate").style.display="none";
+    document.getElementById("mainApp").style.display="block";
+    init();
+  }
+}
+
 // TABS
 function switchTab(id){
   document.querySelectorAll(".ni").forEach(b=>b.classList.remove("active"));
