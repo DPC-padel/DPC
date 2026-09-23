@@ -325,6 +325,10 @@
           <label><input type="radio" name="gender" value="Female" class="opt-label"/><span class="opt-btn">Female</span></label>
           <label><input type="radio" name="gender" value="Prefer not to say" class="opt-label"/><span class="opt-btn">Prefer not to say</span></label>
         </div>
+        <div class="q-sub" style="margin-top:16px">40 or older? Tick this to join our 40+ category (optional).</div>
+        <div class="options-grid cols-1">
+          <label><input type="checkbox" id="q_age40" class="opt-label"/><span class="opt-btn">I'm 40+ — add me to the 40+ category</span></label>
+        </div>
       </div>
       <div class="q-divider"></div>
 
@@ -877,6 +881,7 @@ document.getElementById("applyForm").addEventListener("submit", async (e) => {
     onboardingRating:   ratingStr,
     gender,
     girl:               gender === "Female",   // Col C tick — TRUE for girls, FALSE otherwise
+    age40:              document.getElementById("q_age40").checked,   // Col M tick — 40+ category
     rating:             parseFloat(ratingStr) || 0,   // numeric self-rating for group routing
     communityValue:     finalValues.join(", "),
     instagram,

@@ -174,7 +174,7 @@ await check("Save: application form (leaves a DPC HEALTHCHECK row)", async () =>
   const d = await postJSON(APP_API, {
     name: "DPC HEALTHCHECK", phone: TEST_PHONE, location: "Health check", experience: "0-3 months", level: "Beginner",
     wallPlay: "N/A", serveQuality: "N/A", smashAbility: "N/A", doublesCoord: "N/A", returnOfServe: "N/A",
-    onboardingRating: "1 / 7.0", gender: "Prefer not to say", girl: false, rating: 1,
+    onboardingRating: "1 / 7.0", gender: "Prefer not to say", girl: false, age40: false, rating: 1,
     communityValue: "Health check", instagram: "-", instagramFollowing: "No", vision: "Automatic health check. Safe to delete.",
   });
   if (d.ok !== true) throw new Error(d.error || "the reply wasn't {ok:true}");
