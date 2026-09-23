@@ -384,7 +384,7 @@
 
         <!-- Wall Play -->
         <div class="q-block">
-          <div class="q-label">07 — Wall play</div>
+          <div class="q-label">08 — Wall play</div>
           <div class="q-title">How comfortable are you playing shots off the glass?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="wall" value="0" class="opt-label"/><span class="opt-btn">Never tried</span></label>
@@ -397,7 +397,7 @@
 
         <!-- Serve -->
         <div class="q-block">
-          <div class="q-label">08 — Serve quality</div>
+          <div class="q-label">09 — Serve quality</div>
           <div class="q-title">How consistent is your serve?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="serve" value="0" class="opt-label"/><span class="opt-btn">Often faults</span></label>
@@ -410,7 +410,7 @@
 
         <!-- Smash -->
         <div class="q-block">
-          <div class="q-label">09 — Smash ability</div>
+          <div class="q-label">10 — Smash ability</div>
           <div class="q-title">Which smashes can you execute?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="smash" value="0" class="opt-label"/><span class="opt-btn">Cannot smash</span></label>
@@ -423,7 +423,7 @@
 
         <!-- Doubles -->
         <div class="q-block">
-          <div class="q-label">10 — Doubles coordination</div>
+          <div class="q-label">11 — Doubles coordination</div>
           <div class="q-title">How well do you play with a partner?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="doubles" value="0" class="opt-label"/><span class="opt-btn">No coordination</span></label>
@@ -436,7 +436,7 @@
 
         <!-- Return -->
         <div class="q-block">
-          <div class="q-label">11 — Return of serve</div>
+          <div class="q-label">12 — Return of serve</div>
           <div class="q-title">How strong is your return?</div>
           <div class="options-grid cols-1">
             <label><input type="radio" name="ret" value="0" class="opt-label"/><span class="opt-btn">Weak returns</span></label>
@@ -466,7 +466,7 @@
 
       <!-- 12 Community -->
       <div class="q-block tail-block">
-        <div class="q-label" id="communityLabel">07 — Community</div>
+        <div class="q-label" id="communityLabel">08 — Community</div>
         <div class="q-title">What would make this community valuable for you?</div>
         <div class="q-sub">Select all that apply.</div>
         <div class="options-grid cols-2">
@@ -488,7 +488,7 @@
 
       <!-- 13 Instagram -->
       <div class="q-block tail-block">
-        <div class="q-label" id="instaLabel">08 — Instagram</div>
+        <div class="q-label" id="instaLabel">09 — Instagram</div>
         <div class="q-title">Your Instagram handle?</div>
         <input class="input-field" type="text" id="q_instagram" placeholder="@yourhandle"/>
         <div class="insta-note">
@@ -505,7 +505,7 @@
 
       <!-- 14 Vision -->
       <div class="q-block tail-block">
-        <div class="q-label" id="visionLabel">09 — Vision</div>
+        <div class="q-label" id="visionLabel">10 — Vision</div>
         <div class="q-title">If you were building Delhi's padel scene from scratch, what would you do?</div>
         <div class="q-sub">Optional — but we love hearing this.</div>
         <textarea class="input-field" id="q_vision" placeholder="Share your thoughts…" rows="4"></textarea>
@@ -624,7 +624,7 @@ function showHideAdvanced() {
     advSection.classList.remove("show");
   }
 
-  const base = isAdv ? 11 : 6;
+  const base = isAdv ? 13 : 8;
   document.getElementById("communityLabel").textContent = String(base).padStart(2,"0")   + " — Community";
   document.getElementById("instaLabel").textContent     = String(base+1).padStart(2,"0") + " — Instagram";
   document.getElementById("visionLabel").textContent    = String(base+2).padStart(2,"0") + " — Vision";
