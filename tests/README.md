@@ -34,7 +34,7 @@ node tests/health.mjs                     # live health check — writes to the 
 2. every public page loads
 3. every Apps Script answers (games, matches, players, coaching, founder financials, 4 leaderboards); the games (≤ 15 min) and leaderboard (≤ 2 h) caches are fresh; and every recorded match is on a dashboard (the dashboard sync runs when Master is edited, not on a timer, so its age alone means nothing)
 4. two real saves, both as `DPC HEALTHCHECK`, phone `1000000001`:
-   - a **waitlist registration** on the next upcoming game, removed straight after
+   - a **waitlist registration** on the next upcoming game, saved through the Supabase inbox like the site does, removed straight after
    - an **application** — the Application script can't delete, so each run leaves one row in the response sheet to clear. Master only ever gets one row (it skips duplicate phones).
 
 Failures are emailed through the "DPC Errors" Apps Script (`DPC_ERRORS_URL` in `errors.js`, deployed with access "Anyone") and the run exits 1. The same script receives errors players hit on the website.

@@ -89,13 +89,32 @@ const Sheets = {
     return json.data;
   },
 
+  // Fast path: straight into Supabase's rsvp_inbox (~0.2s). A Supabase webhook
+  // pings the games Apps Script, which copies the row into the Sheet within
+  // seconds (and a 5-min timer catches any missed ping). 409 = the same phone is
+  // already waiting in the inbox for this game.
+  // If Supabase can't be reached, fall back to saving through Apps Script.
+  async addRSVP(rsvp, tries = 3) {
+    try {
+      const res = await fetch(`${SUPABASE.url}/rest/v1/rsvp_inbox`, {
+        method: "POST",
+        headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({ event_id: String(rsvp.eventId), event_name: rsvp.eventName || "", name: rsvp.name, phone: rsvp.phone, status: rsvp.status || "confirmed" }),
+      });
+      if (res.ok) return { message: "RSVP saved", status: rsvp.status };
+      if (res.status === 409) throw new Error("Already registered for this event.");
+    } catch (e) {
+      if (/already registered/i.test(e.message)) throw e;
+    }
+    return this.addRSVPViaScript(rsvp, tries);
+  },
+
   // Saves hit the same Apps Script hiccups as reads (HTML error page, dropped
   // connection), so retry those. A retry after a save that did land comes back
   // "Already registered" — the page treats that as saved. A real answer from the
-  // script (ok:false) is never retried.
-  // ponytail: no server lock — a retry racing a still-running first save can add a
-  // duplicate row; wrap addRSVP in LockService if duplicates show up.
-  async addRSVP(rsvp, tries = 3) {
+  // script (ok:false) is never retried. The script holds a lock, so a retry
+  // can't add a duplicate row.
+  async addRSVPViaScript(rsvp, tries = 3) {
     for (let i = 0; i < tries; i++) {
       let json;
       try {

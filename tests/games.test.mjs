@@ -68,17 +68,24 @@ const DUP = '{"ok":false,"error":"Already registered for this event."}';
 const HTML = "<html><title>Error</title></html>";
 const rsvp = { eventId: "evt1", name: "Test", phone: "9000000000", status: "confirmed" };
 
-function withNetwork(replies, fn) {
+// Supabase inbox replies: a status code, or an Error for "unreachable". Default:
+// unreachable, so these tests exercise the Apps Script fallback.
+function withNetwork(replies, fn, sb = new TypeError("Failed to fetch")) {
   return async () => {
-    const calls = [], realFetch = globalThis.fetch, realTimeout = globalThis.setTimeout;
+    const calls = [], sbCalls = [], realFetch = globalThis.fetch, realTimeout = globalThis.setTimeout;
     globalThis.setTimeout = (f) => { queueMicrotask(f); return 0; };
     globalThis.fetch = async (url, opts) => {
+      if (url.includes("supabase.co")) {
+        sbCalls.push(JSON.parse(opts.body));
+        if (sb instanceof Error) throw sb;
+        return { ok: sb < 300, status: sb };
+      }
       calls.push(JSON.parse(opts.body));
       const r = replies[Math.min(calls.length - 1, replies.length - 1)];
       if (r instanceof Error) throw r;
       return { text: async () => r };
     };
-    try { await fn(calls); } finally { globalThis.fetch = realFetch; globalThis.setTimeout = realTimeout; }
+    try { await fn(calls, sbCalls); } finally { globalThis.fetch = realFetch; globalThis.setTimeout = realTimeout; }
   };
 }
 
@@ -101,6 +108,22 @@ test("gives up after 3 tries with a plain message", withNetwork([HTML], async (c
   await rejects(cfg.Sheets.addRSVP(rsvp), /Couldn't reach the server/);
   eq(calls.length, 3);
 }));
+
+suite("Games · saving an RSVP straight to Supabase");
+
+test("a Supabase save skips Apps Script", withNetwork([OK], async (calls, sbCalls) => {
+  eq(await cfg.Sheets.addRSVP(rsvp), { message: "RSVP saved", status: "confirmed" });
+  eq(sbCalls, [{ event_id: "evt1", event_name: "", name: "Test", phone: "9000000000", status: "confirmed" }]);
+  eq(calls.length, 0);
+}, 201));
+test("409 from Supabase means already registered, no fallback", withNetwork([OK], async (calls) => {
+  await rejects(cfg.Sheets.addRSVP(rsvp), /Already registered/);
+  eq(calls.length, 0);
+}, 409));
+test("a Supabase error falls back to Apps Script", withNetwork([OK], async (calls) => {
+  eq(await cfg.Sheets.addRSVP(rsvp), { message: "RSVP saved" });
+  eq(calls.length, 1);
+}, 500));
 
 suite("Games · partner sign-ups (the Karan + Jaskaran, Antariksh + Siddharth bug)");
 
@@ -127,6 +150,7 @@ function signUp({ mode, name, phone, name2 = "", phone2 = "", server, rsvps = []
     normalizePhone: (p) => String(p || "").replace(/[^\d+]/g, ""),
     closeModal() {}, render() {}, showToast() {},
     fetch: async (url, opts) => {
+      if (url.includes("supabase.co")) throw new TypeError("Failed to fetch");   // exercise the Apps Script path
       const b = JSON.parse(opts.body);
       posts.push(b.data.phone);
       const q = server[b.data.phone];
@@ -170,6 +194,13 @@ test("tapping again after that adds the partner without a duplicate player", asy
   await p.submit();
   ok(/Both in!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
   eq(p.allRSVPs.filter((r) => r.phone === "9000000001").length, 1);
+});
+
+test("already on the list: says so without saving again", async () => {
+  const p = signUp({ mode: "single", name: "Karan Sehgal", phone: "9000000001", rsvps: [{ eventId: "evt1", phone: "9000000001" }], server: {} });
+  await p.submit();
+  ok(/Already registered for this event\./.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
+  eq(p.posts.length, 0);
 });
 
 test("signing up alone when already registered still says so", async () => {

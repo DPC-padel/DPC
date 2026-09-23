@@ -3,7 +3,7 @@
 // 1. offline unit tests
 // 2. every public page loads
 // 3. every Apps Script and Supabase source answers, and the caches are fresh
-// 4. real saves: a waitlist registration (removed straight after) and one
+// 4. real saves: a waitlist registration via Supabase (removed straight after) and one
 //    application (leaves a "DPC HEALTHCHECK" row in the response sheet to delete)
 // Any failure is emailed through the "DPC Errors" script (URL read from errors.js).
 import { readFileSync } from "node:fs";
@@ -163,8 +163,14 @@ await check("Save: game registration (waitlist, removed straight after)", async 
     .filter((e) => String(e.date) >= today)
     .sort((a, b) => String(a.date).localeCompare(String(b.date)))[0];
   if (!ev) return "skipped: no upcoming event to register on";
-  const add = await postJSON(GAMES_API, { action: "addRSVP", data: { eventId: ev.id, eventName: ev.title, name: "DPC HEALTHCHECK", phone: TEST_PHONE, status: "waitlist" } });
-  if (!add.ok && !/already registered/i.test(add.error || "")) throw new Error("registering failed: " + (add.error || "ok:false"));
+  // Same path as the site: into the Supabase inbox. removeRSVP copies the inbox
+  // into the Sheet first, so it also proves that copy works.
+  const add = await fetch(`${SB_URL}/rest/v1/rsvp_inbox`, {
+    method: "POST", signal: AbortSignal.timeout(30000),
+    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify({ event_id: ev.id, event_name: ev.title, name: "DPC HEALTHCHECK", phone: TEST_PHONE, status: "waitlist" }),
+  });
+  if (!add.ok && add.status !== 409) throw new Error(`registering in Supabase failed: HTTP ${add.status} ${(await add.text()).slice(0, 120)}`);
   const del = await postJSON(GAMES_API, { action: "removeRSVP", data: { eventId: ev.id, phone: TEST_PHONE } });
   if (!del.ok) throw new Error(`removing failed: ${del.error || "ok:false"}. Delete "DPC HEALTHCHECK" from "${ev.title}" by hand`);
   return `on "${ev.title}"`;
