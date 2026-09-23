@@ -22,3 +22,22 @@ alter table public.rsvp_inbox enable row level security;
 revoke all on public.rsvp_inbox from anon, authenticated;
 grant insert (event_id, event_name, name, phone, status) on public.rsvp_inbox to anon;
 create policy "website can register" on public.rsvp_inbox for insert to anon with check (true);
+
+-- Ping the games Apps Script on every new row so it copies it into the Sheet
+-- within seconds (same as a dashboard "Database Webhook", set up in SQL).
+-- The body is ignored by the script; it reads the inbox itself.
+create extension if not exists pg_net;
+
+create or replace function public.rsvp_inbox_ping() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  perform net.http_post(
+    url := 'https://script.google.com/macros/s/AKfycbzcuaikfX6twFzhGkHz6A5oh1vdUnCu-17br2YqIpzPG7D4DE1cJn9VRLt7wFSJOpQB/exec',
+    body := jsonb_build_object('table', 'rsvp_inbox'),
+    timeout_milliseconds := 5000
+  );
+  return new;
+end $$;
+
+create trigger rsvp_inbox_ping after insert on public.rsvp_inbox
+for each row execute function public.rsvp_inbox_ping();
