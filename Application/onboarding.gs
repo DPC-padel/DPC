@@ -5,7 +5,7 @@
 
 const RATINGS_SHEET_ID = '1N1X86vzB7kZYO0JzXIxEYl6kw5U6qBKt3w75h2Din0A';
 const PLAYER_TAB       = 'Player_ID';
-const RATINGS_API      = 'https://script.google.com/macros/s/RATINGS_API_DEPLOYMENT_ID/exec';
+const RATINGS_API      = 'https://script.google.com/macros/s/AKfycbxxg8sKLWTWvnLcHuBONDC1Q5M8nksdrM6xC2dFBDVfNEi7kJmIstK1wnh_xvF5MqXYvA/exec';
 
 function doPost(e) {
   const data  = JSON.parse(e.postData.contents);

@@ -35,8 +35,8 @@ const PAGE_CONFIG = {
 
 const API_URLS = {
   // Break Point + First Serve come from the Ratings API (Rating&Ranking sheet).
-  firstServe: "https://script.google.com/macros/s/RATINGS_API_DEPLOYMENT_ID/exec?action=firstServe",
-  breakPoint: "https://script.google.com/macros/s/RATINGS_API_DEPLOYMENT_ID/exec?action=breakPoint",
+  firstServe: "https://script.google.com/macros/s/AKfycbxxg8sKLWTWvnLcHuBONDC1Q5M8nksdrM6xC2dFBDVfNEi7kJmIstK1wnh_xvF5MqXYvA/exec?action=firstServe",
+  breakPoint: "https://script.google.com/macros/s/AKfycbxxg8sKLWTWvnLcHuBONDC1Q5M8nksdrM6xC2dFBDVfNEi7kJmIstK1wnh_xvF5MqXYvA/exec?action=breakPoint",
   matchPoint: "https://script.google.com/macros/s/AKfycbz0EuOkKQvC7F2BAjymJQEoGF1qmglQRnP07eqMrLmECTXSZrXj-PpvDZ18cBeLrRHF6A/exec",
   noida: "https://script.google.com/macros/s/AKfycbyum4imblCdj5mFLbr-zDFthSM8Am0f-1DrEVgdF7jioZueooMguFDgy5GX7V_3yRNH/exec"
 };

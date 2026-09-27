@@ -574,7 +574,7 @@ let lastFetchOk = true; // false = last fetch failed (network), not "player miss
 const MAX_RATING = 7.0;
 
 // ── Real data layer (session + Supabase/Apps Script cache) ──
-const MATCHES_API = 'https://script.google.com/macros/s/RATINGS_API_DEPLOYMENT_ID/exec'; // Ratings API (Rating&Ranking sheet)
+const MATCHES_API = 'https://script.google.com/macros/s/AKfycbxxg8sKLWTWvnLcHuBONDC1Q5M8nksdrM6xC2dFBDVfNEi7kJmIstK1wnh_xvF5MqXYvA/exec'; // Ratings API (Rating&Ranking sheet)
 const SUPABASE = { url:'https://zruqzybdpniofxbcwuat.supabase.co', anonKey:'sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy' };
 const SUPABASE_READY = !SUPABASE.url.startsWith('YOUR_');
 const CACHE_PLAYER_KEY='dpcCache_player', CACHE_MATCHES_KEY='dpcCache_matches', CACHE_AT_KEY='dpcCache_savedAt', CACHE_PHONE_KEY='dpcCache_phone', CACHE_TTL=30*24*60*60*1000;
