@@ -574,12 +574,12 @@ let lastFetchOk = true; // false = last fetch failed (network), not "player miss
 const MAX_RATING = 7.0;
 
 // ── Real data layer (session + Supabase/Apps Script cache) ──
-const MATCHES_API = 'https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec';
+const MATCHES_API = 'https://script.google.com/macros/s/RATINGS_API_DEPLOYMENT_ID/exec'; // Ratings API (Rating&Ranking sheet)
 const SUPABASE = { url:'https://zruqzybdpniofxbcwuat.supabase.co', anonKey:'sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy' };
 const SUPABASE_READY = !SUPABASE.url.startsWith('YOUR_');
 const CACHE_PLAYER_KEY='dpcCache_player', CACHE_MATCHES_KEY='dpcCache_matches', CACHE_AT_KEY='dpcCache_savedAt', CACHE_PHONE_KEY='dpcCache_phone', CACHE_TTL=30*24*60*60*1000;
 // Bump when the stored player/matches shape or how rating/ranking is derived changes → every browser refetches once.
-const CACHE_VER_KEY='dpcCache_ver', CACHE_VERSION='2026-09-14-master-venue';
+const CACHE_VER_KEY='dpcCache_ver', CACHE_VERSION='2026-09-27-ratings-sheet';
 const SESSION_KEY='dpcPlayerSession', SESSION_PHONE_KEY='dpcPlayerPhone', SESSION_SAVED_AT_KEY='dpcPlayerSessionSavedAt', SESSION_TTL=90*24*60*60*1000;
 
 function clearStoredSession(){localStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_PHONE_KEY);localStorage.removeItem(SESSION_SAVED_AT_KEY);}

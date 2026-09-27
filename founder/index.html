@@ -444,7 +444,7 @@ Object.assign(CONFIG, {
   FIN_TOKEN:  "dpcfin_sl4cp0IQNa8OW5Y-t5s4t5MFqkqpu-Qh",   // must match API_TOKEN in the Apps Script
   FIN_API:    "https://script.google.com/macros/s/AKfycbw0tsQpAKOpNzWHOcPFaaZtwgoeZqjufCYZO7OhBzlSb0BGOOMQ8XqqMvUJDm5mf2s9fQ/exec",
   EVENTS_API: "https://script.google.com/macros/s/AKfycbzcuaikfX6twFzhGkHz6A5oh1vdUnCu-17br2YqIpzPG7D4DE1cJn9VRLt7wFSJOpQB/exec",
-  MASTER_API: "https://script.google.com/macros/s/AKfycbzwz3P9vVxsMxgWwQGoE9AuRToVXEAueHul_RUSNUlEMAC8Rllca3IwhlZTUPAIFVRu/exec",
+  RATINGS_API: "https://script.google.com/macros/s/RATINGS_API_DEPLOYMENT_ID/exec",
   SUPABASE:   { url:"https://zruqzybdpniofxbcwuat.supabase.co", key:"sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
   SESSION:    "dpcFounder",
 });
@@ -494,11 +494,8 @@ async function load(){
 
     const [fin, all, cache] = await Promise.all([
       fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json()).catch(miss("financials", null)),
-      // one token-protected API serves both feeds; fall back to the Master script
-      fetch(CONFIG.FIN_API + "?action=getAllMatches&token=" + encodeURIComponent(CONFIG.FIN_TOKEN))
-        .then(r=>r.json())
-        .then(d => (d && d.success) ? d : fetch(CONFIG.MASTER_API + "?action=getAllMatches").then(r=>r.json()))
-        .catch(miss("all matches", null)),
+      // every match row, from the Ratings API (Rating&Ranking sheet)
+      fetch(CONFIG.RATINGS_API + "?action=getAllMatches").then(r=>r.json()).catch(miss("all matches", null)),
       fetch(`${CONFIG.SUPABASE.url}/rest/v1/dashboard_cache?select=phone,matches`,
         { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(miss("dashboard cache", [])),
     ]);

@@ -102,7 +102,7 @@ await Promise.all([
     if (!d.ok || !Array.isArray(d.data)) throw new Error(d.error || "no registrations list");
     return `${d.data.length} registrations`;
   }),
-  check("Matches script (dashboards)", async () => {
+  check("Ratings script (dashboards)", async () => {
     const d = await getJSON(`${MATCHES_API}?action=getPlayerMatches&phone=${TEST_PHONE}`);
     if (typeof d.success !== "boolean") throw new Error("unexpected reply");
     return "answers";
@@ -138,15 +138,15 @@ await Promise.all([
     if (old > 120) throw new Error(`last updated ${old} min ago`);
     return `${old} min old`;
   }),
-  // The dashboard sync runs when Master is edited, not on a timer, so its age means
-  // nothing. What matters: every recorded match is on a dashboard.
+  // The dashboard sync runs when the Rating&Ranking sheet is edited, not on a timer,
+  // so its age means nothing. What matters: every recorded match is on a dashboard.
   check("Dashboards have every recorded match", async () => {
-    const all = await getJSON(`${FIN_API}?action=getAllMatches&token=${encodeURIComponent(FIN_TOKEN)}`);
+    const all = await getJSON(`${MATCHES_API}?action=getAllMatches`);
     if (!all.success || !Array.isArray(all.matches)) throw new Error("couldn't read all matches");
     const rows = await sb("dashboard_cache?select=matches");
     const shown = new Set(rows.flatMap((r) => (r.matches || []).map((m) => m.matchId)));
     const missing = [...new Set(all.matches.map((m) => m.matchId).filter(Boolean))].filter((id) => !shown.has(id));
-    if (missing.length) throw new Error(`${missing.length} match(es) on no dashboard yet: ${missing.slice(0, 5).join(", ")}. Editing Master (or running syncDashboard) refreshes them`);
+    if (missing.length) throw new Error(`${missing.length} match(es) on no dashboard yet: ${missing.slice(0, 5).join(", ")}. Editing the Rating&Ranking sheet (or DPC → Sync website now) refreshes them`);
     return `all ${all.matches.length} match rows shown`;
   }),
   check("Coaching cache has coaches and slots", async () => {

@@ -13,6 +13,10 @@ Google Sheets (you edit)
    → website reads Supabase   (Apps Script stays as automatic fallback)
 ```
 
+> **Break Point and First Serve** no longer go through this sync: the Ratings
+> API (`ratings-api.gs`, bound to the Rating&Ranking sheet) writes those two
+> rows itself. `supabase-sync.gs` now only pulls Match Point and Noida.
+
 ## Why a JSON cache and not real tables
 
 Each endpoint returns several arrays with inconsistent column names

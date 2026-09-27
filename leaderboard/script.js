@@ -1,6 +1,6 @@
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
 const MASTER_CACHE_KEY = "dpcRankingCache:all-pages";
-const CACHE_SCHEMA_VERSION = 8; // bumped to bust old cache after tournament addition
+const CACHE_SCHEMA_VERSION = 9; // bumped: Break Point + First Serve moved to the Rating&Ranking sheet
 const ADMIN_STORAGE_KEY = "dpcRankingAdmin";
 const ADMIN_QUERY_KEY = "admin";
 const ADMIN_QUERY_VALUE = "1";
@@ -34,8 +34,9 @@ const PAGE_CONFIG = {
 };
 
 const API_URLS = {
-  firstServe: "https://script.google.com/macros/s/AKfycbyUACkr6V5Kn4yla7Wv6vIJ6cNXoxtHR4yFYrXS66uHfhumDjgIJVzOFpuMZK3o5uGa/exec",
-  breakPoint: "https://script.google.com/macros/s/AKfycbxz0ee4RK4niCcg0lVwmktJKoCmy6lP3q9O5c6Md41m6AElQcxRN-wU810bkCbYVsk8/exec",
+  // Break Point + First Serve come from the Ratings API (Rating&Ranking sheet).
+  firstServe: "https://script.google.com/macros/s/RATINGS_API_DEPLOYMENT_ID/exec?action=firstServe",
+  breakPoint: "https://script.google.com/macros/s/RATINGS_API_DEPLOYMENT_ID/exec?action=breakPoint",
   matchPoint: "https://script.google.com/macros/s/AKfycbz0EuOkKQvC7F2BAjymJQEoGF1qmglQRnP07eqMrLmECTXSZrXj-PpvDZ18cBeLrRHF6A/exec",
   noida: "https://script.google.com/macros/s/AKfycbyum4imblCdj5mFLbr-zDFthSM8Am0f-1DrEVgdF7jioZueooMguFDgy5GX7V_3yRNH/exec"
 };

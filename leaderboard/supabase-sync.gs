@@ -1,6 +1,6 @@
 /* Delhi//PadelCollective — Leaderboard → Supabase sync
-   Standalone script. Needs NO Google Sheet. Calls your 4 existing
-   public leaderboard endpoints and pushes their JSON to Supabase.
+   Standalone script. Needs NO Google Sheet. Calls the Match Point
+   and Noida leaderboard endpoints and pushes their JSON to Supabase.
 
    Change-driven: deploy this as a Web app, and any writer (API or
    function) pings  <exec-url>?action=sync  after it writes. A 60-min
@@ -11,10 +11,10 @@ const SUPABASE_URL = 'https://zruqzybdpniofxbcwuat.supabase.co';
 // deployed script; leave this placeholder in the repo so the secret isn't committed.
 const SUPABASE_SERVICE_KEY = 'YOUR_LEGACY_SERVICE_ROLE_KEY_STARTS_WITH_eyJ';
 
-// Your existing public endpoints — leave as-is.
+// Break Point + First Serve are pushed by the Ratings API (leaderboard/ratings-api.gs)
+// straight from the Rating&Ranking sheet — don't add them back here or the old
+// sheets will overwrite them.
 const SOURCES = {
-  firstServe: 'https://script.google.com/macros/s/AKfycbyUACkr6V5Kn4yla7Wv6vIJ6cNXoxtHR4yFYrXS66uHfhumDjgIJVzOFpuMZK3o5uGa/exec',
-  breakPoint: 'https://script.google.com/macros/s/AKfycbxz0ee4RK4niCcg0lVwmktJKoCmy6lP3q9O5c6Md41m6AElQcxRN-wU810bkCbYVsk8/exec',
   matchPoint: 'https://script.google.com/macros/s/AKfycbz0EuOkKQvC7F2BAjymJQEoGF1qmglQRnP07eqMrLmECTXSZrXj-PpvDZ18cBeLrRHF6A/exec',
   noida:      'https://script.google.com/macros/s/AKfycbyum4imblCdj5mFLbr-zDFthSM8Am0f-1DrEVgdF7jioZueooMguFDgy5GX7V_3yRNH/exec'
 };
@@ -48,7 +48,7 @@ function syncNow_() {
   }
 }
 
-/** Pull all 4 endpoints and upsert their JSON into leaderboard_cache. */
+/** Pull the endpoints and upsert their JSON into leaderboard_cache. */
 function syncAll() {
   const rows = [];
   const errors = [];
