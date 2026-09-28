@@ -27,7 +27,9 @@ function doPost(e) {
     data.age40 === true,     // M 40+ — TRUE when the applicant ticked the 40+ box
   ]);
 
-  addToPlayerId(data);
+  // The response is saved above; a problem adding to Player_ID must not
+  // make the form tell the applicant it failed.
+  try { addToPlayerId(data); } catch (err) { console.error('Player_ID: ' + err); }
 
   return ContentService
     .createTextOutput(JSON.stringify({ ok: true }))
@@ -54,15 +56,22 @@ function addToPlayerId(data) {
   const cPhone = col('contact number'), cName = col('name'), cSelf = col('self rating'), cGirl = col('girls');
   if (!cPhone || !cName) return;
 
-  // No duplicate players (compare on the normalized 10-digit form).
+  // Last row that actually has a player (number or name). Google's getLastRow()
+  // also counts rows that only hold formulas, which put new players far below.
+  let lastPlayerRow = 1;
   const lastRow = tab.getLastRow();
   if (lastRow > 1) {
     const phones = tab.getRange(2, cPhone, lastRow - 1, 1).getValues();
+    const names  = tab.getRange(2, cName,  lastRow - 1, 1).getValues();
+    // No duplicate players (compare on the normalized 10-digit form).
     if (phones.some(r => tenDigit(r[0]) === phone)) return;
+    phones.forEach((r, i) => {
+      if (String(r[0]).trim() || String(names[i][0]).trim()) lastPlayerRow = i + 2;
+    });
   }
 
   // Write only our cells, so formula columns (Ranking, Rating) are left alone.
-  const row = lastRow + 1;
+  const row = lastPlayerRow + 1;
   tab.getRange(row, cPhone).setValue(phone);
   tab.getRange(row, cName).setValue(name);
   if (cSelf) tab.getRange(row, cSelf).setValue(selfRatingNumerator(data.onboardingRating));
