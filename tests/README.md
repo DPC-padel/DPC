@@ -22,7 +22,7 @@ node tests/health.mjs                     # live health check — writes to the 
 | `dashboard.test.mjs` | rating/ranking history charts, match filters and numbering, on-phone cache version, rating from the Master venue's board, Supabase → Apps Script fallback |
 | `games.test.mjs` | sheet dates/times, RSVP save retries, partner sign-ups (player already saved, partner failing, tap again), finding your registration |
 | `coaching.test.mjs` | per-type pricing, slot capacity, live-not-demo, times and request ids, failures reported |
-| `leaderboard.test.mjs` | Girls board, qualification gate, ties, sheet → board rows, failures reported |
+| `leaderboard.test.mjs` | Girls board, qualification gate, ties, sheet → board rows, failures reported; Ratings API beat-the-field bonus |
 | `founder.test.mjs` | date parsing, weeks, match de-dupe, activity and money per period |
 | `americano.test.mjs` | scheduler: partners, opponents, fairness, edge cases (parked) |
 

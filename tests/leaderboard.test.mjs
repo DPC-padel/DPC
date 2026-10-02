@@ -177,3 +177,34 @@ test("every board reports a failed load", () => {
   for (const b of ["First Serve", "Break Point", "Match Point", "Noida", "Girls"])
     ok(js.includes(`window.DPC?.report("Leaderboard: ${b}"`), `${b} failures aren't reported`);
 });
+
+const B = loadFns("leaderboard/ratings-api.gs", ["fieldBonus_"], "var BONUS_PER_PLACE = 0.01, BONUS_MIN_FIELD = 4;");
+const fld = (...rs) => rs.map(([phone, rating, rank]) => ({ phone, rating, rank }));
+const near = (a, b) => Math.abs(a - b) < 1e-9;
+
+suite("Ratings API · beat-the-field bonus");
+
+test("finishing above your seed earns 0.01 per place; at or below earns nothing", () => {
+  // seeds by rating: a1 b2 c3 d4 e5 f6 g7 h8
+  const got = B.fieldBonus_(fld(["a", 3.1, 1], ["b", 2.9, 2], ["c", 2.8, 4], ["d", 2.7, 5],
+                               ["e", 2.6, 6], ["f", 2.5, 8], ["g", 2.4, 3], ["h", 2.2, 7]));
+  ok(near(got.g, 0.04), "seed 7 finishing 3rd → +0.04, got " + got.g);
+  ok(near(got.h, 0.01), "seed 8 finishing 7th → +0.01");
+  eq(Object.keys(got).sort(), ["g", "h"]);
+});
+
+test("unrated players and no-shows are left out of seed and finish", () => {
+  // x is unrated and finishes 1st; z is a no-show. Among the rated four, d (seed 4) finishes 1st.
+  const got = B.fieldBonus_(fld(["x", null, 1], ["a", 3.0, 3], ["b", 2.8, 4], ["c", 2.6, 5], ["d", 2.4, 2], ["z", 2.9, "NS"]));
+  ok(near(got.d, 0.03), "seed 4 finishing 1st of the rated → +0.03, got " + got.d);
+  ok(!("x" in got) && !("z" in got));
+});
+
+test("equal ratings share the higher seed, so no bonus between them", () => {
+  const got = B.fieldBonus_(fld(["a", 2.5, 2], ["b", 2.5, 1], ["c", 2.5, 3], ["d", 2.5, 4]));
+  eq(got, {});
+});
+
+test("fewer than 4 rated players gives no bonus", () => {
+  eq(B.fieldBonus_(fld(["a", 3, 3], ["b", 2.5, 2], ["c", 2, 1], ["x", "", 4])), {});
+});

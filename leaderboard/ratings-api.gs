@@ -21,6 +21,9 @@
 //  Ranking: only players with MIN_MATCHES+ matches are ranked (by rating),
 //  everyone else gets a blank Ranking — the sheet's own Ranking column is ignored.
 //
+//  Beat-the-field bonus: every sync rewrites the Competitive_bonus tab (BP/FS bonus
+//  per player) from the Americano match tabs. Not added to Rating yet.
+//
 //  SETUP: Extensions → Apps Script in the Rating&Ranking sheet, paste this,
 //  put the service_role key on SB_SERVICE_KEY, Deploy → New deployment → Web app
 //  (Execute as: Me, Who has access: Anyone). Then run installTriggers() once.
@@ -31,6 +34,9 @@ const SB_URL         = 'https://zruqzybdpniofxbcwuat.supabase.co';
 const SB_SERVICE_KEY = 'YOUR_LEGACY_SERVICE_ROLE_KEY_STARTS_WITH_eyJ'; // service_role — never commit the real one
 const MIN_MATCHES = 2;
 const VENUE = { BP: 'Breakpoint', FS: 'First Serve' };
+// Beat-the-field bonus (Americano only): +BONUS_PER_PLACE for every place a player
+// finishes above their seed (their rating's rank in that match), capped at BONUS_CAP.
+const BONUS_PER_PLACE = 0.01, BONUS_CAP = 0.3, BONUS_MIN_FIELD = 4;
 
 
 // ============================================================
@@ -166,7 +172,7 @@ function build_() {
   };
 
   // Matches, in the shape Master's getPlayerMatches sent.
-  const matches = new Map(), allMatches = [], played = { BP: {}, FS: {} };
+  const matches = new Map(), allMatches = [], played = { BP: {}, FS: {} }, bonus = { BP: {}, FS: {} };
   ['BP', 'FS'].forEach(function (k) {
     const t = tab_(k + '_match');
     const I = { id: t.col('Match ID'), date: t.col('Date'), type: t.col('Type'), name: t.col('Player Name'), phone: t.col('Contact Number'),
@@ -175,6 +181,17 @@ function build_() {
     const rows = t.rows.filter(function (r) { return str_(r[I.id]) && str_(r[I.name]); });
     const byEvent = {};
     rows.forEach(function (r) { const id = str_(r[I.id]); (byEvent[id] = byEvent[id] || []).push(r); });
+
+    // ponytail: seeds use today's board rating, not the rating on match day — use Rating History if that matters.
+    Object.keys(byEvent).forEach(function (id) {
+      const ev = byEvent[id];
+      if (!/americano/i.test(str_(ev[0][I.type]))) return;
+      const got = fieldBonus_(ev.map(function (r) {
+        const ph = d10_(r[I.phone]), b = onBoard[k][ph];
+        return { phone: ph, rating: b ? b.Rating : null, rank: rank_(r[I.rank]) };
+      }));
+      Object.keys(got).forEach(function (ph) { bonus[k][ph] = Math.min(BONUS_CAP, round2_((bonus[k][ph] || 0) + got[ph])); });
+    });
 
     rows.forEach(function (r) {
       const id = str_(r[I.id]), type = str_(r[I.type]), ph = d10_(r[I.phone]), date = date_(r[I.date]);
@@ -221,7 +238,30 @@ function build_() {
     });
   });
 
-  return { bp: bp, fs: fs, players: players, matches: matches, allMatches: allMatches };
+  return { bp: bp, fs: fs, players: players, matches: matches, allMatches: allMatches, bonus: bonus };
+}
+
+// One Americano: [{ phone, rating, rank }] → { phone: bonus }. Only rated players
+// with a numeric finish count; seed and finish are both ranked within that group.
+function fieldBonus_(field) {
+  const f = field.filter(function (p) { return p.phone && p.rating != null && p.rating !== '' && typeof p.rank === 'number'; });
+  const out = {};
+  if (f.length < BONUS_MIN_FIELD) return out;
+  f.forEach(function (p) {
+    const seed = 1 + f.filter(function (o) { return o.rating > p.rating; }).length;
+    const finish = 1 + f.filter(function (o) { return o.rank < p.rank; }).length;
+    if (seed > finish) out[p.phone] = BONUS_PER_PLACE * (seed - finish);
+  });
+  return out;
+}
+
+// Competitive_bonus tab: one row per Player_ID player, for the Rating formula to look up.
+function writeBonusTab_(d) {
+  const sh = SS.getSheetByName('Competitive_bonus') || SS.insertSheet('Competitive_bonus');
+  const rows = [['Name', 'Contact Number', 'BP Bonus', 'FS Bonus']];
+  d.players.forEach(function (p, ph) { rows.push([p.name, Number(ph), d.bonus.BP[ph] || 0, d.bonus.FS[ph] || 0]); });
+  sh.clearContents();
+  sh.getRange(1, 1, rows.length, 4).setValues(rows);
 }
 
 
@@ -240,6 +280,7 @@ function sb_(method, path, payload) {
 
 function syncAll() {
   const d = build_(), now = new Date().toISOString();
+  writeBonusTab_(d);
   sb_('post', 'leaderboard_cache', [
     { source: 'breakPoint', payload: d.bp, updated_at: now },
     { source: 'firstServe', payload: d.fs, updated_at: now },
