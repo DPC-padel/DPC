@@ -104,8 +104,9 @@ function tab_(name) {
 }
 
 // Overall board (BP_final / FS_final): every column as-is, plus ID (phone),
-// Girls, a 2-decimal Rating and our Ranking.
-function finalRows_(ev, girls) {
+// Girls, a 2-decimal Rating and our Ranking. Returns every row (opponent ratings
+// need them all) but ranks only the ones keep(ID) lets on this board.
+function finalRows_(ev, girls, keep) {
   const t = tab_(ev + '_final');
   const iName = t.col('Name'), iPhone = t.col('Contact Number'), iMP = t.col('Matches played');
   const rows = t.rows.filter(function (r) { return str_(r[iName]); }).map(function (r) {
@@ -119,7 +120,7 @@ function finalRows_(ev, girls) {
     o.Ranking = '';
     return o;
   });
-  const ranked = rows.filter(function (o) { return o['Matches played'] >= MIN_MATCHES; })
+  const ranked = rows.filter(function (o) { return keep(o.ID) && o['Matches played'] >= MIN_MATCHES; })
     .sort(function (a, b) { return (b.Rating - a.Rating) || (num_(b.Score) - num_(a.Score)) || a.Name.localeCompare(b.Name); });
   ranked.forEach(function (o, i) {
     const prev = ranked[i - 1];
@@ -130,11 +131,11 @@ function finalRows_(ev, girls) {
 
 // Americano / tournament / personal boards in the old endpoints' shape.
 // Players who haven't played that format are left out, as before.
-function subRows_(name) {
+function subRows_(name, keep) {
   const t = tab_(name);
   const iN = t.col('Name'), iP = t.col('Contact Number'), iMP = t.col('MP'), iS = t.col('Score'),
         iW = t.col('Won'), iL = t.col('Loss'), iF = t.col('F Pts'), iA = t.col('A Pts');
-  return t.rows.filter(function (r) { return str_(r[iN]) && num_(r[iMP]) > 0; }).map(function (r) {
+  return t.rows.filter(function (r) { return str_(r[iN]) && num_(r[iMP]) > 0 && keep(d10_(r[iP])); }).map(function (r) {
     const o = { MP: num_(r[iMP]), Score: num_(r[iS]), 'Player ID': d10_(r[iP]), 'Player Name': str_(r[iN]) };
     if (iW >= 0) { o.won = num_(r[iW]); o.Loss = num_(r[iL]); o['F Pts'] = num_(r[iF]); o['A pts'] = num_(r[iA]); }
     return o;
@@ -155,20 +156,26 @@ function build_() {
   });
   const girls = function (phone, name) { return !!(phone && girlPhones[phone]) || !!girlNames[String(name).toLowerCase()]; };
 
-  const boards = { BP: finalRows_('BP', girls), FS: finalRows_('FS', girls) };
+  // A player whose Player_ID Venue is set only shows on that venue's boards; blank shows on both.
+  const home = {};
+  pid.rows.forEach(function (r) { const ph = d10_(r[P.phone]), v = venue_(r[P.venue]); if (ph && v) home[ph] = v; });
+  const keep = { BP: function (ph) { return !home[ph] || home[ph] === VENUE.BP; },
+                 FS: function (ph) { return !home[ph] || home[ph] === VENUE.FS; } };
+
+  const boards = { BP: finalRows_('BP', girls, keep.BP), FS: finalRows_('FS', girls, keep.FS) };
   const onBoard = { BP: {}, FS: {} };
   ['BP', 'FS'].forEach(function (k) { boards[k].forEach(function (o) { if (o.ID) onBoard[k][o.ID] = o; }); });
 
   const bp = {
-    breakPointOverall:    boards.BP,
-    breakPointAmericano:  subRows_('BP_Americano'),
-    breakPointTournament: subRows_('BP_tournament'),
+    breakPointOverall:    boards.BP.filter(function (o) { return keep.BP(o.ID); }),
+    breakPointAmericano:  subRows_('BP_Americano', keep.BP),
+    breakPointTournament: subRows_('BP_tournament', keep.BP),
   };
   const fs = {
-    rankings:         boards.FS,
-    firstServe:       subRows_('FS_Americano'),
-    pmMatchScores:    subRows_('FS_personal'),
-    tournamentScores: subRows_('FS_tournament'),
+    rankings:         boards.FS.filter(function (o) { return keep.FS(o.ID); }),
+    firstServe:       subRows_('FS_Americano', keep.FS),
+    pmMatchScores:    subRows_('FS_personal', keep.FS),
+    tournamentScores: subRows_('FS_tournament', keep.FS),
   };
 
   // Matches, in the shape Master's getPlayerMatches sent.
@@ -238,7 +245,7 @@ function build_() {
     });
   });
 
-  return { bp: bp, fs: fs, players: players, matches: matches, allMatches: allMatches, bonus: bonus };
+  return { bp: bp, fs: fs, players: players, matches: matches, allMatches: allMatches, bonus: bonus, played: played };
 }
 
 // One Americano: [{ phone, rating, rank }] → { phone: bonus }. Only rated players
@@ -337,6 +344,7 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('DPC')
     .addItem('Record ranking & rating snapshot', 'recordSnapshot')
     .addItem('Sync website now', 'syncAll')
+    .addItem('Fill blank venues', 'fillVenues')
     .addToUi();
 }
 
@@ -356,4 +364,24 @@ function recordSnapshot() {
   sh.getRange(2, iRk + 1, rk.length, 1).setValues(rk);
   sh.getRange(2, iRt + 1, rt.length, 1).setValues(rt);
   syncAll();
+}
+
+
+// ============================================================
+//  VENUES — DPC menu → Fill blank venues
+// ============================================================
+// Blank Player_ID Venue → the only venue they've played at. Players who've played
+// at both are left blank and listed, for a person to decide.
+function fillVenues() {
+  const d = build_(), sh = SS.getSheetByName('Player_ID'), t = tab_('Player_ID');
+  const iPh = t.col('Contact Number'), iN = t.col('Name'), iV = t.col('Venue'), both = [];
+  if (iV < 0 || iPh < 0) throw new Error('Player_ID needs "Venue" and "Contact Number" columns');
+  const out = t.rows.map(function (r) {
+    const ph = d10_(r[iPh]), nBP = d.played.BP[ph] || 0, nFS = d.played.FS[ph] || 0;
+    if (venue_(r[iV]) || !ph || !(nBP || nFS)) return [r[iV]];
+    if (nBP && nFS) { both.push(str_(r[iN]) + ' (' + ph + '): BP ' + nBP + ', FS ' + nFS); return [r[iV]]; }
+    return [nBP ? VENUE.BP : VENUE.FS];
+  });
+  if (out.length) sh.getRange(2, iV + 1, out.length, 1).setValues(out);
+  SpreadsheetApp.getUi().alert(both.length ? 'Played at both, fill these yourself:\n' + both.join('\n') : 'All venues filled.');
 }
