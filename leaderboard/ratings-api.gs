@@ -22,7 +22,7 @@
 //  everyone else gets a blank Ranking — the sheet's own Ranking column is ignored.
 //
 //  Beat-the-field bonus: every sync rewrites the Competitive_bonus tab (BP/FS bonus
-//  per player) from the Americano match tabs. Not added to Rating yet.
+//  per player) from Americano matches on/after BONUS_FROM.
 //
 //  SETUP: Extensions → Apps Script in the Rating&Ranking sheet, paste this,
 //  put the service_role key on SB_SERVICE_KEY, Deploy → New deployment → Web app
@@ -36,7 +36,9 @@ const MIN_MATCHES = 2;
 const VENUE = { BP: 'Breakpoint', FS: 'First Serve' };
 // Beat-the-field bonus (Americano only): +BONUS_PER_PLACE for every place a player
 // finishes above their seed (their rating's rank in that match), capped at BONUS_CAP.
-const BONUS_PER_PLACE = 0.01, BONUS_CAP = 0.3, BONUS_MIN_FIELD = 4;
+// Only matches on or after BONUS_FROM count, so history doesn't add a lump.
+const BONUS_PER_PLACE = 0.005, BONUS_CAP = 0.15, BONUS_MIN_FIELD = 4;
+const BONUS_FROM = new Date(2026, 9, 5);   // 5 Oct 2026 (months are 0-based)
 
 
 // ============================================================
@@ -193,6 +195,8 @@ function build_() {
     Object.keys(byEvent).forEach(function (id) {
       const ev = byEvent[id];
       if (!/americano/i.test(str_(ev[0][I.type]))) return;
+      const when = ev[0][I.date] instanceof Date ? ev[0][I.date] : new Date(str_(ev[0][I.date]));
+      if (!(when >= BONUS_FROM)) return;   // older, or a date we can't read → no bonus
       const got = fieldBonus_(ev.map(function (r) {
         const ph = d10_(r[I.phone]), b = onBoard[k][ph];
         return { phone: ph, rating: b ? b.Rating : null, rank: rank_(r[I.rank]) };
