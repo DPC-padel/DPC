@@ -75,7 +75,7 @@ function addToPlayerId(data) {
   tab.getRange(row, cPhone).setValue(phone);
   tab.getRange(row, cName).setValue(name);
   if (cSelf) tab.getRange(row, cSelf).setValue(selfRatingNumerator(data.onboardingRating));
-  if (cGirl) tab.getRange(row, cGirl).setValue(data.girl === true);
+  if (cGirl) tab.getRange(row, cGirl).setValue(data.girl === true ? 'yes' : 'no');   // matches the column's yes/no dropdown
 
   // New player added → rebuild the dashboards.
   try {
