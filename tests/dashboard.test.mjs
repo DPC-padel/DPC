@@ -197,3 +197,30 @@ test("everything down: reports 'couldn't load' rather than 'player not found'", 
   const D = dataLayer({ fetchImpl: async () => { throw new TypeError("Failed to fetch"); } });
   eq((await D.fetchFromAPI("9000000001")).ok, false);
 });
+
+suite("Dashboard · logging opens");
+
+function visitLogger(answer) {
+  const store = new Map(), calls = [];
+  const localStorage = { getItem: k => store.has(k) ? store.get(k) : null, setItem: (k, v) => store.set(k, String(v)) };
+  const fetch = (url, opts) => { calls.push(JSON.parse(opts.body)); return answer(); };
+  const logVisit = new Function("localStorage", "fetch", "PLAYERS_API",
+    extractFns("Dashboard/index.html", ["logVisit"]) + "\nreturn logVisit;")(localStorage, fetch, "https://x");
+  return { logVisit, calls };
+}
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+test("sends the visit once a day per player on this phone", async () => {
+  const V = visitLogger(() => Promise.resolve({ json: () => ({ success: true, logged: true }) }));
+  V.logVisit("9000000001"); await tick();
+  V.logVisit("9000000001"); await tick();
+  eq(V.calls, [{ action: "visit", phone: "9000000001" }]);
+  V.logVisit("9000000004"); await tick();
+  eq(V.calls.length, 2, "a different player on the same phone is logged too");
+});
+test("a failed send is retried on the next open and never throws", async () => {
+  const V = visitLogger(() => Promise.reject(new Error("offline")));
+  V.logVisit("9000000001"); await tick();
+  V.logVisit("9000000001"); await tick();
+  eq(V.calls.length, 2);
+});

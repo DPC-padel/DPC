@@ -19,7 +19,7 @@ node tests/health.mjs                     # live health check — writes to the 
 | `login.test.mjs` | 90-day rolling session, "not registered" detection, friendly network errors |
 | `application.test.mjs` | self-rating pieces; never the Sep 8 deployment that didn't save; only `{ok:true}` counts as saved |
 | `players.test.mjs` | onboarding self-rating floor, phone normalisation (last-10), Application question numbering |
-| `dashboard.test.mjs` | rating/ranking history charts, match filters and numbering, on-phone cache version, rating from the Master venue's board, Supabase → Apps Script fallback |
+| `dashboard.test.mjs` | rating/ranking history charts, match filters and numbering, on-phone cache version, rating from the Master venue's board, Supabase → Apps Script fallback, opens logged once a day |
 | `games.test.mjs` | sheet dates/times, RSVP save retries, partner sign-ups (player already saved, partner failing, tap again), finding your registration |
 | `coaching.test.mjs` | per-type pricing, slot capacity, live-not-demo, times and request ids, failures reported |
 | `leaderboard.test.mjs` | Girls board, qualification gate, ties, sheet → board rows, failures reported; Ratings API beat-the-field bonus |
