@@ -2,6 +2,9 @@
 //  Delhi//PadelCollective — Players API (login / register)
 //  Bound to the Players sheet ("Data" tab). Deployed as a web app (Anyone).
 //
+//  Forgot password: a player can only set a new password after an admin clears
+//  their Password cell (column C) in Data — they message DPC, you clear it.
+//
 //  POST { action: 'visit', phone } → one row per player per day in the
 //  Dashboard_Visits tab (Date, Phone, Name, First open). The Dashboard sends it
 //  on every open, so this shows who opens it each day.
@@ -19,8 +22,6 @@ const C = {
 function doGet(e) {
   const action = e.parameter.action;
   if (action === 'getPlayer')    return respond(getPlayer(e.parameter.phone));
-  if (action === 'getAllPlayers') return respond(getAllPlayers());
-  if (action === 'checkPhone')   return respond(checkPhone(e.parameter.phone));
   return respond({ success: false, message: 'Unknown action' });
 }
 
@@ -142,39 +143,6 @@ function getPlayer(phone) {
   return { success: false, message: 'Player not found' };
 }
 
-// GET ALL PLAYERS
-function getAllPlayers() {
-  const data    = getSheet().getDataRange().getValues();
-  const players = [];
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    if (!row[C.PHONE - 1]) continue;
-    players.push(buildPlayerObj(row));
-  }
-  return { success: true, total: players.length, players };
-}
-
-// CHECK PHONE
-function checkPhone(phone) {
-  if (!phone) return { success: false, message: 'Phone required' };
-  const data = getSheet().getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
-    if (normalise(row[C.PHONE - 1]) !== normalise(phone)) continue;
-    const hasPassword = String(row[C.PASSWORD - 1]).trim().length === 64;
-    return {
-      success:    true,
-      found:      true,
-      registered: hasPassword,
-      name:       row[C.NAME - 1],
-      message:    hasPassword
-        ? 'Already registered. Please log in.'
-        : 'Phone found. Please set your password to register.'
-    };
-  }
-  return { success: true, found: false, message: 'Your number is not in our system yet. Please apply to join first.' };
-}
-
 // UPDATE PASSWORD
 function updatePassword(phone, newPassword) {
   if (!phone || !newPassword)
@@ -186,6 +154,9 @@ function updatePassword(phone, newPassword) {
   const data  = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (normalise(data[i][C.PHONE - 1]) !== normalise(phone)) continue;
+    // Only after an admin has cleared the old password, so nobody can take over an account with just a phone number.
+    if (String(data[i][C.PASSWORD - 1]).trim())
+      return { success: false, message: 'To reset your password, message DPC on WhatsApp first. We\'ll unlock it, then try again here.' };
     sheet.getRange(i + 1, C.PASSWORD).setValue(hashPassword(newPassword));
     return { success: true, message: 'Password updated.' };
   }
