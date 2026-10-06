@@ -7,7 +7,7 @@
 <title>Delhi//PadelCollective — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="config.js?v=10"></script>
+<script src="config.js?v=11"></script>
 <style>
   :root {
     --bg: #f5f3ef; --card: #fff; --border: #e0ddd7; --border-dk: #ccc9c2;
@@ -384,17 +384,23 @@
 // LOGIN
 document.getElementById("pwBtn").addEventListener("click", tryLogin);
 document.getElementById("pwInput").addEventListener("keydown", e=>{ if(e.key==="Enter") tryLogin(); });
-function tryLogin(){
-  if(document.getElementById("pwInput").value===CONFIG.ADMIN_PASSWORD){
+// The password is checked by Supabase (admin_rsvps), not by this page.
+async function tryLogin(){
+  const pw=document.getElementById("pwInput").value;
+  try{
+    await Sheets.fetchAdminRSVPs(pw);
+    sessionStorage.setItem(ADMIN_PW_KEY,pw);
     document.getElementById("loginGate").style.display="none";
     document.getElementById("mainApp").style.display="block";
     init();
-  } else {
+  } catch(e) {
+    document.getElementById("pwErr").textContent=/wrong admin password/i.test(e.message)?"Incorrect password.":"Couldn't check the password. Try again.";
     document.getElementById("pwErr").style.display="block";
     document.getElementById("pwInput").value="";
   }
 }
 document.getElementById("logoutBtn").addEventListener("click",()=>{
+  sessionStorage.removeItem(ADMIN_PW_KEY);
   document.getElementById("mainApp").style.display="none";
   document.getElementById("loginGate").style.display="flex";
   document.getElementById("pwInput").value="";
@@ -415,7 +421,7 @@ const waitlistCnt  = id => allRSVPs.filter(r=>r.eventId===id && r.status==="wait
 
 async function init(){
   try{
-    [allEvents,allRSVPs]=await Promise.all([Sheets.fetchEvents(),Sheets.fetchRSVPs()]);
+    [allEvents,allRSVPs]=await Promise.all([Sheets.fetchEvents(),Sheets.fetchAdminRSVPs()]);
     allEvents.sort((a,b)=>{
       const da=parseSheetDate(a.date), db=parseSheetDate(b.date);
       return (da||0)-(db||0);
@@ -647,13 +653,7 @@ async function markPaid(btn, eventId, phone) {
   btn.textContent = "Saving…";
   btn.disabled = true;
   try {
-    const res  = await fetch(CONFIG.SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "markPaid", data: { eventId, phone } }),
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || "Failed");
+    await Sheets.markPaid(eventId, phone);
     const rsvp = allRSVPs.find(r => r.eventId === eventId && r.phone === phone);
     if (rsvp) rsvp.paid = "true";
     const td = btn.closest("td");

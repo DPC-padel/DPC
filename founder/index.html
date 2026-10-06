@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <script src="../errors.js?v=1"></script>
-<script src="../calender/config.js?v=10"></script>
+<script src="../calender/config.js?v=11"></script>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Founders · Delhi//PadelCollective</title>
@@ -431,21 +431,19 @@ select.inp{cursor:pointer;}
 /* ============================================================
    Founder dashboard — reads three live sources:
      1. Financials  → costing sheet Apps Script (monthly P&L)
-     2. Activity    → dashboard_cache (match history: date+phone+matchId)
+     2. Activity    → Ratings API getAllMatches (match history by player name)
      3. Upcoming    → Games/calendar Apps Script (real-time only)
    Financials are monthly, so Week is disabled for money sections.
    ============================================================ */
 // CONFIG comes from calender/config.js (games Apps Script); founder keys added here.
 Object.assign(CONFIG, {
-  // Access: one of these numbers + the shared password. Numbers are compared
-  // on their last 10 digits, so a +91 prefix is fine.
+  // Access: one of these numbers + the admin password. The password is checked
+  // by the servers (Supabase admin_rsvps, and the financials script, whose
+  // API_TOKEN must be the same password) — never by this page.
   ALLOWED:    ["9599216261", "9211264111", "9818886723"],
-  PASSWORD:   "Padel@2024",
-  FIN_TOKEN:  "dpcfin_sl4cp0IQNa8OW5Y-t5s4t5MFqkqpu-Qh",   // must match API_TOKEN in the Apps Script
   FIN_API:    "https://script.google.com/macros/s/AKfycbw0tsQpAKOpNzWHOcPFaaZtwgoeZqjufCYZO7OhBzlSb0BGOOMQ8XqqMvUJDm5mf2s9fQ/exec",
   EVENTS_API: "https://script.google.com/macros/s/AKfycbzcuaikfX6twFzhGkHz6A5oh1vdUnCu-17br2YqIpzPG7D4DE1cJn9VRLt7wFSJOpQB/exec",
   RATINGS_API: "https://script.google.com/macros/s/AKfycbxxg8sKLWTWvnLcHuBONDC1Q5M8nksdrM6xC2dFBDVfNEi7kJmIstK1wnh_xvF5MqXYvA/exec",
-  SUPABASE:   { url:"https://zruqzybdpniofxbcwuat.supabase.co", key:"sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" },
   SESSION:    "dpcFounder",
 });
 const $ = id => document.getElementById(id);
@@ -454,14 +452,15 @@ const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","
 // ── auth ──
 const last10 = v => String(v||"").replace(/\D/g,"").slice(-10);
 function unlock(){ $("gate").style.display="none"; $("app").style.display="block"; load(); }
-$("pwBtn").addEventListener("click", () => {
-  const ok = CONFIG.ALLOWED.map(last10).includes(last10($("ph").value))
-          && $("pw").value === CONFIG.PASSWORD;
-  if (ok){ sessionStorage.setItem(CONFIG.SESSION, last10($("ph").value)); unlock(); }
+$("pwBtn").addEventListener("click", async () => {
+  const pw = $("pw").value;
+  let ok = CONFIG.ALLOWED.map(last10).includes(last10($("ph").value));
+  if (ok) { try { await Sheets.fetchAdminRSVPs(pw); } catch (e) { ok = false; } }
+  if (ok){ sessionStorage.setItem(CONFIG.SESSION, last10($("ph").value)); sessionStorage.setItem(ADMIN_PW_KEY, pw); unlock(); }
   else $("pwErr").classList.add("show");
 });
 ["ph","pw"].forEach(id => $(id).addEventListener("keydown", e => { if(e.key==="Enter") $("pwBtn").click(); }));
-$("logout").addEventListener("click", () => { sessionStorage.removeItem(CONFIG.SESSION); location.reload(); });
+$("logout").addEventListener("click", () => { sessionStorage.removeItem(CONFIG.SESSION); sessionStorage.removeItem(ADMIN_PW_KEY); location.reload(); });
 
 // ── formatting ──
 const inr = n => "₹" + Math.round(n).toLocaleString("en-IN");
@@ -492,17 +491,15 @@ async function load(){
     const miss = (where, fallback) => e => { failed = true; window.DPC?.report("Founder: " + where, e); return fallback; };
     const eventsP = fetch(CONFIG.EVENTS_API + "?action=events").then(r=>r.json()).catch(miss("events", null));
 
-    const [fin, all, cache] = await Promise.all([
-      fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json()).catch(miss("financials", null)),
+    const [fin, all] = await Promise.all([
+      fetch(CONFIG.FIN_API + "?action=getFinancials&token=" + encodeURIComponent(adminPassword())).then(r=>r.json()).catch(miss("financials", null)),
       // every match row, from the Ratings API (Rating&Ranking sheet)
       fetch(CONFIG.RATINGS_API + "?action=getAllMatches").then(r=>r.json()).catch(miss("all matches", null)),
-      fetch(`${CONFIG.SUPABASE.url}/rest/v1/dashboard_cache?select=phone,matches`,
-        { headers:{ apikey:CONFIG.SUPABASE.key, Authorization:"Bearer "+CONFIG.SUPABASE.key }}).then(r=>r.json()).catch(miss("dashboard cache", [])),
     ]);
     if (fin && !fin.ok) miss("financials", null)(new Error(fin.error || "getFinancials answered ok:false"));
     FIN = fin && fin.ok ? fin : null;
     // Names are the source of truth — not every player has a phone in Master.
-    MATCHES = (all && all.success && all.matches) ? fromAllMatches(all.matches) : flattenMatches(cache);
+    MATCHES = (all && all.success && all.matches) ? fromAllMatches(all.matches) : [];
     NAME_BASED = !!(all && all.success);
     computeFirstSeen();
     buildPeriods();
@@ -522,23 +519,6 @@ async function load(){
   } finally { $("refresh").classList.remove("spin"); }
 }
 $("refresh").addEventListener("click", load);
-
-/** One row per (event, player) — de-duped, since tournaments repeat a player across rows. */
-function flattenMatches(rows){
-  const seen = new Set(), out = [];
-  for (const r of rows || []){
-    const phone = String(r.phone||"");
-    for (const m of r.matches || []){
-      const id = m.matchId, d = parseDate(m.date);
-      if (!id || !d) continue;
-      const k = id + "|" + phone;
-      if (seen.has(k)) continue;
-      seen.add(k);
-      out.push({ id, phone, date:d, type:m.matchType || "Other" });
-    }
-  }
-  return out;
-}
 
 /** Preferred source: every venue match row, keyed by PLAYER NAME. */
 function fromAllMatches(rows){
@@ -928,7 +908,7 @@ const COLLATERALS = {
 let CUSTOM = [], CUSTOM_LOADED = false;
 async function loadCustomCollaterals(){
   try{
-    const r = await fetch(CONFIG.FIN_API + "?action=getCollaterals&token=" + encodeURIComponent(CONFIG.FIN_TOKEN)).then(r=>r.json());
+    const r = await fetch(CONFIG.FIN_API + "?action=getCollaterals&token=" + encodeURIComponent(adminPassword())).then(r=>r.json());
     CUSTOM = (r && r.ok && Array.isArray(r.items)) ? r.items : [];
   }catch(e){ CUSTOM = []; }
   CUSTOM_LOADED = true;
@@ -974,7 +954,7 @@ $("acSave").addEventListener("click", async ()=>{
   if(!section) return err("Name the new section.");
   const btn=$("acSave"); btn.disabled=true; btn.textContent="Saving…";
   try{
-    const q = new URLSearchParams({ action:"addCollateral", token:CONFIG.FIN_TOKEN,
+    const q = new URLSearchParams({ action:"addCollateral", token:adminPassword(),
                                     section, title, url, desc:$("acDesc").value.trim() });
     const r = await fetch(CONFIG.FIN_API + "?" + q).then(r=>r.json());
     if(!r || !r.ok) throw new Error((r&&r.error) || "save failed");
@@ -1013,7 +993,7 @@ function paintCollaterals(){
         </a>`).join("")}</div></div>`).join("");
 }
 
-$("logout2").addEventListener("click", () => { sessionStorage.removeItem(CONFIG.SESSION); location.reload(); });
+$("logout2").addEventListener("click", () => { sessionStorage.removeItem(CONFIG.SESSION); sessionStorage.removeItem(ADMIN_PW_KEY); location.reload(); });
 
 // ── games admin — same Apps Script + Sheet as /calender/admin.html ──
 const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1068,7 +1048,7 @@ async function loadGames(){
   G_LOADED = true;
   $("gRefresh").classList.add("spin");
   try{
-    [G_EVENTS, G_RSVPS] = await Promise.all([Sheets.fetchEvents(), Sheets.fetchRSVPs()]);
+    [G_EVENTS, G_RSVPS] = await Promise.all([Sheets.fetchEvents(), Sheets.fetchAdminRSVPs()]);
     G_EVENTS.sort(byDate);
     renderGames();
   }catch(e){
@@ -1138,10 +1118,7 @@ $("gRsvps").addEventListener("click", async e => {
   const eventId = btn.dataset.paid, phone = btn.dataset.phone;
   btn.textContent = "Saving…"; btn.disabled = true;
   try{
-    const res = await fetch(CONFIG.SCRIPT_URL, { method:"POST", headers:{"Content-Type":"text/plain"},
-      body: JSON.stringify({ action:"markPaid", data:{ eventId, phone } }) });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.error || "Failed");
+    await Sheets.markPaid(eventId, phone);
     const r = G_RSVPS.find(r=>r.eventId===eventId && String(r.phone)===phone);
     if (r) r.paid = "true";
     btn.closest("td").innerHTML = `<span class="badge good">✓ Paid</span>`;
@@ -1210,7 +1187,7 @@ function showView(v){
 const bindViews = root => root.querySelectorAll("[data-v]").forEach(b=>b.addEventListener("click",e=>{ e.preventDefault(); showView(b.dataset.v); }));
 bindViews(document);
 
-if (CONFIG.ALLOWED.map(last10).includes(sessionStorage.getItem(CONFIG.SESSION)||"")) unlock();
+if (CONFIG.ALLOWED.map(last10).includes(sessionStorage.getItem(CONFIG.SESSION)||"") && adminPassword()) unlock();
 </script>
 </body>
 </html>

@@ -4,8 +4,12 @@
 
 const CONFIG = {
   SCRIPT_URL:     "https://script.google.com/macros/s/AKfycbzcuaikfX6twFzhGkHz6A5oh1vdUnCu-17br2YqIpzPG7D4DE1cJn9VRLt7wFSJOpQB/exec",
-  ADMIN_PASSWORD: "padel2024",
 };
+
+// Admin pages: the password the admin typed, kept for this tab only. It is
+// checked by the server (Supabase admin_rsvps, the games script) — never here.
+const ADMIN_PW_KEY = "dpcAdminPw";
+const adminPassword = () => { try { return sessionStorage.getItem(ADMIN_PW_KEY) || ""; } catch (e) { return ""; } };
 
 // Reads come from a Supabase cache (reliable) that the games Apps Script keeps
 // in sync from the Sheet — same pattern as the leaderboard. Writes still POST
@@ -69,10 +73,32 @@ const Sheets = {
     }
   },
 
+  // Admin: every RSVP with phone numbers. Throws "Wrong admin password" if Supabase refuses it.
+  async fetchAdminRSVPs(pw = adminPassword()) {
+    const res = await fetch(`${SUPABASE.url}/rest/v1/rpc/admin_rsvps`, {
+      method: "POST",
+      headers: { apikey: SUPABASE.anonKey, Authorization: `Bearer ${SUPABASE.anonKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ pw }),
+    });
+    if (res.status === 401 || res.status === 403) throw new Error("Wrong admin password");
+    if (!res.ok) throw new Error("Couldn't load registrations");
+    return (await res.json()) || [];
+  },
+
+  async markPaid(eventId, phone) {
+    const res  = await fetch(CONFIG.SCRIPT_URL, {
+      method: "POST", headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "markPaid", data: { eventId, phone }, password: adminPassword() }),
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "Failed to mark paid");
+    return json.data;
+  },
+
   async addEvent(ev) {
     const res  = await fetch(CONFIG.SCRIPT_URL, {
       method: "POST", headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "addEvent", data: ev }),
+      body: JSON.stringify({ action: "addEvent", data: ev, password: adminPassword() }),
     });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || "Failed to add event");
@@ -82,7 +108,7 @@ const Sheets = {
   async editEvent(ev) {
     const res  = await fetch(CONFIG.SCRIPT_URL, {
       method: "POST", headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "editEvent", data: ev }),
+      body: JSON.stringify({ action: "editEvent", data: ev, password: adminPassword() }),
     });
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || "Failed to edit event");

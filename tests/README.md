@@ -41,6 +41,8 @@ Failures are emailed through the "DPC Errors" Apps Script (`DPC_ERRORS_URL` in `
 
 ## Schedule
 
+The financials check needs the admin password, which is never in the repo: put it in `~/.config/dpc/admin-password` (one line, `chmod 600`) or `DPC_ADMIN_PASSWORD`. Without it that check is skipped.
+
 A LaunchAgent on this Mac runs `health.mjs` every 48 hours while the Mac is on:
 `~/Library/LaunchAgents/com.padelcollective.healthcheck.plist`, log at `~/Library/Logs/dpc-healthcheck.log`.
 

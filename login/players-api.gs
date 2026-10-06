@@ -5,6 +5,10 @@
 //  Forgot password: a player can only set a new password after an admin clears
 //  their Password cell (column C) in Data — they message DPC, you clear it.
 //
+//  Login also returns `key`, the player's dashboard key (HMAC of their 10-digit
+//  number with the DASH_SECRET Script Property — the same value as in the Ratings
+//  script). The Dashboard needs it to read their data.
+//
 //  POST { action: 'visit', phone } → one row per player per day in the
 //  Dashboard_Visits tab (Date, Phone, Name, First open). The Dashboard sends it
 //  on every open, so this shows who opens it each day.
@@ -60,7 +64,7 @@ function login(phone, password) {
     if (storedHash !== hashPassword(password))
       return { success: false, message: 'Incorrect password.' };
 
-    return { success: true, player: buildPlayerObj(row) };
+    return { success: true, player: buildPlayerObj(row), key: dashKey(row[C.PHONE - 1]) };
   }
 
   return { success: false, message: 'Phone number not found. Please register first.' };
@@ -202,6 +206,14 @@ function buildPlayerObj(row) {
     name:        row[C.NAME - 1],
     joiningDate: row[C.JOINING_DATE - 1],
   };
+}
+
+function dashKey(phone) {
+  const secret = PropertiesService.getScriptProperties().getProperty('DASH_SECRET');
+  if (!secret) throw new Error('Set the DASH_SECRET Script Property');
+  const d = String(phone).replace(/\D/g, ''), ten = d.length > 10 ? d.slice(-10) : d;
+  return Utilities.computeHmacSha256Signature(ten, secret)
+    .map(b => ('0' + (b & 0xff).toString(16)).slice(-2)).join('');
 }
 
 function normalise(val) {

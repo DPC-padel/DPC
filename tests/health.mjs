@@ -8,6 +8,7 @@
 // Any failure is emailed through the "DPC Errors" script (URL read from errors.js).
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { homedir } from "node:os";
 import { ROOT } from "./lib/harness.mjs";
 
 const SITE = "https://www.padelcollectiveindia.com";
@@ -27,7 +28,11 @@ const MATCHES_API  = pick("Dashboard/index.html", /const MATCHES_API = '([^']+)'
 const PLAYERS_API  = pick("login/index.html", /const PLAYERS_API\s*=\s*'([^']+)'/, "PLAYERS_API");
 const COACHING_API = pick("coaching/config.js", /const COACHING_API = "([^"]+)"/, "COACHING_API");
 const FIN_API      = pick("founder/index.html", /FIN_API:\s*"([^"]+)"/, "FIN_API");
-const FIN_TOKEN    = pick("founder/index.html", /FIN_TOKEN:\s*"([^"]+)"/, "FIN_TOKEN");
+// The admin password (= the financials token) never lives in the repo. Put it in
+// ~/.config/dpc/admin-password (one line, chmod 600) or DPC_ADMIN_PASSWORD.
+const ADMIN_PW = process.env.DPC_ADMIN_PASSWORD || (() => {
+  try { return readFileSync(homedir() + "/.config/dpc/admin-password", "utf8").trim(); } catch { return ""; }
+})();
 const SB_URL       = pick("calender/config.js", /url:\s*"(https:\/\/[^"]+\.supabase\.co)"/, "Supabase url");
 const SB_KEY       = pick("calender/config.js", /anonKey:\s*"([^"]+)"/, "Supabase key");
 const BOARDS = Object.fromEntries([...src("leaderboard/script.js").matchAll(/(firstServe|breakPoint|matchPoint|noida):\s*"(https:\/\/script\.google\.com[^"]+)"/g)].map((m) => [m[1], m[2]]));
@@ -118,7 +123,8 @@ await Promise.all([
     return `${d.length} courts`;
   }),
   check("Founder financials script", async () => {
-    const d = await getJSON(`${FIN_API}?action=getFinancials&token=${encodeURIComponent(FIN_TOKEN)}`);
+    if (!ADMIN_PW) return "skipped: no admin password in ~/.config/dpc/admin-password";
+    const d = await getJSON(`${FIN_API}?action=getFinancials&token=${encodeURIComponent(ADMIN_PW)}`);
     if (!d.ok) throw new Error(d.error || "ok:false");
     return `FY ${d.fy}`;
   }),
@@ -143,8 +149,11 @@ await Promise.all([
   check("Dashboards have every recorded match", async () => {
     const all = await getJSON(`${MATCHES_API}?action=getAllMatches`);
     if (!all.success || !Array.isArray(all.matches)) throw new Error("couldn't read all matches");
-    const rows = await sb("dashboard_cache?select=matches");
-    const shown = new Set(rows.flatMap((r) => (r.matches || []).map((m) => m.matchId)));
+    // dashboard_cache can't be listed any more; this function returns just the match ids.
+    const res = await fetch(`${SB_URL}/rest/v1/rpc/dashboard_match_ids`, { method: "POST", signal: AbortSignal.timeout(30000),
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: "{}" });
+    if (!res.ok) throw new Error(`dashboard_match_ids: HTTP ${res.status}`);
+    const shown = new Set(await res.json());
     const missing = [...new Set(all.matches.map((m) => m.matchId).filter(Boolean))].filter((id) => !shown.has(id));
     if (missing.length) throw new Error(`${missing.length} match(es) on no dashboard yet: ${missing.slice(0, 5).join(", ")}. Editing the Rating&Ranking sheet (or DPC → Sync website now) refreshes them`);
     return `all ${all.matches.length} match rows shown`;

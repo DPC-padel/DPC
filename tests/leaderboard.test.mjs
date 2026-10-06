@@ -208,3 +208,15 @@ test("equal ratings share the higher seed, so no bonus between them", () => {
 test("fewer than 4 rated players gives no bonus", () => {
   eq(B.fieldBonus_(fld(["a", 3, 3], ["b", 2.5, 2], ["c", 2, 1], ["x", "", 4])), {});
 });
+
+suite("Public boards carry no phone numbers");
+
+for (const file of ["leaderboard/ratings-api.gs", "leaderboard/supabase-sync.gs"]) {
+  const { noPhones_ } = loadFns(file, ["noPhones_"]);
+  test(`${file}: every phone field is dropped, at any depth; the rest is kept`, () => {
+    const out = noPhones_({ breakPointOverall: [{ Name: "A", ID: "9810000001", "Contact Number": "+91 98100 00001", Rating: 3.1, Ranking: 1 }],
+      breakPointAmericano: [{ "Player ID": "9810000001", "Player Name": "A", MP: 2 }], noida: [{ playerId: "9810000002", name: "B" }] });
+    eq(out, { breakPointOverall: [{ Name: "A", Rating: 3.1, Ranking: 1 }], breakPointAmericano: [{ "Player Name": "A", MP: 2 }], noida: [{ name: "B" }] });
+    ok(!/98100/.test(JSON.stringify(out)));
+  });
+}

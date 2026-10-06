@@ -8,9 +8,9 @@
 //      leaderboard sync)
 //
 //  GET ?action=
-//    breakPoint | firstServe          → same JSON the old leaderboard endpoints sent
-//    getPlayer&phone=…                → { success, player }
-//    getPlayerMatches&phone=…         → { success, phone, total, matches }
+//    breakPoint | firstServe          → same JSON the old leaderboard endpoints sent, minus phone numbers
+//    getPlayer&phone=…&key=…          → { success, player }      (key: the one login hands out)
+//    getPlayerMatches&phone=…&key=…   → { success, phone, total, matches }
 //    getAllMatches                    → { success, total, matches } (no phones)
 //    sync                             → rebuild leaderboard_cache + dashboard_cache now
 //
@@ -25,7 +25,8 @@
 //  per player) from Americano matches on/after BONUS_FROM.
 //
 //  SETUP: Extensions → Apps Script in the Rating&Ranking sheet, paste this,
-//  put the service_role key on SB_SERVICE_KEY, Deploy → New deployment → Web app
+//  put the service_role key on SB_SERVICE_KEY, set the DASH_SECRET Script Property
+//  (Project Settings → Script Properties; same value as in the Players script), Deploy → New deployment → Web app
 //  (Execute as: Me, Who has access: Anyone). Then run installTriggers() once.
 // ============================================================
 
@@ -48,13 +49,15 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   try {
     switch (p.action) {
-      case 'breakPoint': return json_(build_().bp);
-      case 'firstServe': return json_(build_().fs);
+      case 'breakPoint': return json_(noPhones_(build_().bp));
+      case 'firstServe': return json_(noPhones_(build_().fs));
       case 'getPlayer': {
+        if (!keyOk_(p)) return json_({ success: false, message: 'Please log in again.' });
         const pl = build_().players.get(d10_(p.phone));
         return json_(pl ? { success: true, player: pl } : { success: false, message: 'Player not found' });
       }
       case 'getPlayerMatches': {
+        if (!keyOk_(p)) return json_({ success: false, message: 'Please log in again.' });
         const ph = d10_(p.phone), m = build_().matches.get(ph) || [];
         return json_({ success: true, phone: ph, total: m.length, matches: m });
       }
@@ -72,6 +75,21 @@ function doGet(e) {
 }
 function doPost(e) { return doGet(e); }
 function json_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+
+// A player's dashboard key: HMAC of their 10-digit number. Login (Players script,
+// same DASH_SECRET) hands it out; without it nobody can read someone's dashboard.
+function dashKey_(phone) {
+  const secret = PropertiesService.getScriptProperties().getProperty('DASH_SECRET');
+  if (!secret) throw new Error('Set the DASH_SECRET Script Property');
+  return Utilities.computeHmacSha256Signature(d10_(phone), secret)
+    .map(function (b) { return ('0' + (b & 0xff).toString(16)).slice(-2); }).join('');
+}
+function keyOk_(p) { return !!(p.phone && p.key) && String(p.key) === dashKey_(p.phone); }
+
+// Public copies of the boards: every phone-number field removed.
+function noPhones_(o) {
+  return JSON.parse(JSON.stringify(o, function (k, v) { return /^(id|player ?id|playerid|contact number|phone)$/i.test(k) ? undefined : v; }));
+}
 
 
 // ============================================================
@@ -216,7 +234,7 @@ function build_() {
         m.roundScores = str_(r[I.scores]);
         m.opponents = byEvent[id].filter(function (o) { return o !== r; }).map(function (o) {
           const oph = d10_(o[I.phone]), b = onBoard[k][oph];
-          return { playerName: str_(o[I.name]), phone: oph ? Number(oph) : '', rank: rank_(o[I.rank]),
+          return { playerName: str_(o[I.name]), rank: rank_(o[I.rank]),
                    total: num_(o[I.pf]), rating: b ? b.Rating : '', roundScores: str_(o[I.scores]) };
         });
       } else {
@@ -293,11 +311,11 @@ function syncAll() {
   const d = build_(), now = new Date().toISOString();
   writeBonusTab_(d);
   sb_('post', 'leaderboard_cache', [
-    { source: 'breakPoint', payload: d.bp, updated_at: now },
-    { source: 'firstServe', payload: d.fs, updated_at: now },
+    { source: 'breakPoint', payload: noPhones_(d.bp), updated_at: now },
+    { source: 'firstServe', payload: noPhones_(d.fs), updated_at: now },
   ]);
   const rows = [];
-  d.players.forEach(function (p, ph) { rows.push({ phone: ph, player: p, matches: d.matches.get(ph) || [], updated_at: now }); });
+  d.players.forEach(function (p, ph) { rows.push({ phone: ph, key: dashKey_(ph), player: p, matches: d.matches.get(ph) || [], updated_at: now }); });
   if (rows.length < 50) throw new Error('Only ' + rows.length + ' players in Player_ID — not syncing, so the dashboards are not wiped');
   sb_('post', 'dashboard_cache', rows);
   sb_('delete', 'dashboard_cache?updated_at=lt.' + encodeURIComponent(now));   // players no longer in Player_ID

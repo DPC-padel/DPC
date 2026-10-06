@@ -15,6 +15,12 @@
 //  Sheet edits: an onChange trigger pushes both tabs to games_cache, so anything
 //  you change in the Sheet shows on the site within seconds.
 //
+//  Privacy: games_cache (public) has RSVPs without phone numbers (just the last
+//  4 digits, so a player's phone can spot their own row). The full RSVPs go to
+//  games_private, which only admin_rsvps(password) in Supabase can read.
+//  Admin actions (addEvent, editEvent, markPaid) need body.password to match
+//  the ADMIN_PASSWORD Script Property (Project Settings → Script Properties).
+//
 //  REDEPLOY: Save → Deploy → Manage Deployments → Edit → New Version → Deploy
 //  After pasting v7 once: run installGamesTrigger() from the editor.
 // ============================================================
@@ -77,6 +83,20 @@ function findRSVPRow(sheet, eventId, phone) {
   return -1;
 }
 
+function isAdmin(pw) {
+  const want = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD');
+  return !!want && String(pw || '') === want;
+}
+
+// What the public sees of an RSVP: no phone number, only its last 4 digits.
+function publicRSVPs(list) {
+  return list.map(r => {
+    const o = Object.assign({}, r, { ph4: String(r.phone).replace(/\D/g, '').slice(-4) });
+    delete o.phone;
+    return o;
+  });
+}
+
 // One writer at a time, so two saves can't both miss each other's row.
 function withLock(fn) {
   const lock = LockService.getScriptLock();
@@ -93,7 +113,7 @@ function doGet(e) {
     const action = (e.parameter && e.parameter.action) ? e.parameter.action : "events";
 
     if (action === "events") return makeResponse({ ok: true, data: buildEventsData() });
-    if (action === "rsvps")  return makeResponse({ ok: true, data: buildRSVPsData() });
+    if (action === "rsvps")  return makeResponse({ ok: true, data: publicRSVPs(buildRSVPsData()) });
 
     return makeResponse({ ok: false, error: "Unknown action" });
   } catch (err) {
@@ -119,6 +139,8 @@ function doPost(e) {
 
     const { action, data } = body;
     if (!action || !data) return makeResponse({ ok: false, error: "Missing action or data" });
+    if (["addEvent", "editEvent", "markPaid"].indexOf(action) !== -1 && !isAdmin(body.password))
+      return makeResponse({ ok: false, error: "Wrong admin password" });
 
     // ── ADD EVENT ──────────────────────────────────────────
     if (action === "addEvent") {
@@ -319,13 +341,8 @@ function buildRSVPsData() {
     }));
 }
 
-function syncGamesCache() {
-  const now  = new Date().toISOString();
-  const rows = [
-    { source: 'events', payload: buildEventsData(), updated_at: now },
-    { source: 'rsvps',  payload: buildRSVPsData(),  updated_at: now },
-  ];
-  const resp = UrlFetchApp.fetch(SB_URL + '/rest/v1/games_cache', {
+function sbUpsert(table, rows) {
+  const resp = UrlFetchApp.fetch(SB_URL + '/rest/v1/' + table, {
     method: 'post',
     contentType: 'application/json',
     headers: {
@@ -337,8 +354,19 @@ function syncGamesCache() {
     muteHttpExceptions: true
   });
   if (resp.getResponseCode() >= 300) {
-    throw new Error('games_cache upsert failed: HTTP ' + resp.getResponseCode() + ' — ' + resp.getContentText());
+    throw new Error(table + ' upsert failed: HTTP ' + resp.getResponseCode() + ' — ' + resp.getContentText());
   }
+}
+
+function syncGamesCache() {
+  const now  = new Date().toISOString();
+  const rsvps = buildRSVPsData();
+  // Private copy first: the inbox's "already registered" check reads it.
+  sbUpsert('games_private', [{ source: 'rsvps', payload: rsvps, updated_at: now }]);
+  sbUpsert('games_cache', [
+    { source: 'events', payload: buildEventsData(),   updated_at: now },
+    { source: 'rsvps',  payload: publicRSVPs(rsvps), updated_at: now },
+  ]);
 }
 
 

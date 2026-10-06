@@ -585,8 +585,9 @@ const SESSION_KEY='dpcPlayerSession', SESSION_PHONE_KEY='dpcPlayerPhone', SESSIO
 
 // Once a day per device: tells the login script this player opened the Dashboard. Never blocks the page.
 function logVisit(phone){try{const day=new Date().toDateString();if(localStorage.getItem('dpcVisitDay')===day+phone)return;fetch(PLAYERS_API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'visit',phone})}).then(r=>r.json()).then(d=>{if(d&&d.success)localStorage.setItem('dpcVisitDay',day+phone);}).catch(()=>{});}catch(e){}}
-function clearStoredSession(){localStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_PHONE_KEY);localStorage.removeItem(SESSION_SAVED_AT_KEY);}
-function getValidSessionPhone(){const s=localStorage.getItem(SESSION_KEY),p=localStorage.getItem(SESSION_PHONE_KEY),a=Number(localStorage.getItem(SESSION_SAVED_AT_KEY)||0);if(!s||!p||!a){clearStoredSession();return null;}if(Date.now()-a>SESSION_TTL){clearStoredSession();return null;}localStorage.setItem(SESSION_SAVED_AT_KEY,String(Date.now()));return{savedSession:s,savedPhone:p};}
+const DASH_KEY='dpcDashKey'; // from login; reading this player's dashboard needs it
+function clearStoredSession(){localStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_PHONE_KEY);localStorage.removeItem(SESSION_SAVED_AT_KEY);localStorage.removeItem(DASH_KEY);}
+function getValidSessionPhone(){const s=localStorage.getItem(SESSION_KEY),p=localStorage.getItem(SESSION_PHONE_KEY),a=Number(localStorage.getItem(SESSION_SAVED_AT_KEY)||0);/* no key = logged in before keys existed → log in once more */if(!s||!p||!a||!localStorage.getItem(DASH_KEY)){clearStoredSession();return null;}if(Date.now()-a>SESSION_TTL){clearStoredSession();return null;}localStorage.setItem(SESSION_SAVED_AT_KEY,String(Date.now()));return{savedSession:s,savedPhone:p};}
 function saveCache(phone,player,matches){try{localStorage.setItem(CACHE_PLAYER_KEY,JSON.stringify(player));localStorage.setItem(CACHE_MATCHES_KEY,JSON.stringify(matches));localStorage.setItem(CACHE_AT_KEY,String(Date.now()));localStorage.setItem(CACHE_PHONE_KEY,phone);localStorage.setItem(CACHE_VER_KEY,CACHE_VERSION);}catch(e){}}
 function loadCache(phone){try{if(localStorage.getItem(CACHE_VER_KEY)!==CACHE_VERSION)return null;/* saved by older logic → refetch */const cp=localStorage.getItem(CACHE_PHONE_KEY),ca=Number(localStorage.getItem(CACHE_AT_KEY)||0),pr=localStorage.getItem(CACHE_PLAYER_KEY),mr=localStorage.getItem(CACHE_MATCHES_KEY);if(!pr||!mr||!ca)return null;if(cp!==phone)return null;if(Date.now()-ca>CACHE_TTL)return null;const player=JSON.parse(pr),matches=JSON.parse(mr);if(!hasPlayerData(player,matches))return null;/* ignore a poisoned empty cache */return{player,matches};}catch(e){return null;}}
 function hasPlayerData(p,m){return !!(p&&(p.rating!=null||p.ranking!=null||p.rank!=null||p.totalPoints!=null||p.points!=null||(m&&m.length)));}
@@ -625,23 +626,20 @@ async function fetchFromAPI(phone){
   // cache/Master keys are the bare 10-digit number. Query both keys and keep
   // the richer row, so an old 91-prefixed login still lands on the clean data.
   const ph10=String(phone||'').replace(/\D/g,'').slice(-10);
-  const keys=[...new Set([String(phone),ph10].filter(Boolean))];
+  const key=localStorage.getItem(DASH_KEY)||'';
+  // Only this player's row, by the key login handed out — nobody can list dashboards.
   if(SUPABASE_READY){try{
-    const filter=keys.length>1
-      ?`or=(${keys.map(k=>`phone.eq.${encodeURIComponent(k)}`).join(',')})`
-      :`phone=eq.${encodeURIComponent(keys[0])}`;
-    const res=await fetch(`${SUPABASE.url}/rest/v1/dashboard_cache?${filter}&select=phone,player,matches`,{headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`}});
+    const res=await fetch(`${SUPABASE.url}/rest/v1/rpc/dashboard_for`,{method:'POST',headers:{apikey:SUPABASE.anonKey,Authorization:`Bearer ${SUPABASE.anonKey}`,'Content-Type':'application/json'},body:JSON.stringify({k:key})});
     if(res.ok){
-      const rows=(await res.json()).filter(r=>r&&r.player);
-      rows.sort((a,b)=>((b.matches||[]).length-(a.matches||[]).length)||((b.player.ranking?1:0)-(a.player.ranking?1:0)));
-      if(rows.length){player={...player,...rows[0].player};matches=rows[0].matches||[];gotSupabase=true;}
+      const row=await res.json();
+      if(row&&row.player){player={...player,...row.player};matches=row.matches||[];gotSupabase=true;}
     }
   }catch(e){window.DPC?.report("Dashboard: Supabase cache",e);}}
   let ok=gotSupabase; // did we reach a source and get a definitive answer?
   if(!gotSupabase){
     // Master getPlayer: rating (falls back to self-rating), ranking + rating/ranking history
-    try{const r=await fetch(`${MATCHES_API}?action=getPlayer&phone=${encodeURIComponent(ph10)}`);const d=await r.json();if(d&&d.success&&d.player){player={...player,...d.player};ok=true;}}catch(e){}
-    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(ph10)}`);const d=await r.json();ok=true;if(d&&d.success)matches=d.matches||[];}catch(e){matches=allMatches;}
+    try{const r=await fetch(`${MATCHES_API}?action=getPlayer&phone=${encodeURIComponent(ph10)}&key=${encodeURIComponent(key)}`);const d=await r.json();if(d&&d.success&&d.player){player={...player,...d.player};ok=true;}}catch(e){}
+    try{const r=await fetch(`${MATCHES_API}?action=getPlayerMatches&phone=${encodeURIComponent(ph10)}&key=${encodeURIComponent(key)}`);const d=await r.json();ok=true;if(d&&d.success)matches=d.matches||[];}catch(e){matches=allMatches;}
   }
   // Board = the player's Master venue: players can play anywhere, but their venue only changes by rating/decision.
   // Name = how that board spells them (from a match at that venue); rating/ranking live only in leaderboard_cache.

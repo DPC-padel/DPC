@@ -48,6 +48,11 @@ function syncNow_() {
   }
 }
 
+// Every phone-number field removed (same rule as the Ratings API's public boards).
+function noPhones_(o) {
+  return JSON.parse(JSON.stringify(o, function (k, v) { return /^(id|player ?id|playerid|contact number|phone)$/i.test(k) ? undefined : v; }));
+}
+
 /** Pull the endpoints and upsert their JSON into leaderboard_cache. */
 function syncAll() {
   const rows = [];
@@ -57,7 +62,7 @@ function syncAll() {
     try {
       const res = UrlFetchApp.fetch(SOURCES[source], { muteHttpExceptions: true, followRedirects: true });
       if (res.getResponseCode() !== 200) { errors.push(source + ' HTTP ' + res.getResponseCode()); return; }
-      const payload = JSON.parse(res.getContentText());
+      const payload = noPhones_(JSON.parse(res.getContentText()));   // the cache is public
       rows.push({ source: source, payload: payload, updated_at: new Date().toISOString() });
     } catch (e) {
       errors.push(source + ' ' + e.message);

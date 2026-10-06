@@ -7,7 +7,7 @@
 <title>Delhi//PadelCollective — Schedule</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-<script src="config.js?v=10"></script>
+<script src="config.js?v=11"></script>
 <style>
  @font-face {
   font-family: 'Berling';
@@ -831,13 +831,18 @@ function saveMyRSVP(id,data){ const m=getMyRSVPs(); m[id]=data; localStorage.set
 function clearMyRSVP(id){ const m=getMyRSVPs(); delete m[id]; localStorage.setItem(LS_RSVP,JSON.stringify(m)); }
 function normalizePhone(phone){ return String(phone||"").replace(/[^\d+]/g,""); }
 function sameEventId(a,b){ return String(a??"")===String(b??""); }
+// RSVPs from the server carry only the phone's last 4 digits (ph4); ones added on this page carry the full number.
+function samePhone(r,phone){
+  const p=normalizePhone(phone).replace(/\D/g,"");
+  if(!p)return false;
+  return r.phone ? normalizePhone(r.phone)===normalizePhone(phone) : !!r.ph4 && String(r.ph4)===p.slice(-4);
+}
 function findStoredRSVP(eventId,myEntry){
   if(!myEntry)return null;
-  const myPhone=normalizePhone(myEntry.phone);
   const myName=String(myEntry.name||"").trim().toLowerCase();
   return allRSVPs.find(r=>
     sameEventId(r.eventId,eventId) && (
-      normalizePhone(r.phone)===myPhone ||
+      samePhone(r,myEntry.phone) ||
       (myName && String(r.name||"").trim().toLowerCase()===myName)
     )
   ) || null;
@@ -1070,7 +1075,7 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
 function openConfirm(eventId,phone){
   const me=getMyRSVPs()[eventId],storedEntry=findStoredRSVP(eventId,me);
   pendingRemoveId=eventId;
-  pendingRemovePhone=storedEntry?.phone||phone||me?.phone||"";
+  pendingRemovePhone=me?.phone||storedEntry?.phone||phone||"";
   const isWl=me&&me.status==="waitlist";
   document.getElementById("confirmText").textContent=isWl?"You'll be removed from the waitlist.":"You'll be removed from the confirmed list. Your spot will open up for others.";
   document.getElementById("confirmRemove").disabled=false;document.getElementById("confirmRemove").textContent="Yes, remove me";
@@ -1085,7 +1090,7 @@ document.getElementById("confirmRemove").addEventListener("click",async()=>{
   btn.disabled=true;btn.textContent="Removing…";
   try{
     await Sheets.removeRSVP(pendingRemoveId,pendingRemovePhone);
-    allRSVPs=allRSVPs.filter(r=>!(sameEventId(r.eventId,pendingRemoveId)&&normalizePhone(r.phone)===normalizePhone(pendingRemovePhone)));
+    allRSVPs=allRSVPs.filter(r=>!(sameEventId(r.eventId,pendingRemoveId)&&samePhone(r,pendingRemovePhone)));
     clearMyRSVP(pendingRemoveId);closeConfirm();render();showToast("Removed from session.");
   }catch(err){btn.disabled=false;btn.textContent="Yes, remove me";window.DPC?.report("Games: remove",err);window.DPC?DPC.toast("Couldn't remove you. Try again."):alert("Couldn't remove you. Try again.");}
 });

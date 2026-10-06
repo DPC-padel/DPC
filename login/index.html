@@ -584,6 +584,7 @@ const APPS_SCRIPT_URL = PLAYERS_API;
 const SESSION_KEY = 'dpcPlayerSession';
 const SESSION_PHONE_KEY = 'dpcPlayerPhone';
 const SESSION_SAVED_AT_KEY = 'dpcPlayerSessionSavedAt';
+const DASH_KEY = 'dpcDashKey';   // from login; the Dashboard needs it to read this player's data
 const SESSION_TTL = 90 * 24 * 60 * 60 * 1000; // 90 days of inactivity (rolling)
 
 // ─── TAB SWITCHING ────────────────────────────────────────
@@ -653,6 +654,7 @@ function clearStoredSession() {
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem(SESSION_PHONE_KEY);
   localStorage.removeItem(SESSION_SAVED_AT_KEY);
+  localStorage.removeItem(DASH_KEY);
 }
 
 function hasValidSession() {
@@ -660,7 +662,8 @@ function hasValidSession() {
   const savedPhone = localStorage.getItem(SESSION_PHONE_KEY);
   const savedAt = Number(localStorage.getItem(SESSION_SAVED_AT_KEY) || 0);
 
-  if (!savedSession || !savedPhone || !savedAt) {
+  // No dashboard key = logged in before keys existed → log in once more.
+  if (!savedSession || !savedPhone || !savedAt || !localStorage.getItem(DASH_KEY)) {
     clearStoredSession();
     return false;
   }
@@ -676,7 +679,8 @@ function hasValidSession() {
   return true;
 }
 
-function saveSessionAndRedirect(player, phone) {
+function saveSessionAndRedirect(player, phone, key) {
+  localStorage.setItem(DASH_KEY, key || '');
   localStorage.setItem(SESSION_KEY, JSON.stringify(player));
   localStorage.setItem(SESSION_PHONE_KEY, phone);
   localStorage.setItem(SESSION_SAVED_AT_KEY, String(Date.now()));
@@ -706,7 +710,7 @@ async function handleLogin() {
     if (!loginData.success) throw Object.assign(new Error(loginData.message || 'Login failed.'), { fromServer: true });
 
     const player = loginData.player;
-    saveSessionAndRedirect(player, phone);
+    saveSessionAndRedirect(player, phone, loginData.key);
 } catch(e) {
 
   showAlert('loginError', friendlyError(e, 'Login'));

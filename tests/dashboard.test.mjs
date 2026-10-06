@@ -80,7 +80,7 @@ test("avatar initials, and no crash for a player without a name", () => {
 });
 
 // ── data layer, evaluated from the page with a fake network and storage ──
-function dataLayer({ fetchImpl, store = new Map() }) {
+function dataLayer({ fetchImpl, store = new Map([["dpcDashKey", "k".repeat(64)]]) }) {
   const s = html.indexOf("let currentPlayer = null;"), e = html.indexOf("async function bootstrapDashboard");
   if (s < 0 || e < 0) throw new Error("dashboard.test: data layer not found in Dashboard/index.html");
   const localStorage = { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), removeItem: (k) => store.delete(k) };
@@ -133,17 +133,20 @@ test("unknown venue, missing player or a failed request give nothing", async () 
 
 // A fake internet: Supabase dashboard row, leaderboard boards, and the Apps Script fallback.
 function site({ cacheRow, boards = {}, appsScript }) {
-  return async (url) => {
+  return async (url, opts) => {
     const u = String(url);
-    if (u.includes("dashboard_cache")) {
+    if (u.includes("dashboard_cache")) throw new Error("the Dashboard must never list dashboard_cache");
+    if (u.includes("rpc/dashboard_for")) {
       if (!cacheRow) throw new TypeError("Failed to fetch");
-      return { ok: true, json: async () => [cacheRow] };
+      // Supabase only answers for the right key; no key → no row.
+      return { ok: true, json: async () => (JSON.parse(opts.body).k ? cacheRow : null) };
     }
     if (u.includes("leaderboard_cache")) {
       const src = u.match(/source=eq\.(\w+)/)[1];
       return { ok: true, json: async () => [{ payload: { rankings: boards[src] || [] } }] };
     }
     if (!appsScript) throw new TypeError("Failed to fetch");
+    if (!/[?&]key=k{64}/.test(u)) throw new Error("Apps Script read without the login key: " + u);
     if (u.includes("action=getPlayer&")) return { json: async () => appsScript.player };
     if (u.includes("action=getPlayerMatches")) return { json: async () => appsScript.matches };
     throw new Error("unexpected url " + u);
@@ -151,6 +154,12 @@ function site({ cacheRow, boards = {}, appsScript }) {
 }
 
 suite("Dashboard · loading a player");
+
+test("without a login key nothing is read", async () => {
+  const D = dataLayer({ store: new Map(), fetchImpl: site({ cacheRow: { phone: "1", player: { name: "X", rating: 2 }, matches: [] } }) });
+  const { player } = await D.fetchFromAPI("1");
+  eq(player.rating, undefined);
+});
 
 test("rating comes from the Master venue's board, not the latest match's (Amaya)", async () => {
   const D = dataLayer({ fetchImpl: site({

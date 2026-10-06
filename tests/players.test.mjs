@@ -1,6 +1,7 @@
 // Player data: onboarding self-rating floor + phone normalisation.
 import { readFileSync } from "node:fs";
-import { ROOT, loadFns, suite, test, ok, eq } from "./lib/harness.mjs";
+import { createHmac } from "node:crypto";
+import { ROOT, loadFns, extractFns, suite, test, ok, eq } from "./lib/harness.mjs";
 
 const A = loadFns("Application/index.html", ["displaySelfRating"]);
 
@@ -101,3 +102,24 @@ for (const isAdv of [false, true]) {
     eq(seq, seq.map((_, i) => i + 1), `numbering should run 1..${seq.length}`);
   });
 }
+
+// ── dashboard key: login (Players script) and the Ratings script must agree ──
+const gasStubs = `var PropertiesService = { getScriptProperties: () => ({ getProperty: () => "s3cret" }) };
+var Utilities = { computeHmacSha256Signature: (v, k) => Array.from(__hmac(v, k)).map(b => b > 127 ? b - 256 : b) };`;
+const hmac = (v, k) => createHmac("sha256", k).update(v).digest();
+const P = new Function("__hmac", gasStubs + extractFns("login/players-api.gs", ["dashKey"]) + "\nreturn { dashKey };")(hmac);
+const R = new Function("__hmac", gasStubs + extractFns("leaderboard/ratings-api.gs", ["str_", "d10_", "dashKey_", "keyOk_"]) + "\nreturn { dashKey_, keyOk_ };")(hmac);
+
+suite("Dashboard key (login ↔ Ratings script)");
+
+test("login and the Ratings script give the same key for the same number, however it's typed", () => {
+  const want = hmac("9810000001", "s3cret").toString("hex");
+  for (const typed of ["9810000001", "+91 98100 00001", "919810000001", 9810000001]) eq(P.dashKey(typed), want, String(typed));
+  eq(R.dashKey_("9810000001"), want);
+});
+test("the Ratings script only accepts the key for that number", () => {
+  const k = R.dashKey_("9810000001");
+  ok(R.keyOk_({ phone: "9810000001", key: k }));
+  ok(!R.keyOk_({ phone: "9810000002", key: k }), "another player's key must not work");
+  ok(!R.keyOk_({ phone: "9810000001" }), "no key must not work");
+});

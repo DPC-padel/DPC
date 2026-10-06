@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { ROOT, extractFns, suite, test, ok, eq } from "./lib/harness.mjs";
 
 const src = readFileSync(ROOT + "login/index.html", "utf8");
-const consts = ["SESSION_KEY", "SESSION_PHONE_KEY", "SESSION_SAVED_AT_KEY", "SESSION_TTL"].map((k) => {
+const consts = ["SESSION_KEY", "SESSION_PHONE_KEY", "SESSION_SAVED_AT_KEY", "SESSION_TTL", "DASH_KEY"].map((k) => {
   const m = src.match(new RegExp(`const\\s+${k}\\s*=\\s*([^;]+);`));
   if (!m) throw new Error(`login.test: ${k} not found in login/index.html`);
   return `const ${k} = ${m[1]};`;
@@ -24,6 +24,7 @@ const signIn = (L, ageMs) => {
   L.store.set("dpcPlayerSession", "{}");
   L.store.set("dpcPlayerPhone", "9000000001");
   L.store.set("dpcPlayerSessionSavedAt", String(Date.now() - ageMs));
+  L.store.set("dpcDashKey", "k".repeat(64));
 };
 
 suite("Login · 'not registered' answers");
@@ -54,6 +55,13 @@ test("away longer than the limit: signed out and the session cleared", () => {
 test("a half-saved session is cleared", () => {
   const L = login();
   L.store.set("dpcPlayerPhone", "9000000001");
+  eq([L.hasValidSession(), L.store.size], [false, 0]);
+});
+
+test("logged in before dashboard keys existed: signed out once, so they log in again", () => {
+  const L = login();
+  signIn(L, DAY);
+  L.store.delete("dpcDashKey");
   eq([L.hasValidSession(), L.store.size], [false, 0]);
 });
 

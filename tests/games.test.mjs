@@ -225,7 +225,7 @@ test("partner number must differ from yours", async () => {
 
 suite("Games · finding your own registration");
 
-const mine = (rsvps) => loadFns("calender/index.html", ["normalizePhone", "sameEventId", "findStoredRSVP"], "var allRSVPs = " + JSON.stringify(rsvps) + ";");
+const mine = (rsvps) => loadFns("calender/index.html", ["normalizePhone", "sameEventId", "samePhone", "findStoredRSVP"], "var allRSVPs = " + JSON.stringify(rsvps) + ";");
 
 test("matches by phone, ignoring spaces and dashes", () => {
   const H = mine([{ eventId: "evt1", phone: "98101-78983", name: "K" }]);
@@ -238,5 +238,10 @@ test("falls back to your name, case-insensitive", () => {
 test("another event's registration isn't yours", () => {
   const H = mine([{ eventId: "evt2", phone: "9000000001", name: "K" }]);
   eq(H.findStoredRSVP("evt1", { phone: "9000000001" }), null);
+});
+test("server rows have only the last 4 digits; that still finds you, and another number doesn't", () => {
+  const H = mine([{ eventId: "evt1", name: "Karan", ph4: "8983" }]);
+  eq(H.findStoredRSVP("evt1", { phone: "98101 78983" })?.name, "Karan");
+  eq(H.findStoredRSVP("evt1", { phone: "9810170000" }), null);
 });
 test("nothing stored on this phone gives null", () => eq(mine([]).findStoredRSVP("evt1", null), null));

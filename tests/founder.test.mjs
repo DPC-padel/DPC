@@ -11,8 +11,8 @@ const PCT = line(/const pctS = .+;/, "pctS");
 function founder(state = {}) {
   const pre = `${MON}\n${PCT}\nvar FIN = __s.FIN || null, MATCHES = __s.MATCHES || [], FIRST_SEEN = {};`;
   return new Function("__s", pre + "\n" +
-    extractFns("founder/index.html", ["parseDate", "startOfWeek", "flattenMatches", "fromAllMatches", "computeFirstSeen", "finFor", "actFor", "delta"]) +
-    "\nreturn { parseDate, startOfWeek, flattenMatches, fromAllMatches, finFor, actFor, delta, firstSeen: () => { computeFirstSeen(); return FIRST_SEEN; } };")(state);
+    extractFns("founder/index.html", ["parseDate", "startOfWeek", "fromAllMatches", "computeFirstSeen", "finFor", "actFor", "delta"]) +
+    "\nreturn { parseDate, startOfWeek, fromAllMatches, finFor, actFor, delta, firstSeen: () => { computeFirstSeen(); return FIRST_SEEN; } };")(state);
 }
 const F = founder();
 const ymd = (d) => d && [d.getFullYear(), d.getMonth() + 1, d.getDate()];
@@ -35,13 +35,6 @@ test("weeks start on Monday at midnight", () => {
 
 suite("Founder · match rows");
 
-test("one row per event per player, skipping rows without an id or a date", () => {
-  const out = F.flattenMatches([
-    { phone: "1", matches: [{ matchId: "T1", date: "14 Sep 2026", matchType: "Tournament" }, { matchId: "T1", date: "14 Sep 2026" }, { matchId: "", date: "14 Sep 2026" }, { matchId: "A1", date: "bad" }] },
-    { phone: "2", matches: [{ matchId: "T1", date: "14 Sep 2026" }] },
-  ]);
-  eq(out.map((m) => [m.id, m.phone, m.type]), [["T1", "1", "Tournament"], ["T1", "2", "Other"]]);
-});
 test("name-keyed rows de-duplicate regardless of case and spaces", () => {
   const out = F.fromAllMatches([
     { matchId: "A1", date: "1 Sep 2026", name: "Karan" },
