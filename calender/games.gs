@@ -5,6 +5,7 @@
 //  A: ID | B: Title | C: Date | D: StartTime | E: EndTime
 //  F: Location | G: Game | H: Level | I: TotalSlots | J: Cost | K: CreatedAt
 //  L: Link1 (single payment link) | M: Link2 (partner payment link)
+//  N: Offline (optional — spots booked outside the site, added to the joined count)
 //
 //  RSVPs tab Row 1 (7 columns):
 //  A: EventID | B: EventName | C: Name | D: Phone | E: Status | F: Timestamp | G: Paid
@@ -305,7 +306,7 @@ function buildEventsData() {
   const sheet = getSheet(EVENTS_SHEET);
   const last  = sheet.getLastRow();
   if (last <= 1) return [];
-  return sheet.getRange(2, 1, last - 1, 13).getValues()
+  return sheet.getRange(2, 1, last - 1, Math.min(14, sheet.getMaxColumns())).getValues()
     .filter(r => r[0] !== "" && r[0] !== null && r[0] !== undefined)
     .map(r => ({
       id:         String(r[0]),
@@ -321,6 +322,7 @@ function buildEventsData() {
       createdAt:  String(r[10]),
       link1:      String(r[11] || ""),
       link2:      String(r[12] || ""),
+      offline:    parseInt(r[13]) || 0,
     }));
 }
 
