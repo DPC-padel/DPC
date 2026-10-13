@@ -580,7 +580,7 @@ const SUPABASE = { url:'https://zruqzybdpniofxbcwuat.supabase.co', anonKey:'sb_p
 const SUPABASE_READY = !SUPABASE.url.startsWith('YOUR_');
 const CACHE_PLAYER_KEY='dpcCache_player', CACHE_MATCHES_KEY='dpcCache_matches', CACHE_AT_KEY='dpcCache_savedAt', CACHE_PHONE_KEY='dpcCache_phone', CACHE_TTL=30*24*60*60*1000;
 // Bump when the stored player/matches shape or how rating/ranking is derived changes → every browser refetches once.
-const CACHE_VER_KEY='dpcCache_ver', CACHE_VERSION='2026-09-27-ratings-sheet';
+const CACHE_VER_KEY='dpcCache_ver', CACHE_VERSION='2026-10-13-rank-by-pts';
 const SESSION_KEY='dpcPlayerSession', SESSION_PHONE_KEY='dpcPlayerPhone', SESSION_SAVED_AT_KEY='dpcPlayerSessionSavedAt', SESSION_TTL=90*24*60*60*1000;
 
 // Once a day per device: tells the login script this player opened the Dashboard. Never blocks the page.
@@ -610,12 +610,19 @@ async function fetchLeaderboardStats(name,venue){
     const rankOf=r=>Number(r.Ranking??r.ranking??r.Rank??r.rank)||0;
     const me=list.find(r=>nameOf(r)===key);
     if(!me)return null;
-    // Ranking mirrors the board: only players with >=2 matches, renumbered by standing.
+    // Ranking mirrors the board: only players with >=2 matches. Break Point and First Serve
+    // rank by Pts (equal Pts share a rank, as on the leaderboard); other boards by standing.
     let ranking=null;
     if(matchesOf(me)>=2){
-      const qualified=list.filter(r=>matchesOf(r)>=2).sort((a,b)=>rankOf(a)-rankOf(b));
-      const idx=qualified.findIndex(r=>nameOf(r)===key);
-      if(idx>=0)ranking=idx+1;
+      const qualified=list.filter(r=>matchesOf(r)>=2);
+      if(src==='breakPoint'||src==='firstServe'){
+        const ptsOf=r=>Math.round(Number(r.Score??r.score)||0);
+        ranking=1+qualified.filter(r=>ptsOf(r)>ptsOf(me)).length;
+      }else{
+        qualified.sort((a,b)=>rankOf(a)-rankOf(b));
+        const idx=qualified.findIndex(r=>nameOf(r)===key);
+        if(idx>=0)ranking=idx+1;
+      }
     }
     return {rating:me.Rating??me.rating, ranking};
   }catch(e){return null;}

@@ -116,9 +116,9 @@ const board = (rows) => async () => ({ ok: true, json: async () => [{ payload: {
 
 test("rank counts only players with 2+ matches; names match loosely", async () => {
   const D = dataLayer({ fetchImpl: board([
-    { Name: "Top", Rating: 3.5, Ranking: 1, "Matches played": 5 },
-    { Name: "Newbie", Rating: 3.4, Ranking: 2, "Matches played": 1 },
-    { Name: "Karan Sehgal", Rating: 2.45, Ranking: 3, "Matches played": 6 },
+    { Name: "Top", Rating: 3.5, Ranking: 1, Score: 100, "Matches played": 5 },
+    { Name: "Newbie", Rating: 3.4, Ranking: 2, Score: 200, "Matches played": 1 },
+    { Name: "Karan Sehgal", Rating: 2.45, Ranking: 3, Score: 50, "Matches played": 6 },
   ]) });
   eq(await D.fetchLeaderboardStats("  karan sehgal ", "First Serve"), { rating: 2.45, ranking: 2 });
   eq(await D.fetchLeaderboardStats("Newbie", "First Serve"), { rating: 3.4, ranking: null });
@@ -232,4 +232,35 @@ test("a failed send is retried on the next open and never throws", async () => {
   V.logVisit("9000000001"); await tick();
   V.logVisit("9000000001"); await tick();
   eq(V.calls.length, 2);
+});
+
+suite("Dashboard · rank matches the leaderboard (Pts on Break Point and First Serve)");
+
+test("rank is by Pts on Break Point: more Pts ranks higher whatever the rating", async () => {
+  const D = dataLayer({ fetchImpl: site({ boards: { breakPoint: [
+    { Name: "Nik S", Rating: 3.50, Ranking: 13, Score: 176, "Matches played": 25 },
+    { Name: "Jai", Rating: 3.70, Ranking: 1, Score: 20, "Matches played": 3 },
+    { Name: "Prabh", Rating: 3.62, Ranking: 4, Score: 129, "Matches played": 14 },
+  ] } }) });
+  eq((await D.fetchLeaderboardStats("Nik S", "Breakpoint")).ranking, 1);
+  eq((await D.fetchLeaderboardStats("Jai", "Breakpoint")).ranking, 3);
+});
+test("equal Pts share a rank, like the leaderboard's ties", async () => {
+  const D = dataLayer({ fetchImpl: site({ boards: { firstServe: [
+    { Name: "A", Rating: 2.6, Score: 80, "Matches played": 9 },
+    { Name: "Saatvik", Rating: 2.57, Score: 63, "Matches played": 11 },
+    { Name: "Sachin G", Rating: 2.38, Score: 63, "Matches played": 8 },
+    { Name: "B", Rating: 2.9, Score: 50, "Matches played": 2 },
+  ] } }) });
+  eq((await D.fetchLeaderboardStats("Saatvik", "First Serve")).ranking, 2);
+  eq((await D.fetchLeaderboardStats("Sachin G", "First Serve")).ranking, 2);
+  eq((await D.fetchLeaderboardStats("B", "First Serve")).ranking, 4);
+});
+test("fewer than 2 matches: not ranked; other boards still rank by standing", async () => {
+  const D = dataLayer({ fetchImpl: site({ boards: {
+    firstServe: [{ Name: "New", Rating: 2.1, Score: 999, "Matches played": 1 }],
+    matchPoint: [{ Name: "M1", Rating: 4.5, Ranking: 2, Score: 1, "Matches played": 5 }, { Name: "M2", Rating: 4.6, Ranking: 1, Score: 50, "Matches played": 5 }],
+  } }) });
+  eq((await D.fetchLeaderboardStats("New", "First Serve")).ranking, null);
+  eq((await D.fetchLeaderboardStats("M1", "Match Point")).ranking, 2);
 });
