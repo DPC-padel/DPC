@@ -15,10 +15,6 @@
 <style>
 .reg{max-width:720px;margin-inline:auto;padding:40px var(--pad) 80px}
 .reg-card{background:var(--surface);padding:clamp(20px,4vw,40px)}
-.reg-head{text-align:center;margin-bottom:28px}
-.reg-head .crest{width:96px;height:96px;margin:0 auto 18px}
-.reg-head .script{font-size:clamp(40px,7vw,64px);line-height:1}
-.reg-head .dates{margin-top:16px;display:grid;gap:4px;color:var(--text-2);font-family:var(--serif);font-size:18px}
 .reg .f{padding:0}
 .reg .done{padding:8px 0}
 </style>
@@ -31,13 +27,8 @@
   </div>
 </header>
 <main class="reg">
-  <div class="reg-card frame">
-    <div class="reg-head">
-      <img class="crest" src="../../img/crest.jpg" alt="Delhi Padel League 2026 crest" width="96" height="96">
-      <p class="script">Register to play</p>
-      <h1 style="font-size:clamp(24px,3vw,30px);margin-top:10px">Season One · New Delhi</h1>
-      <div class="dates"><span>Group stage · 20–22 November</span><span>Semis &amp; Finals · 28–29 November</span></div>
-    </div>
+  <h1 class="sr-only" style="position:absolute;left:-9999px">Register to play, Delhi Padel League Season One</h1>
+  <div class="reg-card">
     <form class="f" data-form="player" novalidate>
     <p class="fsec">Your details</p>
     <div class="field"><label for="p-name">Full name</label><input id="p-name" name="name" required autocomplete="name"><span class="err">Enter your full name.</span></div>
