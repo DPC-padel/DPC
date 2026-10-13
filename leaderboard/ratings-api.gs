@@ -167,7 +167,7 @@ function build_() {
   // Player_ID first: it holds the Girls column (optional) the boards need.
   const pid = tab_('Player_ID');
   const P = { phone: pid.col('Contact Number'), name: pid.col('Name'), venue: pid.col('Venue'), self: pid.col('Self Rating'),
-              rkH: pid.col('Ranking History'), rtH: pid.col('Rating History'), girl: pid.col('Girls') };
+              rkH: pid.col('Ranking History'), rtH: pid.col('Rating History'), ptH: pid.col('Pts History'), girl: pid.col('Girls') };
   const girlPhones = {}, girlNames = {};
   if (P.girl >= 0) pid.rows.forEach(function (r) {
     if (!/^(true|yes|y|1)$/i.test(str_(r[P.girl]))) return;
@@ -267,6 +267,8 @@ function build_() {
       selfRating: self,
       ratingHistory: P.rtH >= 0 ? str_(r[P.rtH]) : '',
       rankingHistory: P.rkH >= 0 ? str_(r[P.rkH]) : '',
+      pts: b ? Math.round(num_(b.Score)) : null,   // the leaderboard's Pts
+      ptsHistory: P.ptH >= 0 ? str_(r[P.ptH]) : '',
     });
   });
 
@@ -356,10 +358,11 @@ function runSyncNow() { syncNow_(); }
 
 function installTriggers() {
   ScriptApp.getProjectTriggers().forEach(function (t) {
-    if (['onSheetChange', 'runSyncNow', 'syncAll'].indexOf(t.getHandlerFunction()) !== -1) ScriptApp.deleteTrigger(t);
+    if (['onSheetChange', 'runSyncNow', 'syncAll', 'recordPtsDaily'].indexOf(t.getHandlerFunction()) !== -1) ScriptApp.deleteTrigger(t);
   });
   ScriptApp.newTrigger('onSheetChange').forSpreadsheet(SS).onChange().create();
   ScriptApp.newTrigger('runSyncNow').timeBased().everyHours(1).create();   // safety net
+  ScriptApp.newTrigger('recordPtsDaily').timeBased().everyDays(1).atHour(23).create();   // Pts graph
 }
 
 
@@ -376,20 +379,34 @@ function onOpen() {
 }
 
 // Appends "dd.mm.yyyy, value" to each ranked/rated player's history in Player_ID.
-function recordSnapshot() {
+function recordSnapshot() { snapshot_(true); }
+// Daily (installTriggers): Pts History only, for the Dashboard's Pts graph.
+function recordPtsDaily() { snapshot_(false); }
+
+function snapshot_(rankAndRating) {
   const d = build_(), sh = SS.getSheetByName('Player_ID'), t = tab_('Player_ID');
   const iPh = t.col('Contact Number'), iRk = t.col('Ranking History'), iRt = t.col('Rating History');
+  let iPt = t.col('Pts History');
+  if (iPt < 0) { iPt = sh.getLastColumn(); sh.getRange(1, iPt + 1).setValue('Pts History').setFontWeight('bold'); }
   const today = Utilities.formatDate(new Date(), SS.getSpreadsheetTimeZone(), 'dd.MM.yyyy');
-  const add = function (hist, v) { return (str_(hist) ? str_(hist) + '; ' : '') + today + ', ' + v; };
-  const rk = [], rt = [];
+  const add = function (hist, v) {
+    const parts = str_(hist) ? str_(hist).split(';').map(function (x) { return x.trim(); }) : [];
+    if (parts.length && parts[parts.length - 1].indexOf(today + ',') === 0) parts.pop();   // run twice today → keep the latest
+    return parts.concat(today + ', ' + v).join('; ');
+  };
+  const rk = [], rt = [], pt = [];
   t.rows.forEach(function (r) {
     const p = d.players.get(d10_(r[iPh])), onBoard = p && p.ranking != null;
     rk.push([onBoard ? add(r[iRk], p.ranking) : r[iRk]]);
     rt.push([onBoard ? add(r[iRt], p.rating) : r[iRt]]);
+    pt.push([p && p.pts != null ? add(r[iPt], p.pts) : (r[iPt] == null ? '' : r[iPt])]);
   });
   if (!t.rows.length) return;
-  sh.getRange(2, iRk + 1, rk.length, 1).setValues(rk);
-  sh.getRange(2, iRt + 1, rt.length, 1).setValues(rt);
+  if (rankAndRating) {
+    sh.getRange(2, iRk + 1, rk.length, 1).setValues(rk);
+    sh.getRange(2, iRt + 1, rt.length, 1).setValues(rt);
+  }
+  sh.getRange(2, iPt + 1, pt.length, 1).setValues(pt);
   syncAll();
 }
 

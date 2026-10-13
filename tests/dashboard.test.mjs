@@ -120,8 +120,8 @@ test("rank counts only players with 2+ matches; names match loosely", async () =
     { Name: "Newbie", Rating: 3.4, Ranking: 2, Score: 200, "Matches played": 1 },
     { Name: "Karan Sehgal", Rating: 2.45, Ranking: 3, Score: 50, "Matches played": 6 },
   ]) });
-  eq(await D.fetchLeaderboardStats("  karan sehgal ", "First Serve"), { rating: 2.45, ranking: 2 });
-  eq(await D.fetchLeaderboardStats("Newbie", "First Serve"), { rating: 3.4, ranking: null });
+  eq(await D.fetchLeaderboardStats("  karan sehgal ", "First Serve"), { rating: 2.45, ranking: 2, pts: 50 });
+  eq(await D.fetchLeaderboardStats("Newbie", "First Serve"), { rating: 3.4, ranking: null, pts: 200 });
 });
 test("unknown venue, missing player or a failed request give nothing", async () => {
   const D = dataLayer({ fetchImpl: board([{ Name: "A", Rating: 3, Ranking: 1, "Matches played": 3 }]) });
