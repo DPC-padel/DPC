@@ -98,8 +98,8 @@ function tenDigit(v) {
 }
 
 // Which groups an applicant joins (keys only; links come from Script Properties).
-//  Men:   rating < 3 → First Serve · 3 to under 4 → Break Point · 4+ → Break Point 2.0
-//  Women: never played → Girls 101 · 0-3 months → Girls Beginner · rating above 3 → Inter Girls
+//  Men:   rating < 3 → First Serve · 3 to under 4 → Break Point · 4+ → Break Point+
+//  Women: never played → Girls 101 · 0-3 months → Girls Beginner · rating above 3 → Inter Girls and Break Point
 //         · anyone else → Girls Beginner
 //  Everyone: Noida in their locations → Noida · ticked 40+ → 40+
 function groupsFor(data) {
@@ -108,7 +108,7 @@ function groupsFor(data) {
   if (data.girl === true) {
     if (data.experience === 'Never played') out.push('GIRLS_101');
     else if (data.experience === '0-3 months') out.push('GIRLS_BEGINNER');
-    else if (rating > 3) out.push('GIRLS_INTER');
+    else if (rating > 3) out.push('GIRLS_INTER', 'BREAK_POINT');
     else out.push('GIRLS_BEGINNER');
   } else {
     out.push(rating < 3 ? 'FIRST_SERVE' : rating < 4 ? 'BREAK_POINT' : 'BREAK_POINT_2');
@@ -119,7 +119,7 @@ function groupsFor(data) {
 }
 
 const GROUP_NAMES = {
-  FIRST_SERVE: 'First Serve', BREAK_POINT: 'Break Point', BREAK_POINT_2: 'Break Point 2.0',
+  FIRST_SERVE: 'First Serve', BREAK_POINT: 'Break Point', BREAK_POINT_2: 'Break Point+',
   GIRLS_101: 'Girls 101', GIRLS_BEGINNER: 'Girls Beginner', GIRLS_INTER: 'Inter Girls',
   NOIDA: 'Noida', '40_PLUS': '40+',
 };

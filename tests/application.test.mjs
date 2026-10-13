@@ -43,10 +43,10 @@ test("men: under 3 → First Serve, 3 to under 4 → Break Point, 4 and up → B
   eq(man(3), ["BREAK_POINT"]); eq(man(3.9), ["BREAK_POINT"]);
   eq(man(4), ["BREAK_POINT_2"]); eq(man(5), ["BREAK_POINT_2"]);
 });
-test("women: never played → Girls 101, 0-3 months → Girls Beginner, above 3 → Inter Girls", () => {
+test("women: never played → Girls 101, 0-3 months → Girls Beginner, above 3 → Inter Girls and Break Point", () => {
   eq(girl("Never played", 1), ["GIRLS_101"]);
   eq(girl("0-3 months", 2), ["GIRLS_BEGINNER"]);
-  eq(girl("1+ years", 3.4), ["GIRLS_INTER"]);
+  eq(girl("1+ years", 3.4), ["GIRLS_INTER", "BREAK_POINT"]);
   eq(girl("3-12 months", 2.5), ["GIRLS_BEGINNER"]);
 });
 test("Noida in the locations adds Noida; 40+ adds 40+; for anyone", () => {
