@@ -6,12 +6,20 @@
 //    Players  ← "Register interest"
 //    Partners ← "Partner with DPL"
 //
-//  The League page POSTs JSON: { form: "player" | "sponsor", ...fields }.
-//  Replies { ok: true } once the row is saved, or { ok: false, error }.
+//  Fast path: the League page saves to Supabase league_inbox (~0.2s). A Supabase
+//  trigger POSTs { table: "league_inbox" } here → processInbox() copies the new
+//  rows into the tabs and marks them synced. A 5-minute timer runs it too, in
+//  case a ping is missed (run installTrigger() once).
+//  Fallback: if Supabase can't be reached, the page POSTs the entry here
+//  directly: { form: "player" | "sponsor", ...fields } → { ok: true } once saved.
 //
-//  SETUP: paste this, Save, run setupTabs() once (approve access), then
-//  Deploy → New deployment → Web app (Execute as: Me, Who has access: Anyone).
+//  SETUP: paste this, put the service_role key on SB_SERVICE_KEY, Save, run
+//  setupTabs() and installTrigger() once (approve access), then Deploy → Manage
+//  deployments → Edit → New version (Execute as: Me, Who has access: Anyone).
 // ============================================================
+
+const SB_URL         = 'https://zruqzybdpniofxbcwuat.supabase.co';
+const SB_SERVICE_KEY = 'YOUR_LEGACY_SERVICE_ROLE_KEY_STARTS_WITH_eyJ'; // service_role — never commit the real one
 
 const TABS = {
   player: {
@@ -31,27 +39,66 @@ const TABS = {
 function doPost(e) {
   try {
     const data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    // Supabase ping: the body isn't trusted — processInbox reads the inbox itself with the service key.
+    if (data.table === 'league_inbox') return reply({ ok: true, copied: processInbox() });
     const t = TABS[data.form];
     if (!t) return reply({ ok: false, error: 'Unknown form' });
     const missing = t.required.filter(k => !clean(data[k]));
     if (missing.length) return reply({ ok: false, error: 'Missing: ' + missing.join(', ') });
 
-    const lock = LockService.getScriptLock();
-    lock.waitLock(20000);
-    try {
-      const sh = tab(t);
-      const row = [new Date()].concat(t.fields.map(k => k === 'phone' ? phone(data.phone) : clean(data[k], k === 'message' ? 2000 : 200)), ['New', '']);
-      const r = sh.getLastRow() + 1;
-      // Phone column as text first, so Sheets keeps the +91 and leading zeros.
-      sh.getRange(r, t.headers.indexOf('Phone') + 1).setNumberFormat('@');
-      sh.getRange(r, 1, 1, row.length).setValues([row]);
-    } finally {
-      lock.releaseLock();
-    }
+    withLock(() => appendRows(t, [rowFor(t, data, new Date())]));
     return reply({ ok: true });
   } catch (err) {
     return reply({ ok: false, error: String(err && err.message || err) });
   }
+}
+
+function rowFor(t, data, when) {
+  return [when].concat(t.fields.map(k => k === 'phone' ? phone(data.phone) : clean(data[k], k === 'message' ? 2000 : 200)), ['New', '']);
+}
+
+function appendRows(t, rows) {
+  if (!rows.length) return;
+  const sh = tab(t), r = sh.getLastRow() + 1;
+  // Phone column as text first, so Sheets keeps the +91 and leading zeros.
+  sh.getRange(r, t.headers.indexOf('Phone') + 1, rows.length, 1).setNumberFormat('@');
+  sh.getRange(r, 1, rows.length, rows[0].length).setValues(rows);
+}
+
+function withLock(fn) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try { return fn(); } finally { lock.releaseLock(); }
+}
+
+// ── Supabase inbox → tabs ──
+function sb(method, path, payload) {
+  const opts = { method: method, contentType: 'application/json', muteHttpExceptions: true,
+    headers: { apikey: SB_SERVICE_KEY, Authorization: 'Bearer ' + SB_SERVICE_KEY, Prefer: 'return=minimal' } };
+  if (payload) opts.payload = JSON.stringify(payload);
+  const res = UrlFetchApp.fetch(SB_URL + path, opts);
+  if (res.getResponseCode() >= 300) throw new Error(method + ' ' + path.split('?')[0] + ' failed: HTTP ' + res.getResponseCode() + ' — ' + res.getContentText());
+  const text = res.getContentText();
+  return text ? JSON.parse(text) : null;
+}
+
+// Copies every unsynced inbox row into its tab, then marks them synced. Returns how many.
+function processInbox() {
+  return withLock(() => {
+    const rows = sb('get', '/rest/v1/league_inbox?synced=is.false&order=id&select=*');
+    if (!rows.length) return 0;
+    Object.keys(TABS).forEach(k => appendRows(TABS[k], rows.filter(x => x.form === k).map(x => rowFor(TABS[k], x, new Date(x.created_at)))));
+    SpreadsheetApp.flush();
+    sb('patch', '/rest/v1/league_inbox?id=in.(' + rows.map(x => x.id).join(',') + ')', { synced: true });
+    return rows.length;
+  });
+}
+
+// Every 5 min: copy anything a missed ping left in the inbox. Run installTrigger() once.
+function every5Min() { processInbox(); }
+function installTrigger() {
+  ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === 'every5Min') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('every5Min').timeBased().everyMinutes(5).create();
 }
 
 // Run once from the editor to create both tabs with headers now.

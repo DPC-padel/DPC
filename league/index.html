@@ -656,9 +656,28 @@ document.querySelectorAll('dialog').forEach(d => {
   d.addEventListener('click', e => { if (e.target === d) d.close(); });
 });
 
-// Forms save to the "DPL Interest" Google Sheet (league/interest.gs). The thank-you
-// shows only once the sheet answers { ok: true }; anything else keeps the form and says so.
+// Forms save to Supabase league_inbox first (fast); the "DPL Interest" Apps Script
+// (league/interest.gs) copies each entry into the Google Sheet within seconds. If
+// Supabase can't be reached, the entry goes straight to the Apps Script instead.
+// The thank-you shows only once one of them confirms the save.
 const INTEREST_API = "https://script.google.com/macros/s/AKfycbxeWfHin0MasnfTZFuVLEnP7q1DNWpu-OfIfUeppAfJczKvbxiF_uYnLDGThUNr1lCF/exec";
+const SB = { url: "https://zruqzybdpniofxbcwuat.supabase.co", key: "sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" };
+const INBOX_FIELDS = ["name", "phone", "email", "area", "level", "instagram", "company", "designation", "interest", "message"];
+async function saveEntry(form, fields) {
+  const row = { form };
+  INBOX_FIELDS.forEach(k => { if (k in fields) row[k] = String(fields[k] || "").trim(); });
+  if (row.phone) row.phone = row.phone.replace(/[^\d+ ]/g, "");
+  try {
+    const res = await fetch(`${SB.url}/rest/v1/league_inbox`, { method: "POST",
+      headers: { apikey: SB.key, Authorization: `Bearer ${SB.key}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify(row) });
+    if (res.ok) return;
+    if (res.status === 400) throw Object.assign(new Error("rejected 400"), { invalid: true });   // a check failed (bad phone or email); anything else falls back
+  } catch (x) { if (x.invalid) throw x; }   // network trouble → fall back below
+  const res = await fetch(INTEREST_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ form, ...fields }) });
+  const data = await res.json();
+  if (!data || data.ok !== true) throw new Error(data && data.error || "not saved");
+}
 document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('submit', async e => {
   e.preventDefault();
   if (!f.checkValidity()) { f.reportValidity(); return; }
@@ -668,14 +687,11 @@ document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('su
   err.style.display = 'none';
   btn.disabled = true; btn.textContent = 'Sending…';
   try {
-    const res = await fetch(INTEREST_API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ form: f.dataset.form, ...Object.fromEntries(new FormData(f)) }) });
-    const data = await res.json();
-    if (!data || data.ok !== true) throw new Error(data && data.error || 'not saved');
+    await saveEntry(f.dataset.form, Object.fromEntries(new FormData(f)));
     f.classList.add('sent');
   } catch (x) {
     window.DPC?.report('League: ' + f.dataset.form + ' form', x);
-    err.textContent = "We couldn't send that. Check your connection and try again.";
+    err.textContent = x.invalid ? "Please check your phone number and email, then try again." : "We couldn't send that. Check your connection and try again.";
     err.style.display = 'block';
     btn.disabled = false; btn.textContent = label;
   }
