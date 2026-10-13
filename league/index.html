@@ -258,6 +258,20 @@ dialog[open]{animation:rise .28s var(--ease)}
 form.sent{display:none}
 form.sent~.done{display:block}
 
+/* registration choices */
+.fsec{margin-top:10px;font:600 12px/1.3 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.choices{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.choices legend{font-size:14px;font-weight:600;margin-bottom:8px;width:100%;padding:0}
+.choices label,.consent label{display:inline-flex;align-items:center;gap:10px;cursor:pointer}
+.choices label{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:15px}
+.choices input,.consent input{-webkit-appearance:auto;appearance:auto;width:18px;height:18px;min-height:0;margin:0;padding:0;accent-color:var(--gold);flex:none}
+.choices label:has(input:checked){border-color:var(--gold)}
+.choices .note{width:100%;font-size:13px;color:var(--text-3);margin-top:4px}
+.cat-err{width:100%}
+.cats.bad .cat-err{display:block}
+.consent{gap:12px}
+.consent label{align-items:flex-start;font-size:15px;color:var(--text-2);line-height:1.45}
+.consent input{margin-top:2px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -272,7 +286,7 @@ form.sent~.done{display:block}
     </nav>
     <div class="nav-cta">
       <a class="link" href="#partners">Partner with DPL</a>
-      <button class="btn btn-primary" data-open="player">Register interest</button>
+      <button class="btn btn-primary" data-open="player">Register to play</button>
     </div>
     <button class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
   </div>
@@ -280,7 +294,7 @@ form.sent~.done{display:block}
 <div id="menu">
   <a href="#league">The League</a><a href="#season">Season One</a><a href="#teams">Teams</a><a href="#own">Own a franchise</a><a href="#partners">Partners</a><a href="#about">About</a><a href="../">Delhi Padel Collective</a>
   <div class="ctas">
-    <button class="btn btn-primary" data-open="player">Register interest</button>
+    <button class="btn btn-primary" data-open="player">Register to play</button>
     <button class="btn btn-quiet" data-open="sponsor">Partner with DPL</button>
   </div>
 </div>
@@ -295,7 +309,7 @@ form.sent~.done{display:block}
         <h1>Delhi. Eight franchises. One champion.</h1>
         <p class="lead">Delhi's first franchise-based padel league arrives this November. Three weekends, 120 players, one title.</p>
         <div class="hero-actions">
-          <button class="btn btn-primary" data-open="player" data-track="hero_register">Register your interest</button>
+          <button class="btn btn-primary" data-open="player" data-track="hero_register">Register to play</button>
           <a class="text-link" href="#partners" data-track="hero_partner">Become a partner</a>
         </div>
       </div>
@@ -310,7 +324,7 @@ form.sent~.done{display:block}
       <h2>Three ways into Season One.</h2>
     </div>
     <div class="paths">
-      <article class="path"><h3>Play</h3><p>120 player spots across eight squads. Registrations open soon.</p><button class="btn btn-quiet" data-open="player" data-track="path_play">Register your interest</button></article>
+      <article class="path"><h3>Play</h3><p>120 player spots across eight squads. Registrations are open.</p><button class="btn btn-quiet" data-open="player" data-track="path_play">Register to play</button></article>
       <article class="path"><h3>Own a franchise</h3><p>Eight franchises. Build your squad at auction night and compete for the first title.</p><a class="btn btn-quiet" href="#own" data-track="path_own">See what owners get</a></article>
       <article class="path"><h3>Partner</h3><p>Nine partner seats across three tiers. Your brand inside the game for three weekends.</p><a class="btn btn-quiet" href="#partners" data-track="path_partner">See partnership tiers</a></article>
     </div>
@@ -538,13 +552,13 @@ form.sent~.done{display:block}
     <div class="head" style="margin-bottom:0">
       <p class="eyebrow">Players</p>
       <h2>Want to play?</h2>
-      <p class="lead">Season One player registrations open soon. Leave your details and we'll tell you the day they do.</p>
+      <p class="lead">Season One player registrations are open. It takes about two minutes.</p>
     </div>
-    <p class="status">Registrations not open yet</p>
-    <div><button class="btn btn-primary" data-open="player">Register your interest</button></div>
+    <p class="status">Registrations open</p>
+    <div><button class="btn btn-primary" data-open="player">Register to play</button></div>
     <ol class="how">
-      <li><b>Register interest</b><span>Leave your details today. It takes a minute.</span></li>
-      <li><b>Registrations open</b><span>We message you the day they do.</span></li>
+      <li><b>Register</b><span>Your level, categories and availability. About two minutes.</span></li>
+      <li><b>Confirmation</b><span>We confirm your entry and category on WhatsApp.</span></li>
       <li><b>Auction night</b><span>October 2026. Franchises build their squads.</span></li>
       <li><b>Play</b><span>20–22 and 28–29 November, Delhi + Gurgaon.</span></li>
     </ol>
@@ -562,8 +576,8 @@ form.sent~.done{display:block}
       <details><summary>When and where is Season One?</summary><p>Auction night is in October 2026. Weekend one is 20–22 November and weekend two is 28–29 November, across two venues in Delhi and Gurgaon. Venue names will be announced here.</p></details>
       <details><summary>Who runs it?</summary><p>The team behind Delhi Padel Collective, a community of 1,000+ members that has run 45+ events since February 2026.</p></details>
       <h3>Players</h3>
-      <details><summary>How do I get a spot?</summary><p>Register your interest now. We'll message you when registrations open, and franchises build their squads at auction night in October.</p></details>
-      <details><summary>What level do I need to be?</summary><p>Tell us your level when you register interest. Entry criteria will be shared when registrations open.</p></details>
+      <details><summary>How do I get a spot?</summary><p>Register to play. We confirm your entry and category on WhatsApp, and franchises build their squads at auction night in October.</p></details>
+      <details><summary>What level do I need to be?</summary><p>Every level can play. You pick up to two categories when you register; the DPC team confirms your final category based on level and entries.</p></details>
       <h3>Franchise owners</h3>
       <details><summary>How many franchises are there?</summary><p>Eight. Send an enquiry and we'll walk you through ownership on a call.</p></details>
       <h3>Partners</h3>
@@ -588,26 +602,49 @@ form.sent~.done{display:block}
 </footer>
 
 <div class="sticky" id="sticky">
-  <button class="btn btn-primary" data-open="player">Register interest</button>
+  <button class="btn btn-primary" data-open="player">Register to play</button>
   <button class="btn btn-quiet" data-open="sponsor">Partner with DPL</button>
 </div>
 
 <dialog id="player" aria-labelledby="player-t">
-  <div class="dlg-head"><div><h3 id="player-t">Join the Season One list</h3><p>We'll message you when player registrations open. No spam.</p></div><button class="x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="dlg-head"><div><h3 id="player-t">Register for Season One</h3><p>About two minutes. We'll confirm your entry and category on WhatsApp.</p></div><button class="x" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
   <form class="f" data-form="player" novalidate>
-    <div class="field"><label for="p-name">Name</label><input id="p-name" name="name" required autocomplete="name"><span class="err">Enter your name.</span></div>
+    <p class="fsec">Your details</p>
+    <div class="field"><label for="p-name">Full name</label><input id="p-name" name="name" required autocomplete="name"><span class="err">Enter your full name.</span></div>
     <div class="row">
-      <div class="field"><label for="p-phone">Phone</label><input id="p-phone" name="phone" type="tel" required autocomplete="tel" inputmode="tel" pattern="[0-9+\s\-]{8,}"><span class="err">Enter a phone number with at least 8 digits.</span></div>
+      <div class="field"><label for="p-phone">WhatsApp number</label><input id="p-phone" name="phone" type="tel" required autocomplete="tel" inputmode="tel" pattern="[0-9+\s\-]{8,}"><span class="err">Enter a phone number with at least 8 digits.</span></div>
       <div class="field"><label for="p-email">Email</label><input id="p-email" name="email" type="email" required autocomplete="email"><span class="err">Enter an email like name@example.com.</span></div>
     </div>
     <div class="row">
-      <div class="field"><label for="p-area">City / area <span class="opt">(optional)</span></label><input id="p-area" name="area" autocomplete="address-level2"></div>
-      <div class="field"><label for="p-level">Padel level <span class="opt">(optional)</span></label><select id="p-level" name="level"><option value="">Choose one</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Competitive</option></select></div>
+      <div class="field"><label for="p-gender">Gender</label><select id="p-gender" name="gender" required><option value="">Choose one</option><option>Male</option><option>Female</option></select><span class="err">Choose one.</span></div>
+      <div class="field"><label for="p-age">Age</label><input id="p-age" name="age" type="number" inputmode="numeric" min="12" max="90" required><span class="err">Enter your age.</span></div>
     </div>
     <div class="field"><label for="p-ig">Instagram <span class="opt">(optional)</span></label><input id="p-ig" name="instagram" placeholder="@handle"></div>
-    <button class="btn btn-primary">Keep me in the loop</button>
+
+    <p class="fsec">Your padel</p>
+    <fieldset class="field choices"><legend>How long have you been playing?</legend><label><input type="radio" name="experience" value="Less than 6 months" required><span>Less than 6 months</span></label><label><input type="radio" name="experience" value="6–12 months"><span>6–12 months</span></label><label><input type="radio" name="experience" value="1–2 years"><span>1–2 years</span></label><label><input type="radio" name="experience" value="2+ years"><span>2+ years</span></label></fieldset>
+    <fieldset class="field choices"><legend>How would you rate yourself?</legend><label><input type="radio" name="level" value="Beginner" required><span>Beginner</span></label><label><input type="radio" name="level" value="Intermediate"><span>Intermediate</span></label><label><input type="radio" name="level" value="Advanced"><span>Advanced</span></label></fieldset>
+    <fieldset class="field choices"><legend>Preferred side</legend><label><input type="radio" name="side" value="Right" required><span>Right</span></label><label><input type="radio" name="side" value="Left"><span>Left</span></label><label><input type="radio" name="side" value="Either"><span>Either</span></label></fieldset>
+    <div class="field"><label for="p-tourn">Have you played a tournament in the last year? What was your result?</label><textarea id="p-tourn" name="tournament" rows="2" required placeholder="e.g. DPC Sunday, semi-final. Or: not yet"></textarea><span class="err">Tell us, even if it's "not yet".</span></div>
+    <fieldset class="field choices cats"><legend>Which categories do you want to play? <span class="opt">Pick up to 2</span></legend>
+      <label><input type="checkbox" name="categories" value="Men's doubles Beginner"><span>Men's doubles Beginner</span></label><label><input type="checkbox" name="categories" value="Men's doubles Advanced"><span>Men's doubles Advanced</span></label><label><input type="checkbox" name="categories" value="Mixed doubles"><span>Mixed doubles</span></label><label><input type="checkbox" name="categories" value="Men's 40+"><span>Men's 40+</span></label><label><input type="checkbox" name="categories" value="Women's doubles Beginner"><span>Women's doubles Beginner</span></label><label><input type="checkbox" name="categories" value="Women's doubles Advanced"><span>Women's doubles Advanced</span></label><label><input type="checkbox" name="categories" value="Open"><span>Open</span></label>
+      <p class="note">Final category placement is at the discretion of the DPC team, based on level and entries.</p>
+      <span class="err cat-err">Pick one or two categories.</span>
+    </fieldset>
+
+    <p class="fsec">Availability</p>
+    <fieldset class="field choices"><legend>Can you play both league weekends?</legend><label><input type="radio" name="availability" value="Both weekends" required><span>Both weekends</span></label><label><input type="radio" name="availability" value="Only 20–22 Nov"><span>Only 20–22 Nov</span></label><label><input type="radio" name="availability" value="Only 28–29 Nov"><span>Only 28–29 Nov</span></label><label><input type="radio" name="availability" value="Neither"><span>Neither</span></label></fieldset>
+    <fieldset class="field choices"><legend>T-shirt size</legend><label><input type="radio" name="tshirt" value="S" required><span>S</span></label><label><input type="radio" name="tshirt" value="M"><span>M</span></label><label><input type="radio" name="tshirt" value="L"><span>L</span></label><label><input type="radio" name="tshirt" value="XL"><span>XL</span></label><label><input type="radio" name="tshirt" value="XXL"><span>XXL</span></label></fieldset>
+
+    <p class="fsec">Consent</p>
+    <div class="field consent">
+      <label><input type="checkbox" name="consent" value="Rules and non-refundable fee" required><span>I agree to the league rules, and that the entry fee is non-refundable.</span></label>
+      <label><input type="checkbox" name="consent" value="Plays at own risk" required><span>I understand I play at my own risk.</span></label>
+      <label><input type="checkbox" name="consent" value="Photos and videos" required><span>I consent to photos and videos of me being used on DPC's social media.</span></label>
+    </div>
+    <button class="btn btn-primary">Register</button>
   </form>
-  <div class="done" role="status"><h3>You're on the list.</h3><p>We'll let you know when DPL Season One player registrations open.</p></div>
+  <div class="done" role="status"><h3>You're registered.</h3><p>We'll confirm your entry and category on WhatsApp.</p></div>
 </dialog>
 
 <dialog id="sponsor" aria-labelledby="sponsor-t">
@@ -662,7 +699,8 @@ document.querySelectorAll('dialog').forEach(d => {
 // The thank-you shows only once one of them confirms the save.
 const INTEREST_API = "https://script.google.com/macros/s/AKfycbxeWfHin0MasnfTZFuVLEnP7q1DNWpu-OfIfUeppAfJczKvbxiF_uYnLDGThUNr1lCF/exec";
 const SB = { url: "https://zruqzybdpniofxbcwuat.supabase.co", key: "sb_publishable_O5kl7By_s23gMXNULck-yw_cksU-9Oy" };
-const INBOX_FIELDS = ["name", "phone", "email", "area", "level", "instagram", "company", "designation", "interest", "message"];
+const INBOX_FIELDS = ["name", "phone", "email", "area", "level", "instagram", "company", "designation", "interest", "message",
+  "gender", "age", "experience", "side", "tournament", "categories", "availability", "tshirt", "consent"];
 async function saveEntry(form, fields) {
   const row = { form };
   INBOX_FIELDS.forEach(k => { if (k in fields) row[k] = String(fields[k] || "").trim(); });
@@ -678,8 +716,19 @@ async function saveEntry(form, fields) {
   const data = await res.json();
   if (!data || data.ok !== true) throw new Error(data && data.error || "not saved");
 }
+document.querySelectorAll('.cats').forEach(c => c.addEventListener('change', () => {
+  const n = c.querySelectorAll('input:checked').length;
+  c.classList.toggle('bad', n > 2);
+}));
 document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('submit', async e => {
   e.preventDefault();
+  // Categories: one or two.
+  const cats = f.querySelector('.cats');
+  if (cats) {
+    const n = cats.querySelectorAll('input:checked').length;
+    cats.classList.toggle('bad', n < 1 || n > 2);
+    if (n < 1 || n > 2) { cats.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (f.checkValidity()) return; }
+  }
   if (!f.checkValidity()) { f.reportValidity(); return; }
   const btn = f.querySelector('button'), label = btn.textContent;
   let err = f.querySelector('.ferr');
@@ -687,7 +736,10 @@ document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('su
   err.style.display = 'none';
   btn.disabled = true; btn.textContent = 'Sending…';
   try {
-    await saveEntry(f.dataset.form, Object.fromEntries(new FormData(f)));
+    // Multi-choice answers (categories, consent) become one comma-separated cell.
+    const fd = new FormData(f), fields = {};
+    for (const k of new Set(fd.keys())) fields[k] = fd.getAll(k).join(', ');
+    await saveEntry(f.dataset.form, fields);
     f.classList.add('sent');
   } catch (x) {
     window.DPC?.report('League: ' + f.dataset.form + ' form', x);

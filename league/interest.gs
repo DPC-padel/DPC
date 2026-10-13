@@ -1,10 +1,11 @@
 // ============================================================
 //  Delhi Padel League — interest forms → Google Sheet
 //
-//  Bound to the "DPL Interest" sheet. Two tabs, created with their headers
-//  the first time (or run setupTabs() once from the editor to create them now):
-//    Players  ← "Register interest"
-//    Partners ← "Partner with DPL"
+//  Bound to the "DPL Interest" sheet. Tabs are created with their headers the
+//  first time (or run setupTabs() once from the editor to create them now):
+//    Player registrations ← "Register to play" (Season One registration)
+//    Partners             ← "Partner with DPL"
+//  (An older "Players" tab from the first interest form is left as it is.)
 //
 //  Fast path: the League page saves to Supabase league_inbox (~0.2s). A Supabase
 //  trigger POSTs { table: "league_inbox" } here → processInbox() copies the new
@@ -23,10 +24,12 @@ const SB_SERVICE_KEY = 'YOUR_LEGACY_SERVICE_ROLE_KEY_STARTS_WITH_eyJ'; // servic
 
 const TABS = {
   player: {
-    name: 'Players',
-    headers: ['Timestamp', 'Name', 'Phone', 'Email', 'City / area', 'Padel level', 'Instagram', 'Status', 'Notes'],
-    fields: ['name', 'phone', 'email', 'area', 'level', 'instagram'],
-    required: ['name', 'phone', 'email'],
+    name: 'Player registrations',
+    headers: ['Timestamp', 'Name', 'Phone', 'Email', 'Gender', 'Age', 'Instagram', 'Playing for', 'Level', 'Side',
+              'Tournaments (last year)', 'Categories', 'Availability', 'T-shirt', 'Consent', 'Status', 'Notes'],
+    fields: ['name', 'phone', 'email', 'gender', 'age', 'instagram', 'experience', 'level', 'side',
+             'tournament', 'categories', 'availability', 'tshirt', 'consent'],
+    required: ['name', 'phone', 'email', 'gender', 'age', 'experience', 'level', 'side', 'tournament', 'categories', 'availability', 'tshirt', 'consent'],
   },
   sponsor: {
     name: 'Partners',
@@ -54,7 +57,7 @@ function doPost(e) {
 }
 
 function rowFor(t, data, when) {
-  return [when].concat(t.fields.map(k => k === 'phone' ? phone(data.phone) : clean(data[k], k === 'message' ? 2000 : 200)), ['New', '']);
+  return [when].concat(t.fields.map(k => k === 'phone' ? phone(data.phone) : clean(data[k], k === 'message' ? 2000 : k === 'tournament' ? 500 : 300)), ['New', '']);
 }
 
 function appendRows(t, rows) {
