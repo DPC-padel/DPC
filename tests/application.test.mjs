@@ -54,3 +54,19 @@ test("Noida in the locations adds Noida; 40+ adds 40+; for anyone", () => {
   eq(girl("Never played", 1, { location: "Noida" }), ["GIRLS_101", "NOIDA"]);
 });
 test("a rating sent only as text still routes", () => eq(G.groupsFor({ girl: false, onboardingRating: "3.5" }), ["BREAK_POINT"]));
+
+suite("League interest sheet · values are saved safely");
+
+const LI = loadFns("league/interest.gs", ["clean", "phone"]);
+test("text that looks like a formula is escaped; normal text is untouched", () => {
+  eq(LI.clean("=IMPORTXML(1)"), "'=IMPORTXML(1)");
+  eq(LI.clean("@handle"), "'@handle");
+  eq(LI.clean("  Karan Sehgal  "), "Karan Sehgal");
+  eq(LI.clean(null), "");
+  eq(LI.clean("x".repeat(300)).length, 200);
+});
+test("phones keep digits, + and spaces only, with no escaping apostrophe", () => {
+  eq(LI.phone("+91 98100 00001"), "+91 98100 00001");
+  eq(LI.phone("=98100"), "98100");
+  eq(LI.phone("98-100-00001"), "9810000001");
+});
