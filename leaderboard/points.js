@@ -1,8 +1,9 @@
 // Ranking tab (Break Point and First Serve boards): ranked by Pts — total
 // match points — with each player's rating beside their name and their Pts
-// large on the right. It fills the existing Ranking panel and replaces that
-// panel's rating-ordered table. The podium stays (same look, top 3 by Pts) and
-// the list continues from #4; while searching, the podium hides and every
+// as the main number. It fills the existing Ranking panel in the Girls board's
+// layout (podium, then card rows with avatar, matches and the verified tick),
+// replacing that panel's rating-ordered table. The podium shows the top 3 by Pts
+// and the list continues from #4; while searching, the podium hides and every
 // match shows. The other tabs are unchanged.
 (function () {
   const BOARD = {
@@ -19,15 +20,14 @@
   wrap.className = "pts-wrap";
   wrap.innerHTML = `<div class="podium pts-podium"></div>
     <div class="verified-legend"><span class="vbadge">✓</span> Verified ranking</div>
-    <input class="pts-search" type="search" placeholder="Search player name" aria-label="Search player name">
-    <div class="pts-head" aria-hidden="true"><span>#</span><span>Player · rating</span><span>Pts</span></div>
-    <ol class="pts-list"><li class="pts-empty">Loading…</li></ol>`;
+    <div class="leaderboard-search"><input class="leaderboard-search-input pts-search" type="text" placeholder="Search player name" aria-label="Search player name"></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th class="rank-col">#</th><th>Player</th><th>Rating</th><th>Pts</th></tr></thead>
+      <tbody class="pts-body"><tr><td colspan="4">Loading ranking...</td></tr></tbody>
+    </table></div>`;
   panel.appendChild(wrap);
 
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  // Same colours as the levels on the rating explainer.
-  const BAND = [[0, "#9c968b"], [1, "#6f9a7a"], [2, "#2e4e8e"], [3, "#c8752d"], [4.1, "#7a3b57"], [5, "#b58a2e"], [6, "#9d2e2e"]];
-  const bandColour = (r) => BAND.filter((b) => r >= b[0]).pop()[1];
   let me = "";
   try { me = String(JSON.parse(localStorage.getItem("dpcPlayerSession") || "{}").name || "").trim().toLowerCase(); } catch (e) {}
 
@@ -40,14 +40,19 @@
     podium.hidden = !showPodium;
     if (showPodium) podium.innerHTML = podiumMarkup(rows.slice(0, 3), { value: (p) => p.score, podSub: (p) => "Rating " + Number(p.rating).toFixed(2) });
     const list = q ? rows.filter((r) => r.name.toLowerCase().includes(q)) : showPodium ? rows.slice(3) : rows;
-    wrap.querySelector(".pts-list").innerHTML = list.length ? list.map((r) => {
+    const body = wrap.querySelector(".pts-body");
+    if (!list.length) { body.innerHTML = `<tr><td colspan="4">${q ? "No players found for that search." : "No ranking entries yet."}</td></tr>`; return; }
+    body.innerHTML = list.map((r) => {
       const rating = Number(r.rating);
-      return `<li class="pts-row${r.rank <= 3 ? " pts-top" : ""}${me && r.name.toLowerCase() === me ? " pts-me" : ""}">
-        <span class="pts-rank">${r.rank}</span>
-        <span class="pts-player"><span class="pts-name">${esc(r.name)}</span>${isNaN(rating) ? "" : `<span class="pts-rating" style="--band:${bandColour(rating)}">${rating.toFixed(2)}</span>`}
-          <span class="pts-mp">${r.mp} matches${r.verified ? ' <span class="vbadge" title="Verified ranking">✓</span>' : ""}${r.tied ? " · tied" : ""}</span></span>
-        <span class="pts-score">${r.score}</span></li>`;
-    }).join("") : `<li class="pts-empty">${q ? "No player by that name on this board." : "The board fills up after two matches."}</li>`;
+      const sub = `${r.mp} matches${r.tied ? " · tied" : ""}`;
+      const cell = typeof playerCell === "function" ? playerCell(r, null, sub) : `<span class="player-name">${esc(r.name)}</span>`;   // playerCell: script.js
+      return `<tr class="${me && r.name.toLowerCase() === me ? "highlight" : ""}">
+        <td><span class="rank-text">${r.rank}</span></td>
+        <td>${cell}</td>
+        <td class="stat-cell">${isNaN(rating) ? "—" : rating.toFixed(2)}</td>
+        <td class="stat-cell points-cell pts-cell">${r.score}</td>
+      </tr>`;
+    }).join("");
   }
   search.addEventListener("input", render);
   // Arriving from another board's search (?q=name) pre-fills this one.
@@ -71,6 +76,6 @@
     })
     .catch((e) => {
       window.DPC?.report("Leaderboard: ranking by points", e);
-      wrap.querySelector(".pts-list").innerHTML = `<li class="pts-empty">Couldn't load the ranking. Try again in a minute.</li>`;
+      wrap.querySelector(".pts-body").innerHTML = `<tr><td colspan="4">Couldn't load the ranking. Try again in a minute.</td></tr>`;
     });
 })();
