@@ -23,7 +23,7 @@
 <header id="nav">
   <div class="wrap nav-in">
     <a href="../" class="brand"><img class="crest" src="../../img/crest.jpg" alt="" width="40" height="40">Delhi Padel League</a>
-    <a class="link" href="../" style="font-size:15px;text-decoration:none;color:var(--text-2)">← Back to the League</a>
+    <a href="../" aria-label="Back" onclick="if(history.length>1&&document.referrer){history.back();return false}" style="font-size:22px;line-height:1;text-decoration:none;color:var(--text);padding:8px">←</a>
   </div>
 </header>
 <main class="reg">
@@ -49,6 +49,7 @@
     <div class="field"><label for="p-tourn">Have you played a tournament in the last year? What was your result?</label><textarea id="p-tourn" name="tournament" rows="2" required placeholder="e.g. DPC Sunday, semi-final. Or: not yet"></textarea><span class="err">Tell us, even if it's "not yet".</span></div>
     <fieldset class="field choices cats"><legend>Which categories do you want to play? <span class="opt">Pick up to 2</span></legend>
       <label><input type="checkbox" name="categories" value="Men's doubles Beginner"><span>Men's doubles Beginner</span></label><label><input type="checkbox" name="categories" value="Men's doubles Advanced"><span>Men's doubles Advanced</span></label><label><input type="checkbox" name="categories" value="Mixed doubles"><span>Mixed doubles</span></label><label><input type="checkbox" name="categories" value="Men's 40+"><span>Men's 40+</span></label><label><input type="checkbox" name="categories" value="Women's doubles Beginner"><span>Women's doubles Beginner</span></label><label><input type="checkbox" name="categories" value="Women's doubles Advanced"><span>Women's doubles Advanced</span></label><label><input type="checkbox" name="categories" value="Open"><span>Open</span></label>
+      <p class="note">Entry is ₹4,200 per category.</p>
       <p class="note">Final category placement is at the discretion of the DPC team, based on level and entries.</p>
       <span class="err cat-err">Pick one or two categories.</span>
     </fieldset>
