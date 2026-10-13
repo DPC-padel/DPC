@@ -220,3 +220,42 @@ for (const file of ["leaderboard/ratings-api.gs", "leaderboard/supabase-sync.gs"
     ok(!/98100/.test(JSON.stringify(out)));
   });
 }
+
+suite("Ratings sheet · other-venue matches count at the home venue");
+
+const X = loadFns("leaderboard/ratings-api.gs", ["crossVenueFormula_"]);
+// Real formulas from the Rating&Ranking sheet (FS side).
+const F = {
+  amMP: '=IF($A2="","",COUNTIFS(FS_match!$E:$E,$A2,FS_match!$C:$C,"Americano")+N(SUMIFS(ADJUSTMENTS!$E:$E,ADJUSTMENTS!$A:$A,"FS",ADJUSTMENTS!$B:$B,$A2)))',
+  amScore: '=IF($A2="","",SUMIFS(FS_match!$O:$O,FS_match!$E:$E,$A2,FS_match!$C:$C,"Americano")+N(SUMIFS(ADJUSTMENTS!$D:$D,ADJUSTMENTS!$A:$A,"FS",ADJUSTMENTS!$B:$B,$A2)))',
+  tWon: '=IF($A7="","",COUNTIFS(FS_match!$E:$E,$A7,FS_match!$C:$C,"Tournament",FS_match!$N:$N,"W")+N(SUMIFS(ADJUSTMENTS!$H:$H,ADJUSTMENTS!$A:$A,"FS",ADJUSTMENTS!$B:$B,$A7)))',
+  played: '=IF($A2="","",COUNTIFS(FS_match!$E:$E,$A2,FS_match!$C:$C,"Americano")+IFERROR(VLOOKUP($A2,FS_tournament!$A:$C,3,FALSE()),0))',
+  avg: '=IF($A2="","",IFERROR(AVERAGEIFS(FS_match!$M:$M,FS_match!$E:$E,$A2,FS_match!$C:$C,"Americano"),0))',
+};
+const fs = f => X.crossVenueFormula_(f, "FS_match", "BP_match", "f");
+const balanced = f => { let d = 0; for (const c of f) { d += c === "(" ? 1 : c === ")" ? -1 : 0; if (d < 0) return false; } return d === 0; };
+const HOME = 'LOWER(LEFT(IFERROR(INDEX(Player_ID!$D:$D,MATCH($A2,Player_ID!$B:$B,0)),""),1))="f"';
+
+test("every count and sum over FS_match also adds BP_match, only for First Serve players", () => {
+  eq(fs(F.amMP), '=IF($A2="","",(COUNTIFS(FS_match!$E:$E,$A2,FS_match!$C:$C,"Americano")+IF(' + HOME + ',COUNTIFS(BP_match!$E:$E,$A2,BP_match!$C:$C,"Americano"),0))+N(SUMIFS(ADJUSTMENTS!$E:$E,ADJUSTMENTS!$A:$A,"FS",ADJUSTMENTS!$B:$B,$A2)))');
+  for (const f of Object.values(F)) ok(balanced(fs(f)), "unbalanced: " + fs(f));
+});
+test("ADJUSTMENTS and the tab's own lookups are left alone", () => {
+  ok(fs(F.amScore).includes('N(SUMIFS(ADJUSTMENTS!$D:$D,ADJUSTMENTS!$A:$A,"FS"'));
+  ok(fs(F.played).includes("VLOOKUP($A2,FS_tournament!$A:$C,3,FALSE())"));
+  ok(!/ADJUSTMENTS[^)]*BP_match/.test(fs(F.amScore)));
+});
+test("the row number follows the formula's own row", () => ok(fs(F.tWon).includes("MATCH($A7,Player_ID") && !fs(F.tWon).includes("$A2")));
+test("average finish = all ranked finishes at both venues, no-shows (text) left out", () => {
+  const f = fs(F.avg);
+  ok(balanced(f));
+  ok(f.includes('SUMIFS(BP_match!$M:$M,BP_match!$E:$E,$A2,BP_match!$C:$C,"Americano")'));
+  ok(f.includes('COUNTIFS(BP_match!$E:$E,$A2,BP_match!$C:$C,"Americano",BP_match!$M:$M,">0")'));
+  ok(!f.includes("AVERAGEIFS"));
+});
+test("running it again changes nothing", () => { for (const f of Object.values(F)) eq(fs(fs(f)), fs(f)); });
+test("typed values and blanks are never rewritten", () => { eq(fs("3.16"), "3.16"); eq(fs(""), ""); eq(fs(0), 0); });
+test("the Break Point side mirrors it", () => {
+  const bp = X.crossVenueFormula_(F.amMP.split("FS_match").join("BP_match").split('"FS"').join('"BP"'), "BP_match", "FS_match", "b");
+  ok(bp.includes('IF(LOWER(LEFT(IFERROR(INDEX(Player_ID!$D:$D,MATCH($A2,Player_ID!$B:$B,0)),""),1))="b",COUNTIFS(FS_match!'));
+});

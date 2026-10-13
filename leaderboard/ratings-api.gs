@@ -219,7 +219,10 @@ function build_() {
         const ph = d10_(r[I.phone]), b = onBoard[k][ph];
         return { phone: ph, rating: b ? b.Rating : null, rank: rank_(r[I.rank]) };
       }));
-      Object.keys(got).forEach(function (ph) { bonus[k][ph] = Math.min(BONUS_CAP, round2_((bonus[k][ph] || 0) + got[ph])); });
+      Object.keys(got).forEach(function (ph) {
+        const to = home[ph] === VENUE.BP ? 'BP' : home[ph] === VENUE.FS ? 'FS' : k;   // counts at the player's home venue
+        bonus[to][ph] = Math.min(BONUS_CAP, round2_((bonus[to][ph] || 0) + got[ph]));
+      });
     });
 
     rows.forEach(function (r) {
@@ -309,6 +312,7 @@ function sb_(method, path, payload) {
 
 function syncAll() {
   const d = build_(), now = new Date().toISOString();
+  listAtHomeVenue_();
   writeBonusTab_(d);
   sb_('post', 'leaderboard_cache', [
     { source: 'breakPoint', payload: noPhones_(d.bp), updated_at: now },
@@ -367,6 +371,7 @@ function onOpen() {
     .addItem('Record ranking & rating snapshot', 'recordSnapshot')
     .addItem('Sync website now', 'syncAll')
     .addItem('Fill blank venues', 'fillVenues')
+    .addItem('Include other-venue matches', 'includeOtherVenueMatches')
     .addToUi();
 }
 
@@ -406,4 +411,94 @@ function fillVenues() {
   });
   if (out.length) sh.getRange(2, iV + 1, out.length, 1).setValues(out);
   SpreadsheetApp.getUi().alert(both.length ? 'Played at both, fill these yourself:\n' + both.join('\n') : 'All venues filled.');
+}
+
+
+// ============================================================
+//  HOME VENUE — DPC menu → Include other-venue matches
+// ============================================================
+// A player whose Player_ID Venue is set gets ALL their matches counted at that
+// venue: their matches in the other venue's tab are added to their home
+// Americano / tournament / final numbers. Players with a blank Venue are
+// unchanged (each venue counts only its own tab). Safe to run again.
+const VENUE_TABS = {
+  BP: { match: 'BP_match', other: 'FS_match', letter: 'b', cols: { BP_Americano: ['C', 'D'], BP_tournament: ['C', 'D', 'E', 'F', 'G', 'H'], BP_final: ['I', 'J'] } },
+  FS: { match: 'FS_match', other: 'BP_match', letter: 'f', cols: { FS_Americano: ['C', 'D'], FS_tournament: ['C', 'D', 'E', 'F', 'G', 'H'], FS_final: ['I', 'J'] } },
+};
+
+// One formula → the same formula that also counts the other venue's matches
+// for players whose home is this venue. Returns it unchanged if already done.
+function crossVenueFormula_(f, own, other, letter) {
+  if (!f || f.charAt(0) !== '=' || f.indexOf(other + '!') !== -1) return f;
+  const a = (f.match(/\$A(\d+)/) || [])[0];
+  if (!a) return f;
+  const home = 'LOWER(LEFT(IFERROR(INDEX(Player_ID!$D:$D,MATCH(' + a + ',Player_ID!$B:$B,0)),""),1))="' + letter + '"';
+  const swap = function (t) { return t.split(own + '!').join(other + '!'); };
+  // Every count / sum over this venue's match tab also adds the other tab's, for home players.
+  f = f.replace(new RegExp('\\b(COUNTIFS|SUMIFS)\\(' + own + '!([^()]*)\\)', 'g'), function (m) {
+    return '(' + m + '+IF(' + home + ',' + swap(m) + ',0))';
+  });
+  // Average Americano finish: AVERAGEIFS over two tabs = (sum of ranks) / (number of ranked finishes)
+  f = f.replace(new RegExp('AVERAGEIFS\\(' + own + '!(\\$[A-Z]+:\\$[A-Z]+),([^()]*)\\)', 'g'), function (m, rankCol, rest) {
+    const sum = 'SUMIFS(' + own + '!' + rankCol + ',' + rest + ')', cnt = 'COUNTIFS(' + rest + ',' + own + '!' + rankCol + ',">0")';
+    return '((' + sum + '+IF(' + home + ',' + swap(sum) + ',0))/(' + cnt + '+IF(' + home + ',' + swap(cnt) + ',0)))';
+  });
+  return f;
+}
+
+function includeOtherVenueMatches() {
+  let changed = 0;
+  Object.keys(VENUE_TABS).forEach(function (k) {
+    const v = VENUE_TABS[k];
+    Object.keys(v.cols).forEach(function (tab) {
+      const sh = SS.getSheetByName(tab);
+      if (!sh) throw new Error('Tab "' + tab + '" not found');
+      const last = sh.getLastRow();
+      if (last < 2) return;
+      v.cols[tab].forEach(function (col) {
+        const range = sh.getRange(col + '2:' + col + last), fs = range.getFormulas();
+        // Write back runs of formula cells only, so typed values are never cleared.
+        let start = -1, run = [];
+        const flush = function () { if (run.length) { sh.getRange(col + (start + 2) + ':' + col + (start + 1 + run.length)).setFormulas(run); } run = []; start = -1; };
+        fs.forEach(function (row, i) {
+          if (!row[0]) { flush(); return; }
+          const nf = crossVenueFormula_(row[0], v.match, v.other, v.letter);
+          if (nf !== row[0]) changed++;
+          if (start < 0) start = i;
+          run.push([nf]);
+        });
+        flush();
+      });
+    });
+  });
+  const listed = listAtHomeVenue_();
+  SpreadsheetApp.getUi().alert('Other-venue matches now count at each player\'s home venue.\n' + changed + ' formulas updated, ' + listed + ' players added to their home board.');
+}
+
+// A home-venue player with no matches at home (only at the other venue) isn't
+// listed on the home tabs. An ADJUSTMENTS row for that venue lists them — the
+// sheet's own mechanism. Returns how many rows it added.
+function listAtHomeVenue_() {
+  const adj = SS.getSheetByName('ADJUSTMENTS'), pid = tab_('Player_ID');
+  if (!adj) return 0;
+  const iN = pid.col('Name'), iV = pid.col('Venue');
+  const played = { BP: {}, FS: {} };
+  ['BP', 'FS'].forEach(function (k) { tab_(k + '_match').rows.forEach(function (r) { const n = str_(r[4]); if (n) played[k][n] = true; }); });
+  const a = adj.getRange(2, 1, Math.max(adj.getLastRow() - 1, 1), 2).getValues();
+  const has = {};
+  a.forEach(function (r) { if (str_(r[0]) && str_(r[1])) has[str_(r[0]) + '|' + str_(r[1])] = true; });
+  const add = [];
+  pid.rows.forEach(function (r) {
+    const n = str_(r[iN]), v = venue_(r[iV]), k = v === VENUE.BP ? 'BP' : v === VENUE.FS ? 'FS' : '';
+    const o = k === 'BP' ? 'FS' : 'BP';
+    if (k && n && !played[k][n] && played[o][n] && !has[k + '|' + n]) { add.push([k, n]); has[k + '|' + n] = true; }
+  });
+  if (!add.length) return 0;
+  let row = a.findIndex(function (r) { return !str_(r[0]) && !str_(r[1]); });
+  row = row < 0 ? adj.getLastRow() + 1 : row + 2;
+  add.forEach(function (x, i) {
+    adj.getRange(row + i, 1, 1, 2).setValues([x]);
+    adj.getRange(row + i, 16).setValue('Listed at home venue (plays only at the other venue)');
+  });
+  return add.length;
 }
