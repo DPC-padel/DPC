@@ -656,11 +656,29 @@ document.querySelectorAll('dialog').forEach(d => {
   d.addEventListener('click', e => { if (e.target === d) d.close(); });
 });
 
-// ponytail: forms only confirm locally; wire to a backend once one is chosen
-document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('submit', e => {
+// Forms save to the "DPL Interest" Google Sheet (league/interest.gs). The thank-you
+// shows only once the sheet answers { ok: true }; anything else keeps the form and says so.
+const INTEREST_API = "https://script.google.com/macros/s/AKfycbxeWfHin0MasnfTZFuVLEnP7q1DNWpu-OfIfUeppAfJczKvbxiF_uYnLDGThUNr1lCF/exec";
+document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('submit', async e => {
   e.preventDefault();
   if (!f.checkValidity()) { f.reportValidity(); return; }
-  f.classList.add('sent');
+  const btn = f.querySelector('button'), label = btn.textContent;
+  let err = f.querySelector('.ferr');
+  if (!err) { err = document.createElement('p'); err.className = 'ferr err'; err.setAttribute('role', 'alert'); btn.before(err); }
+  err.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const res = await fetch(INTEREST_API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ form: f.dataset.form, ...Object.fromEntries(new FormData(f)) }) });
+    const data = await res.json();
+    if (!data || data.ok !== true) throw new Error(data && data.error || 'not saved');
+    f.classList.add('sent');
+  } catch (x) {
+    window.DPC?.report('League: ' + f.dataset.form + ' form', x);
+    err.textContent = "We couldn't send that. Check your connection and try again.";
+    err.style.display = 'block';
+    btn.disabled = false; btn.textContent = label;
+  }
 }));
 </script>
 </body>
