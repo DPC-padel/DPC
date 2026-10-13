@@ -920,6 +920,8 @@ function cardHTML(ev,me){
   let actionHTML="";
   // League events (Game = "League") register on the League's own form, not by RSVP, so no slot count.
   const isLeague=String(ev.game||"").trim().toLowerCase()==="league";
+  // Events that don't show "x / y joined" (booked mostly off the site).
+  const hideCount=isLeague||/girls in bloom/i.test(ev.title);
   if(isLeague){
     actionHTML=`<a class="action-btn btn-join" href="../league/register/">Register →</a>`;
   } else if(iDid){
@@ -961,7 +963,7 @@ function cardHTML(ev,me){
       ${costChip}
     </div>
     <div class="c-right">
-      ${isLeague?"":`<div class="slot-info">
+      ${hideCount?"":`<div class="slot-info">
         <strong>${taken}</strong> / ${ev.totalSlots} joined
         <div class="sbar"><div class="sfill ${fc}" style="width:${pct}%"></div></div>
         ${wlCount>0?`<div class="waitlist-count">+${wlCount} waitlist</div>`:""}
