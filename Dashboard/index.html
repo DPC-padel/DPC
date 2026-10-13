@@ -433,9 +433,9 @@ body{
     <div class="info-wrap" id="infoWrap">
       <button class="info-btn" onclick="toggleInfo()" title="What do these mean?">i</button>
       <div class="info-pop" id="infoPop">
-        <p><b>Rank</b> — your spot on the board, set by rating (score breaks ties).</p>
+        <p><b>Rank</b> — your spot on the board, set by Pts on the leaderboard (rating breaks ties).</p>
         <p><b>Rating</b> — your level on the 0–7 skill scale.</p>
-        <p><b>Score</b> — total match points, which feed your rating.</p>
+        <p><b>Score</b> — your accumulated Americano points: every round's points added up.</p>
         <a href="/leaderboard/explainer.html">Full guide →</a>
       </div>
     </div>
@@ -483,7 +483,7 @@ body{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M9.5 9.5a2.5 2.5 0 0 1 4 .5M12 7v10"/></svg>
     </div>
     <div class="q-stat-value" id="statPoints">—</div>
-    <div class="q-stat-label">Points</div>
+    <div class="q-stat-label">Score</div>
     <div class="q-stat-delta up" id="pointsTrend"></div>
   </div>
 </div>
@@ -765,7 +765,7 @@ function renderChart(mode){
       .filter(m=>m.date&&String(m.matchId).toUpperCase().includes('AM'))
       .map(m=>({d:new Date(m.date),v:Number(m.total)||0})));
     if(!h.length)return;
-    data=h.map(x=>Math.round(x.value));label='Points';color='#d97706';
+    data=h.map(x=>Math.round(x.value));label='Score';color='#d97706';
   }
   labels=h.map(x=>x.label);
 
