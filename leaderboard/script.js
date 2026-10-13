@@ -337,9 +337,13 @@ function injectInfoButton() {
   el.innerHTML = `
     <summary class="info-btn" title="What do these mean?">i</summary>
     <div class="info-pop">
+      ${page === "break-point" || page === "first-serve" ? `
+      <p><b>Rank</b> — your spot on the board, set by Pts (rating breaks ties).</p>
+      <p><b>Pts</b> — the points you earn from every match. They depend on where you finish in an Americano and the games you win in a tournament.</p>
+      <p><b>Rating</b> — your level on the 0–7 skill scale.</p>` : `
       <p><b>Rank</b> — your spot on the board, set by rating (score breaks ties).</p>
       <p><b>Rating</b> — your level on the 0–7 skill scale.</p>
-      <p><b>Score</b> — total match points, which feed your rating.</p>
+      <p><b>Score</b> — total match points, which feed your rating.</p>`}
       <a href="explainer.html">Full guide →</a>
     </div>`;
   head.appendChild(el);
