@@ -2,6 +2,11 @@
 // Appends the form response, then adds the player to Player_ID in the
 // Rating&Ranking sheet (phone, name, self-rating, and Girls if that column exists).
 // Phone is normalized to bare 10 digits so it matches login.
+// Replies { ok, groups }: the WhatsApp group buttons this applicant sees (groupsFor).
+// Invite links live in Script Properties (Project Settings → Script Properties),
+// never in code: GROUP_FIRST_SERVE, GROUP_BREAK_POINT, GROUP_BREAK_POINT_2,
+// GROUP_GIRLS_101, GROUP_GIRLS_BEGINNER, GROUP_GIRLS_INTER, GROUP_NOIDA, GROUP_40_PLUS.
+// A group whose link isn't set is simply not shown.
 
 const RATINGS_SHEET_ID = '1N1X86vzB7kZYO0JzXIxEYl6kw5U6qBKt3w75h2Din0A';
 const PLAYER_TAB       = 'Player_ID';
@@ -31,8 +36,11 @@ function doPost(e) {
   // make the form tell the applicant it failed.
   try { addToPlayerId(data); } catch (err) { console.error('Player_ID: ' + err); }
 
+  let groups = [];
+  try { groups = groupLinks(groupsFor(data)); } catch (err) { console.error('Groups: ' + err); }
+
   return ContentService
-    .createTextOutput(JSON.stringify({ ok: true }))
+    .createTextOutput(JSON.stringify({ ok: true, groups: groups }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -87,4 +95,36 @@ function addToPlayerId(data) {
 function tenDigit(v) {
   const d = String(v || '').replace(/\D/g, '');
   return d.length > 10 ? d.slice(-10) : d;
+}
+
+// Which groups an applicant joins (keys only; links come from Script Properties).
+//  Men:   rating < 3 → First Serve · 3 to under 4 → Break Point · 4+ → Break Point 2.0
+//  Women: never played → Girls 101 · 0-3 months → Girls Beginner · rating above 3 → Inter Girls
+//         · anyone else → Girls Beginner
+//  Everyone: Noida in their locations → Noida · ticked 40+ → 40+
+function groupsFor(data) {
+  const rating = Number(data.rating) || parseFloat(data.onboardingRating) || 0;
+  const out = [];
+  if (data.girl === true) {
+    if (data.experience === 'Never played') out.push('GIRLS_101');
+    else if (data.experience === '0-3 months') out.push('GIRLS_BEGINNER');
+    else if (rating > 3) out.push('GIRLS_INTER');
+    else out.push('GIRLS_BEGINNER');
+  } else {
+    out.push(rating < 3 ? 'FIRST_SERVE' : rating < 4 ? 'BREAK_POINT' : 'BREAK_POINT_2');
+  }
+  if (/noida/i.test(String(data.location || ''))) out.push('NOIDA');
+  if (data.age40 === true) out.push('40_PLUS');
+  return out;
+}
+
+const GROUP_NAMES = {
+  FIRST_SERVE: 'First Serve', BREAK_POINT: 'Break Point', BREAK_POINT_2: 'Break Point 2.0',
+  GIRLS_101: 'Girls 101', GIRLS_BEGINNER: 'Girls Beginner', GIRLS_INTER: 'Inter Girls',
+  NOIDA: 'Noida', '40_PLUS': '40+',
+};
+function groupLinks(keys) {
+  const props = PropertiesService.getScriptProperties();
+  return keys.map(k => ({ name: GROUP_NAMES[k], link: String(props.getProperty('GROUP_' + k) || '').trim() }))
+    .filter(g => /^https:\/\/chat\.whatsapp\.com\//.test(g.link));
 }

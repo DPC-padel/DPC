@@ -31,3 +31,26 @@ test("not pointed at the Sep 8 deployment that never saved", () => {
 });
 test("only a {ok:true} reply counts as saved", () => ok(/data\.ok\s*!==\s*true/.test(src), "the submit handler no longer checks for ok:true"));
 test("a failed save is reported", () => ok(src.includes('window.DPC?.report("Application: submit"'), "submit failures aren't reported"));
+
+suite("Application · which WhatsApp groups an applicant gets");
+
+const G = loadFns("Application/onboarding.gs", ["groupsFor"]);
+const man = (rating, more = {}) => G.groupsFor({ girl: false, rating, experience: "1+ years", location: "South Delhi", ...more });
+const girl = (experience, rating, more = {}) => G.groupsFor({ girl: true, rating, experience, location: "South Delhi", ...more });
+
+test("men: under 3 → First Serve, 3 to under 4 → Break Point, 4 and up → Break Point 2.0", () => {
+  eq(man(2.5), ["FIRST_SERVE"]); eq(man(2.99), ["FIRST_SERVE"]);
+  eq(man(3), ["BREAK_POINT"]); eq(man(3.9), ["BREAK_POINT"]);
+  eq(man(4), ["BREAK_POINT_2"]); eq(man(5), ["BREAK_POINT_2"]);
+});
+test("women: never played → Girls 101, 0-3 months → Girls Beginner, above 3 → Inter Girls", () => {
+  eq(girl("Never played", 1), ["GIRLS_101"]);
+  eq(girl("0-3 months", 2), ["GIRLS_BEGINNER"]);
+  eq(girl("1+ years", 3.4), ["GIRLS_INTER"]);
+  eq(girl("3-12 months", 2.5), ["GIRLS_BEGINNER"]);
+});
+test("Noida in the locations adds Noida; 40+ adds 40+; for anyone", () => {
+  eq(man(3.2, { location: "Gurgaon, Noida", age40: true }), ["BREAK_POINT", "NOIDA", "40_PLUS"]);
+  eq(girl("Never played", 1, { location: "Noida" }), ["GIRLS_101", "NOIDA"]);
+});
+test("a rating sent only as text still routes", () => eq(G.groupsFor({ girl: false, onboardingRating: "3.5" }), ["BREAK_POINT"]));
