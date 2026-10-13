@@ -4,20 +4,46 @@
     {
       "name": "dpc-site",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8321"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8321"
+      ],
       "port": 8321
     },
     {
       "name": "dpc-site-2",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8322"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8322"
+      ],
       "port": 8322
     },
     {
       "name": "test-dpc",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8324", "--directory", "/Users/drishtantmaurya/Desktop/Test_DPC"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8324",
+        "--directory",
+        "/Users/drishtantmaurya/Desktop/Test_DPC"
+      ],
       "port": 8324
+    },
+    {
+      "name": "test-subpath",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8325",
+        "--directory",
+        "/private/tmp/claude-501/-Users-drishtantmaurya-Desktop-DPC/c61f8c12-0875-4700-a3b5-af988ee5dcde/scratchpad/subpath"
+      ],
+      "port": 8325
     }
   ]
 }
