@@ -916,7 +916,10 @@ function cardHTML(ev,me){
   const costChip=ev.cost?`<div class="cost-chip">₹${ev.cost}</div>`:"";
 
   let actionHTML="";
-  if(iDid){
+  // League events (Game = "League") register on the League's own form, not by RSVP.
+  if(String(ev.game||"").trim().toLowerCase()==="league"){
+    actionHTML=`<a class="action-btn btn-join" href="../league/register/">Register →</a>`;
+  } else if(iDid){
     actionHTML=`<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
       <button class="action-btn btn-joined" disabled>✓ Joined</button>
       <button class="action-btn btn-remove" data-id="${ev.id}" data-phone="${removePhone}">Remove me</button>
