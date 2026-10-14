@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=EB+Garamond:wght@500;600;700&family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../league.css?v=1">
+<link rel="stylesheet" href="../league.css?v=2">
 <style>
 .reg{max-width:720px;margin-inline:auto;padding:40px var(--pad) 80px}
 .reg-card{background:var(--surface);padding:clamp(20px,4vw,40px)}
@@ -30,6 +30,13 @@
   <h1 class="sr-only" style="position:absolute;left:-9999px">Register to play, Delhi Padel League Season One</h1>
   <div class="reg-card">
     <form class="f" data-form="player" novalidate>
+    <p class="fsec">The dates</p>
+    <div class="dates"><p><b>Group stage</b> Fri 20 – Sun 22 Nov</p><p><b>Semis &amp; Finals</b> Sat 28 – Sun 29 Nov</p></div>
+    <fieldset class="field choices"><legend>Which dates can you play?</legend><label><input type="radio" name="availability" value="Both weekends" required><span>Both weekends</span></label><label><input type="radio" name="availability" value="Only 20–22 Nov"><span>Only 20–22 Nov</span></label><label><input type="radio" name="availability" value="Only 28–29 Nov"><span>Only 28–29 Nov</span></label>
+      <p class="note">Missing one weekend is fine, but teams will see it, and it will affect whether they pick you.</p>
+    </fieldset>
+    <div class="field consent"><label><input type="checkbox" name="consent" value="Available on the dates picked" required><span>I confirm I'll be in Delhi and available to play on the dates I've picked.</span></label></div>
+
     <p class="fsec">Your details</p>
     <div class="field"><label for="p-name">Full name</label><input id="p-name" name="name" required autocomplete="name"><span class="err">Enter your full name.</span></div>
     <div class="row">
@@ -38,7 +45,7 @@
     </div>
     <div class="row">
       <div class="field"><label for="p-gender">Gender</label><select id="p-gender" name="gender" required><option value="">Choose one</option><option>Male</option><option>Female</option></select><span class="err">Choose one.</span></div>
-      <div class="field"><label for="p-age">Age</label><input id="p-age" name="age" type="number" inputmode="numeric" min="12" max="90" required><span class="err">Enter your age.</span></div>
+      <div class="field"><label for="p-dob">Date of birth</label><input id="p-dob" name="dob" type="date" min="1930-01-01" max="2016-12-31" required><span class="err">Enter your date of birth.</span></div>
     </div>
     <div class="field"><label for="p-ig">Instagram <span class="opt">(optional)</span></label><input id="p-ig" name="instagram" placeholder="@handle"></div>
 
@@ -47,15 +54,8 @@
     <fieldset class="field choices"><legend>How would you rate yourself?</legend><label><input type="radio" name="level" value="Beginner" required><span>Beginner</span></label><label><input type="radio" name="level" value="Intermediate"><span>Intermediate</span></label><label><input type="radio" name="level" value="Advanced"><span>Advanced</span></label></fieldset>
     <fieldset class="field choices"><legend>Preferred side</legend><label><input type="radio" name="side" value="Right" required><span>Right</span></label><label><input type="radio" name="side" value="Left"><span>Left</span></label><label><input type="radio" name="side" value="Either"><span>Either</span></label></fieldset>
     <div class="field"><label for="p-tourn">Have you played a tournament in the last year? What was your result?</label><textarea id="p-tourn" name="tournament" rows="2" required placeholder="e.g. DPC Sunday, semi-final. Or: not yet"></textarea><span class="err">Tell us, even if it's "not yet".</span></div>
-    <fieldset class="field choices cats"><legend>Which categories do you want to play? <span class="opt">Pick up to 2</span></legend>
-      <label><input type="checkbox" name="categories" value="Men's doubles Beginner"><span>Men's doubles Beginner</span></label><label><input type="checkbox" name="categories" value="Men's doubles Advanced"><span>Men's doubles Advanced</span></label><label><input type="checkbox" name="categories" value="Mixed doubles"><span>Mixed doubles</span></label><label><input type="checkbox" name="categories" value="Men's 40+"><span>Men's 40+</span></label><label><input type="checkbox" name="categories" value="Women's doubles Beginner"><span>Women's doubles Beginner</span></label><label><input type="checkbox" name="categories" value="Women's doubles Advanced"><span>Women's doubles Advanced</span></label><label><input type="checkbox" name="categories" value="Open"><span>Open</span></label>
-      <p class="note">Entry is ₹4,200 per category.</p>
-      <p class="note">Final category placement is at the discretion of the DPC team, based on level and entries.</p>
-      <span class="err cat-err">Pick one or two categories.</span>
-    </fieldset>
 
-    <p class="fsec">Availability</p>
-    <fieldset class="field choices"><legend>Can you play both league weekends?</legend><label><input type="radio" name="availability" value="Both weekends" required><span>Both weekends</span></label><label><input type="radio" name="availability" value="Only 20–22 Nov"><span>Only 20–22 Nov</span></label><label><input type="radio" name="availability" value="Only 28–29 Nov"><span>Only 28–29 Nov</span></label><label><input type="radio" name="availability" value="Neither"><span>Neither</span></label></fieldset>
+    <p class="fsec">Your kit</p>
     <fieldset class="field choices"><legend>T-shirt size</legend><label><input type="radio" name="tshirt" value="S" required><span>S</span></label><label><input type="radio" name="tshirt" value="M"><span>M</span></label><label><input type="radio" name="tshirt" value="L"><span>L</span></label><label><input type="radio" name="tshirt" value="XL"><span>XL</span></label><label><input type="radio" name="tshirt" value="XXL"><span>XXL</span></label></fieldset>
 
     <p class="fsec">Consent</p>
@@ -69,6 +69,6 @@
     <div class="done" role="status"><h3>Thank you.</h3><p>We've got your registration and will contact you soon.</p></div>
   </div>
 </main>
-<script src="../forms.js?v=1"></script>
+<script src="../forms.js?v=2"></script>
 </body>
 </html>

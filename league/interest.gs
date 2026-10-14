@@ -25,11 +25,11 @@ const SB_SERVICE_KEY = 'YOUR_LEGACY_SERVICE_ROLE_KEY_STARTS_WITH_eyJ'; // servic
 const TABS = {
   player: {
     name: 'Player registrations',
-    headers: ['Timestamp', 'Name', 'Phone', 'Email', 'Gender', 'Age', 'Instagram', 'Playing for', 'Level', 'Side',
+    headers: ['Timestamp', 'Name', 'Phone', 'Email', 'Gender', 'Date of birth', 'Instagram', 'Playing for', 'Level', 'Side',
               'Tournaments (last year)', 'Categories', 'Availability', 'T-shirt', 'Consent', 'Status', 'Notes'],
-    fields: ['name', 'phone', 'email', 'gender', 'age', 'instagram', 'experience', 'level', 'side',
+    fields: ['name', 'phone', 'email', 'gender', 'dob', 'instagram', 'experience', 'level', 'side',
              'tournament', 'categories', 'availability', 'tshirt', 'consent'],
-    required: ['name', 'phone', 'email', 'gender', 'age', 'experience', 'level', 'side', 'tournament', 'categories', 'availability', 'tshirt', 'consent'],
+    required: ['name', 'phone', 'email', 'gender', 'dob', 'experience', 'level', 'side', 'tournament', 'availability', 'tshirt', 'consent'],
   },
   sponsor: {
     name: 'Partners',

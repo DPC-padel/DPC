@@ -249,8 +249,8 @@ form.sent~.done{display:block}
 .choices input,.consent input{-webkit-appearance:auto;appearance:auto;width:18px;height:18px;min-height:0;margin:0;padding:0;accent-color:var(--gold);flex:none}
 .choices label:has(input:checked){border-color:var(--gold)}
 .choices .note{width:100%;font-size:13px;color:var(--text-3);margin-top:4px}
-.cat-err{width:100%}
-.cats.bad .cat-err{display:block}
+.dates{display:grid;gap:4px;padding:14px 16px;border:1px solid var(--line);font-size:15px;color:var(--text)}
+.dates b{display:inline-block;min-width:130px;color:var(--gold)}
 .consent{gap:12px}
 .consent label{align-items:flex-start;font-size:15px;color:var(--text-2);line-height:1.45}
 .consent input{margin-top:2px}
