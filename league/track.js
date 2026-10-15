@@ -38,6 +38,16 @@
     if (el) track("click", el.dataset.track || "register_link");
   });
 
+  // How far down the League page people get: 25 / 50 / 75 / 100%, once each.
+  if (page === "league") {
+    const hit = new Set();
+    addEventListener("scroll", () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      const at = max > 0 ? (100 * scrollY) / max : 100;
+      [25, 50, 75, 100].forEach((n) => { if (at >= n - 2 && !hit.has(n)) { hit.add(n); track("scroll", n); } });
+    }, { passive: true });
+  }
+
   // Form progress: first touch, then each field the first time it's answered.
   document.querySelectorAll("form[data-form]").forEach((f) => {
     const seen = new Set();
