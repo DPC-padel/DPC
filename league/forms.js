@@ -35,8 +35,10 @@ document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('su
     for (const k of new Set(fd.keys())) fields[k] = fd.getAll(k).join(', ');
     await saveEntry(f.dataset.form, fields);
     f.classList.add('sent');
+    window.dplTrack?.('success', f.dataset.form);
   } catch (x) {
     window.DPC?.report('League: ' + f.dataset.form + ' form', x);
+    window.dplTrack?.('error', x.invalid ? 'bad phone/email' : 'not saved');
     err.textContent = x.invalid ? "Please check your phone number and email, then try again." : "We couldn't send that. Check your connection and try again.";
     err.style.display = 'block';
     btn.disabled = false; btn.textContent = label;
