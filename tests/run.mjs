@@ -4,7 +4,7 @@
 import { report } from "./lib/harness.mjs";
 const DEFAULT = [
   "./errors.test.mjs", "./home.test.mjs", "./login.test.mjs", "./application.test.mjs", "./players.test.mjs",
-  "./dashboard.test.mjs", "./games.test.mjs", "./coaching.test.mjs", "./leaderboard.test.mjs", "./founder.test.mjs",
+  "./dashboard.test.mjs", "./games.test.mjs", "./coaching.test.mjs", "./leaderboard.test.mjs", "./founder.test.mjs", "./league-stats.test.mjs",
 ];
 const files = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULT;
 let loadFailed = false;

@@ -20,7 +20,9 @@
     try { sessionStorage.setItem("dplSrc", src); } catch (e) {}
   }
 
+  const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);   // don't count our own testing
   function track(event, detail) {
+    if (local) return;
     try {
       fetch(`${SB.url}/rest/v1/league_events`, { method: "POST", keepalive: true,
         headers: { apikey: SB.key, Authorization: `Bearer ${SB.key}`, "Content-Type": "application/json", Prefer: "return=minimal" },
