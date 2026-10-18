@@ -13,7 +13,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=EB+Garamond:wght@500;600;700&family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../league.css?v=2">
 <style>
-.reg{max-width:720px;margin-inline:auto;padding:40px var(--pad) 80px}
+.reg{max-width:720px;margin-inline:auto;padding:12px var(--pad) 80px}
+.reg-nav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;height:84px}
+.reg-nav .brand{justify-self:center;font-size:clamp(22px,3vw,28px);gap:14px}
+.reg-nav .brand .crest{width:56px;height:56px}
+.reg .hint{font-size:14px;color:var(--text-3);line-height:1.45}
+.reg .days{display:none}
+.reg .days.on{display:flex}
+@media(max-width:599px){.reg .dates{font-size:14px}.reg .dates b{min-width:108px}.reg-nav{height:72px}.reg-nav .brand{font-size:20px;gap:10px}.reg-nav .brand .crest{width:44px;height:44px}}
 .reg-card{background:var(--surface);padding:clamp(20px,4vw,40px)}
 .reg .f{padding:0}
 .reg .done{padding:8px 0}
@@ -21,8 +28,9 @@
 </head>
 <body>
 <header id="nav">
-  <div class="wrap nav-in">
-    <a href="../" class="brand"><img class="crest" src="../../img/crest.jpg" alt="" width="40" height="40">Delhi Padel League</a>
+  <div class="wrap reg-nav">
+    <span></span>
+    <a href="../" class="brand"><img class="crest" src="../../img/crest.jpg" alt="" width="56" height="56">Delhi Padel League</a>
     <a href="../" aria-label="Back" onclick="if(history.length>1&&document.referrer){history.back();return false}" style="font-size:22px;line-height:1;text-decoration:none;color:var(--text);padding:8px">←</a>
   </div>
 </header>
@@ -32,10 +40,11 @@
     <form class="f" data-form="player" novalidate>
     <p class="fsec">The dates</p>
     <div class="dates"><p><b>Group stage</b> Fri 20 – Sun 22 Nov</p><p><b>Semis &amp; Finals</b> Sat 28 – Sun 29 Nov</p></div>
-    <fieldset class="field choices"><legend>Which dates can you play?</legend><label><input type="radio" name="availability" value="Both weekends" required><span>Both weekends</span></label><label><input type="radio" name="availability" value="Only 20–22 Nov"><span>Only 20–22 Nov</span></label><label><input type="radio" name="availability" value="Only 28–29 Nov"><span>Only 28–29 Nov</span></label>
-      <p class="note">Missing one weekend is fine, but teams will see it, and it will affect whether they pick you.</p>
+    <fieldset class="field choices"><legend>Can you play all five match days?</legend><label><input type="radio" name="availability" value="All days" required><span>Yes, all five days</span></label><label><input type="radio" name="availability" value="Can't play"><span>No, I'll miss some</span></label></fieldset>
+    <fieldset class="field choices days" id="days"><legend>Which days can't you play?</legend><label><input type="checkbox" name="availability" value="Fri 20"><span>Fri 20 Nov</span></label><label><input type="checkbox" name="availability" value="Sat 21"><span>Sat 21 Nov</span></label><label><input type="checkbox" name="availability" value="Sun 22"><span>Sun 22 Nov</span></label><label><input type="checkbox" name="availability" value="Sat 28"><span>Sat 28 Nov</span></label><label><input type="checkbox" name="availability" value="Sun 29"><span>Sun 29 Nov</span></label>
+      <p class="note">Missing a day is fine, but teams will see it, and it will affect whether they pick you.</p>
     </fieldset>
-    <div class="field consent"><label><input type="checkbox" name="consent" value="Available on the dates picked" required><span>I confirm I'll be in Delhi and available to play on the dates I've picked.</span></label></div>
+    <div class="field consent"><label><input type="checkbox" name="consent" value="Available on the dates picked" required><span>I confirm I'll be in Delhi and available to play on every day I haven't marked.</span></label></div>
 
     <p class="fsec">Your details</p>
     <div class="field"><label for="p-name">Full name</label><input id="p-name" name="name" required autocomplete="name"><span class="err">Enter your full name.</span></div>
@@ -44,7 +53,7 @@
       <div class="field"><label for="p-email">Email</label><input id="p-email" name="email" type="email" required autocomplete="email"><span class="err">Enter an email like name@example.com.</span></div>
     </div>
     <div class="row">
-      <div class="field"><label for="p-gender">Gender</label><select id="p-gender" name="gender" required><option value="">Choose one</option><option>Male</option><option>Female</option></select><span class="err">Choose one.</span></div>
+      <div class="field"><label for="p-gender">Gender</label><select id="p-gender" name="gender" required><option value="">Choose one</option><option>Male</option><option>Female</option><option>Other</option></select><span class="err">Choose one.</span></div>
       <div class="field"><label for="p-dob">Date of birth</label><input id="p-dob" name="dob" type="date" min="1930-01-01" max="2016-12-31" required><span class="err">Enter your date of birth.</span></div>
     </div>
     <div class="field"><label for="p-ig">Instagram <span class="opt">(optional)</span></label><input id="p-ig" name="instagram" placeholder="@handle"></div>
@@ -53,7 +62,7 @@
     <fieldset class="field choices"><legend>How long have you been playing?</legend><label><input type="radio" name="experience" value="Less than 6 months" required><span>Less than 6 months</span></label><label><input type="radio" name="experience" value="6–12 months"><span>6–12 months</span></label><label><input type="radio" name="experience" value="1–2 years"><span>1–2 years</span></label><label><input type="radio" name="experience" value="2+ years"><span>2+ years</span></label></fieldset>
     <fieldset class="field choices"><legend>How would you rate yourself?</legend><label><input type="radio" name="level" value="Beginner" required><span>Beginner</span></label><label><input type="radio" name="level" value="Lower Intermediate"><span>Lower Intermediate</span></label><label><input type="radio" name="level" value="Intermediate"><span>Intermediate</span></label><label><input type="radio" name="level" value="Advanced"><span>Advanced</span></label></fieldset>
     <fieldset class="field choices"><legend>Preferred side</legend><label><input type="radio" name="side" value="Right" required><span>Right</span></label><label><input type="radio" name="side" value="Left"><span>Left</span></label><label><input type="radio" name="side" value="Either"><span>Either</span></label></fieldset>
-    <div class="field"><label for="p-tourn">Have you played a tournament in the last year? What was your result?</label><textarea id="p-tourn" name="tournament" rows="2" required placeholder="e.g. DPC Sunday, semi-final. Or: not yet"></textarea><span class="err">Tell us, even if it's "not yet".</span></div>
+    <div class="field"><label for="p-tourn">Have you played a tournament in the last year? What was your result?</label><p class="hint" id="p-tourn-hint">Please share all the tournament results you've played, so we understand where to place you in the auction.</p><textarea id="p-tourn" name="tournament" rows="3" required aria-describedby="p-tourn-hint" placeholder="e.g. DPC Sunday, semi-final. Or: not yet"></textarea><span class="err">Tell us, even if it's "not yet".</span></div>
 
     <p class="fsec">Your kit</p>
     <fieldset class="field choices"><legend>T-shirt size</legend><label><input type="radio" name="tshirt" value="S" required><span>S</span></label><label><input type="radio" name="tshirt" value="M"><span>M</span></label><label><input type="radio" name="tshirt" value="L"><span>L</span></label><label><input type="radio" name="tshirt" value="XL"><span>XL</span></label><label><input type="radio" name="tshirt" value="XXL"><span>XXL</span></label></fieldset>
@@ -69,6 +78,20 @@
     <div class="done" role="status"><h3>Thank you.</h3><p>We've got your registration and will contact you soon.</p></div>
   </div>
 </main>
+<script>
+// "No, I'll miss some" shows the days; then at least one day must be ticked.
+(() => {
+  const days = document.getElementById("days"), boxes = [...days.querySelectorAll("input")];
+  const check = () => boxes[0].setCustomValidity(days.classList.contains("on") && !boxes.some((b) => b.checked) ? "Tick the days you can't play." : "");
+  document.querySelectorAll('input[type=radio][name=availability]').forEach((r) => r.addEventListener("change", () => {
+    const miss = r.value === "Can't play" && r.checked;
+    days.classList.toggle("on", miss);
+    if (!miss) boxes.forEach((b) => (b.checked = false));
+    check();
+  }));
+  boxes.forEach((b) => b.addEventListener("change", check));
+})();
+</script>
 <script src="../forms.js?v=3"></script>
 <script src="../track.js?v=2"></script>
 </body>
