@@ -17,10 +17,13 @@
 .reg-nav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;height:84px}
 .reg-nav .brand{justify-self:center;font-size:clamp(22px,3vw,28px);gap:14px}
 .reg-nav .brand .crest{width:56px;height:56px}
+/* The name sits dead centre; the crest hangs to its left. */
+.reg-nav .brand{position:relative;gap:0}
+.reg-nav .brand .crest{position:absolute;right:calc(100% + 14px);top:50%;transform:translateY(-50%)}
 .reg .hint{font-size:14px;color:var(--text-3);line-height:1.45}
 .reg .days{display:none}
 .reg .days.on{display:flex}
-@media(max-width:599px){.reg .dates{font-size:14px}.reg .dates b{min-width:108px}.reg-nav{height:72px}.reg-nav .brand{font-size:20px;gap:10px}.reg-nav .brand .crest{width:44px;height:44px}}
+@media(max-width:599px){.reg .dates{font-size:14px}.reg .dates b{min-width:108px}.reg-nav{height:72px}.reg-nav .brand{font-size:20px}.reg-nav .brand .crest{width:40px;height:40px;right:calc(100% + 10px)}}
 .reg-card{background:var(--surface);padding:clamp(20px,4vw,40px)}
 .reg .f{padding:0}
 .reg .done{padding:8px 0}
