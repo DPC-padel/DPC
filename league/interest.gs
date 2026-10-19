@@ -90,10 +90,37 @@ function processInbox() {
   return withLock(() => {
     const rows = sb('get', '/rest/v1/league_inbox?synced=is.false&order=id&select=*');
     if (!rows.length) return 0;
-    Object.keys(TABS).forEach(k => appendRows(TABS[k], rows.filter(x => x.form === k).map(x => rowFor(TABS[k], x, new Date(x.created_at)))));
+    // Skip anything already in the tab (same time to the second and phone), so a run that
+    // copied rows but failed to mark them synced can never copy them a second time.
+    Object.keys(TABS).forEach(k => {
+      const t = TABS[k], have = seen_(t);
+      appendRows(t, rows.filter(x => x.form === k && !have[key_(new Date(x.created_at), x.phone)]).map(x => rowFor(t, x, new Date(x.created_at))));
+    });
     SpreadsheetApp.flush();
     sb('patch', '/rest/v1/league_inbox?id=in.(' + rows.map(x => x.id).join(',') + ')', { synced: true });
     return rows.length;
+  });
+}
+
+function key_(when, ph) { return Math.floor(new Date(when).getTime() / 1000) + '|' + phone(ph); }
+function seen_(t) {
+  const sh = tab(t), n = sh.getLastRow() - 1, out = {};
+  if (n < 1) return out;
+  const iP = t.headers.indexOf('Phone');
+  sh.getRange(2, 1, n, t.headers.length).getValues().forEach(r => { if (r[0] instanceof Date) out[key_(r[0], r[iP])] = true; });
+  return out;
+}
+
+// Run once from the editor: removes exact repeat rows (same timestamp, name and phone)
+// from Player registrations and Partners, keeping the first of each.
+function removeDuplicates() {
+  Object.keys(TABS).forEach(k => {
+    const t = TABS[k], sh = tab(t), n = sh.getLastRow() - 1;
+    if (n < 1) return;
+    const iN = t.headers.indexOf('Name'), iP = t.headers.indexOf('Phone'), vals = sh.getRange(2, 1, n, t.headers.length).getValues(), seen = {}, drop = [];
+    vals.forEach((r, i) => { const kk = String(r[0] instanceof Date ? r[0].getTime() : r[0]) + '|' + r[iN] + '|' + phone(r[iP]); if (seen[kk]) drop.push(i + 2); else seen[kk] = true; });
+    drop.reverse().forEach(row => sh.deleteRow(row));
+    Logger.log(t.name + ': removed ' + drop.length + ' repeat rows');
   });
 }
 
