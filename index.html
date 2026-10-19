@@ -67,6 +67,13 @@
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-soft);
   }
+  /* On the light scrolled bar, the white logo, buttons and menu turn dark so they stay readable. */
+  #navbar.scrolled .nav-logo svg { color: var(--text); }
+  #navbar.scrolled .nav-login, #navbar.scrolled .nav-dashboard, #navbar.scrolled .nav-howto {
+    color: var(--text); background: rgba(23,21,19,.06); box-shadow: inset 0 0 0 1px rgba(23,21,19,.12);
+  }
+  #navbar.scrolled .nav-login:hover, #navbar.scrolled .nav-dashboard:hover, #navbar.scrolled .nav-howto:hover { background: rgba(23,21,19,.1); }
+  #navbar.scrolled .hamburger span { background: var(--text); }
   .nav-logo { display: flex; align-items: center; text-decoration: none; z-index: 1; }
  .nav-logo svg { height: 17px; width: 145px; color: white; }
   .nav-actions {
