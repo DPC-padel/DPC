@@ -40,10 +40,11 @@ const DPL_WHATSAPP = "919211264111";
   panel.append(log, foot);
   log.append(el("p", "faq-bot", "Hi! What would you like to know about the league?"), chips);
 
-  const asked = new Set();
+  // Only the latest question and answer show; asking another replaces them.
+  let current = -1, shown = [];
   function drawChips() {
     chips.replaceChildren(...DPL_FAQ.map(([q], i) => {
-      if (asked.has(i)) return null;
+      if (i === current) return null;
       const c = el("button", "faq-chip", q);
       c.type = "button";
       c.addEventListener("click", () => answer(i));
@@ -51,12 +52,13 @@ const DPL_WHATSAPP = "919211264111";
     }).filter(Boolean));
   }
   function answer(i) {
-    asked.add(i);
+    current = i;
     track("faq: " + DPL_FAQ[i][0]);
-    const q = el("p", "faq-me", DPL_FAQ[i][0]);
-    chips.before(q, el("p", "faq-bot", DPL_FAQ[i][1]));
+    shown.forEach((n) => n.remove());
+    shown = [el("p", "faq-me", DPL_FAQ[i][0]), el("p", "faq-bot", DPL_FAQ[i][1])];
+    chips.before(...shown);
     drawChips();
-    log.scrollTop = q.offsetTop - log.offsetTop - 8;   // the question just asked sits at the top, answer below
+    log.scrollTop = 0;
   }
   drawChips();
 
