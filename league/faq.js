@@ -1,10 +1,12 @@
 // League help bubble: a round button in the bottom-right of the League page and
-// the registration form. It opens a small chat: tap a question, the answer appears
-// as a reply. Anything not covered goes to WhatsApp. Edit the answers here.
+// the registration form. It opens a list of questions: tap one and its answer opens
+// right under it. Anything not covered goes to WhatsApp. Edit the answers here
+// (a line break in an answer shows as a new line).
 const DPL_FAQ = [
   ["What is the Delhi Padel League?", "Delhi's first franchise-based padel league: eight franchises, 120 players and one champion, across three weekends this November in New Delhi."],
   ["When are the matches?", "Group stage: Fri 20 – Sun 22 Nov. Semis and finals: Sat 28 – Sun 29 Nov. Auction night is on 1 Nov (invite only)."],
-  ["Where will it be played?", "At two venues in New Delhi."],
+  ["What are the match timings?", "Your exact schedule depends on your team and its fixtures. Tentative timings:\n\nGroup stage (your team plays 3 ties)\nFri 20 Nov: 4–10 pm\nSat 21 Nov: 8 am–10 pm\nSun 22 Nov: 8 am–10 pm\n\nKnockouts, if your team makes it\nSat 28 Nov (semis): 4–10 pm\nSun 29 Nov (finals): 6–9 pm\n\nWith so many players and matches, we can't take requests to change match timings."],
+  ["Where will it be played?", "At two venues in New Delhi. The exact location will be shared this week."],
   ["How do I get into a team?", "Register here. Franchise owners build their squads at auction night on 1 November, using what you tell us in this form."],
   ["What if I can't play every day?", "That's fine. Mark the days you can't play in the form. Teams will see it, and it will affect whether they pick you."],
   ["Why do you ask about tournaments?", "Your results help us understand where to place you in the auction. Please share every tournament you've played in the last year."],
@@ -33,34 +35,27 @@ const DPL_WHATSAPP = "919211264111";
   panel.setAttribute("aria-label", "League questions");
   panel.innerHTML = '<div class="faq-head"><p>DPL help</p><button type="button" class="faq-x" aria-label="Close">×</button></div>';
   const log = el("div", "faq-log");
-  log.setAttribute("aria-live", "polite");
-  const chips = el("div", "faq-chips");
+    const chips = el("div", "faq-chips");
   const foot = el("div", "faq-foot");
   foot.innerHTML = `<span>Still stuck?</span><a class="faq-wa" target="_blank" rel="noopener" href="https://wa.me/${DPL_WHATSAPP}?text=${encodeURIComponent("Hi, I have a question about the Delhi Padel League:")}">Ask on WhatsApp</a>`;
   panel.append(log, foot);
   log.append(el("p", "faq-bot", "Hi! What would you like to know about the league?"), chips);
 
-  // Only the latest question and answer show; asking another replaces them.
-  let current = -1, shown = [];
-  function drawChips() {
-    chips.replaceChildren(...DPL_FAQ.map(([q], i) => {
-      if (i === current) return null;
-      const c = el("button", "faq-chip", q);
-      c.type = "button";
-      c.addEventListener("click", () => answer(i));
-      return c;
-    }).filter(Boolean));
-  }
-  function answer(i) {
-    current = i;
-    track("faq: " + DPL_FAQ[i][0]);
-    shown.forEach((n) => n.remove());
-    shown = [el("p", "faq-me", DPL_FAQ[i][0]), el("p", "faq-bot", DPL_FAQ[i][1])];
-    chips.before(...shown);
-    drawChips();
-    log.scrollTop = 0;
-  }
-  drawChips();
+  // Tapping a question opens its answer right under it; one open at a time.
+  DPL_FAQ.forEach(([q, a], i) => {
+    const c = el("button", "faq-chip", q), ans = el("p", "faq-ans", a);
+    c.type = "button";
+    c.id = "faqQ" + i; ans.id = "faqA" + i;
+    c.setAttribute("aria-expanded", "false");
+    c.setAttribute("aria-controls", ans.id);
+    ans.hidden = true;
+    c.addEventListener("click", () => {
+      const open = ans.hidden;
+      chips.querySelectorAll(".faq-chip[aria-expanded=true]").forEach((o) => { o.setAttribute("aria-expanded", "false"); o.nextSibling.hidden = true; });
+      if (open) { ans.hidden = false; c.setAttribute("aria-expanded", "true"); track("faq: " + q); }
+    });
+    chips.append(c, ans);
+  });
 
   function toggle(open) {
     panel.hidden = !open;
