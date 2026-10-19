@@ -267,3 +267,26 @@ h1,h2,h3{color:var(--gold)}
 .num{color:var(--gold)}
 section{border-top-color:var(--line)}
 .status{background:var(--gold);color:#f8f4ea}
+
+/* help bubble (faq.js): bottom-right on the League page and the form */
+.faq-btn{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:45;display:flex;align-items:center;gap:8px;transition:bottom .25s var(--ease)}
+body:has(.sticky.show) .faq-btn{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.faq-tag{background:var(--surface);color:var(--text);font-size:13px;font-weight:500;padding:6px 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line)}
+.faq-dot{width:56px;height:56px;border-radius:50%;background:var(--gold);color:#f8f4ea;display:grid;place-items:center;box-shadow:0 6px 18px rgba(31,61,44,.25)}
+.faq-btn:hover .faq-dot{background:#163f29}
+body.faq-open .faq-tag{display:none}
+.faq-panel{position:fixed;z-index:46;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100vw - 32px));height:min(520px,calc(100svh - 120px));display:flex;flex-direction:column;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 40px rgba(31,61,44,.18);overflow:hidden}
+.faq-panel[hidden]{display:none}
+body:has(.sticky.show) .faq-panel{bottom:calc(152px + env(safe-area-inset-bottom,0px));height:min(520px,calc(100svh - 190px))}
+.faq-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.faq-head p{font-family:var(--serif);font-weight:600;font-size:19px}
+.faq-x{font-size:26px;line-height:1;width:36px;height:36px;color:var(--text-2)}
+.faq-log{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:8px;font-size:15px;line-height:1.45}
+.faq-bot,.faq-me{max-width:85%;padding:9px 12px}
+.faq-bot{align-self:flex-start;background:var(--bg);border-radius:12px 12px 12px 3px}
+.faq-me{align-self:flex-end;background:var(--gold);color:#f8f4ea;border-radius:12px 12px 3px 12px}
+.faq-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.faq-chip{font-size:14px;padding:7px 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--gold);color:var(--gold);text-align:left}
+.faq-chip:hover{background:var(--gold);color:#f8f4ea}
+.faq-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--text-3)}
+.faq-wa{background:var(--gold);color:#f8f4ea;text-decoration:none;font-weight:600;font-size:14px;padding:10px 14px;border-radius:var(--r)}
