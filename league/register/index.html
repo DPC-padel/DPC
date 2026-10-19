@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=EB+Garamond:wght@500;600;700&family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../league.css?v=4">
+<link rel="stylesheet" href="../league.css?v=5">
 <style>
 .reg{max-width:720px;margin-inline:auto;padding:12px var(--pad) 80px}
 .reg-nav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;height:84px}
@@ -47,8 +47,6 @@
     <fieldset class="field choices days" id="days"><legend>Which days can't you play?</legend><label><input type="checkbox" name="availability" value="Fri 20"><span>Fri 20 Nov</span></label><label><input type="checkbox" name="availability" value="Sat 21"><span>Sat 21 Nov</span></label><label><input type="checkbox" name="availability" value="Sun 22"><span>Sun 22 Nov</span></label><label><input type="checkbox" name="availability" value="Sat 28"><span>Sat 28 Nov</span></label><label><input type="checkbox" name="availability" value="Sun 29"><span>Sun 29 Nov</span></label>
       <p class="note">Missing a day is fine, but teams will see it, and it will affect whether they pick you.</p>
     </fieldset>
-    <div class="field consent"><label><input type="checkbox" name="consent" value="Available on the dates picked" required><span>I confirm I'll be in Delhi and available to play on every day I haven't marked.</span></label></div>
-
     <p class="fsec">Your details</p>
     <div class="field"><label for="p-name">Full name</label><input id="p-name" name="name" required autocomplete="name"><span class="err">Enter your full name.</span></div>
     <div class="row">
@@ -65,17 +63,14 @@
     <fieldset class="field choices"><legend>How long have you been playing?</legend><label><input type="radio" name="experience" value="Less than 6 months" required><span>Less than 6 months</span></label><label><input type="radio" name="experience" value="6–12 months"><span>6–12 months</span></label><label><input type="radio" name="experience" value="1–2 years"><span>1–2 years</span></label><label><input type="radio" name="experience" value="2+ years"><span>2+ years</span></label></fieldset>
     <fieldset class="field choices"><legend>How would you rate yourself?</legend><label><input type="radio" name="level" value="Beginner" required><span>Beginner</span></label><label><input type="radio" name="level" value="Lower Intermediate"><span>Lower Intermediate</span></label><label><input type="radio" name="level" value="Intermediate"><span>Intermediate</span></label><label><input type="radio" name="level" value="Advanced"><span>Advanced</span></label></fieldset>
     <fieldset class="field choices"><legend>Preferred side</legend><label><input type="radio" name="side" value="Right" required><span>Right</span></label><label><input type="radio" name="side" value="Left"><span>Left</span></label><label><input type="radio" name="side" value="Either"><span>Either</span></label></fieldset>
-    <div class="field"><label for="p-tourn">Have you played a tournament in the last year? What was your result?</label><p class="hint" id="p-tourn-hint">Please share all the tournament results you've played, so we understand where to place you in the auction.</p><textarea id="p-tourn" name="tournament" rows="3" required aria-describedby="p-tourn-hint" placeholder="e.g. DPC Sunday, semi-final. Or: not yet"></textarea><span class="err">Tell us, even if it's "not yet".</span></div>
+    <div class="field"><label for="p-tourn">Have you played a tournament in the last year? What was your result?</label><p class="hint" id="p-tourn-hint">Please share all the tournament results you've played, so we understand where to place you in the auction. Not played one? That's fine.</p><textarea id="p-tourn" name="tournament" rows="3" required aria-describedby="p-tourn-hint" placeholder="e.g. DPC Sunday, semi-final"></textarea><button type="button" class="btn btn-quiet notyet" style="min-height:38px;font-size:14px;justify-self:start;width:auto">Not yet</button><span class="err">Tell us, even if it's "not yet".</span></div>
 
     <p class="fsec">Your kit</p>
     <fieldset class="field choices"><legend>T-shirt size</legend><label><input type="radio" name="tshirt" value="S" required><span>S</span></label><label><input type="radio" name="tshirt" value="M"><span>M</span></label><label><input type="radio" name="tshirt" value="L"><span>L</span></label><label><input type="radio" name="tshirt" value="XL"><span>XL</span></label><label><input type="radio" name="tshirt" value="XXL"><span>XXL</span></label></fieldset>
 
     <p class="fsec">Consent</p>
-    <div class="field consent">
-      <label><input type="checkbox" name="consent" value="League rules" required><span>I agree to the league rules.</span></label>
-      <label><input type="checkbox" name="consent" value="Plays at own risk" required><span>I understand I play at my own risk.</span></label>
-      <label><input type="checkbox" name="consent" value="Photos and videos" required><span>I consent to photos and videos of me being used on DPC's social media.</span></label>
-    </div>
+    <div class="field consent"><label><input type="checkbox" name="consent" value="Available on the days picked" required><span>I confirm I'll be in Delhi and available to play on every day I haven't marked as unavailable.</span></label></div>
+    <div class="field consent"><label><input type="checkbox" name="consent" value="Rules, own risk, photos and videos" required><span>I agree to the league rules, understand I play at my own risk, and consent to photos and videos of me being used on DPC's social media.</span></label></div>
     <button class="btn btn-primary">Register</button>
   </form>
     <div class="done" role="status"><h3>Thank you.</h3><p>We've got your registration and will contact you soon.</p></div>
@@ -93,9 +88,12 @@
     check();
   }));
   boxes.forEach((b) => b.addEventListener("change", check));
+  // "Not yet" fills the tournament answer in one tap.
+  const t = document.getElementById("p-tourn");
+  document.querySelector(".notyet").addEventListener("click", () => { t.value = "Not yet"; t.dispatchEvent(new Event("input", { bubbles: true })); t.dispatchEvent(new Event("change", { bubbles: true })); });
 })();
 </script>
-<script src="../forms.js?v=3"></script>
+<script src="../forms.js?v=4"></script>
 <script src="../track.js?v=2"></script>
 <script src="../faq.js?v=4"></script>
 </body>

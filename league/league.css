@@ -231,6 +231,11 @@ dialog[open]{animation:rise .28s var(--ease)}
 .field input:user-invalid{border-color:var(--error)}
 .err{display:none;font-size:14px;color:var(--error)}
 .field input:user-invalid~.err{display:block}
+.field.missing>.err,.field.missing>.miss{display:block}
+.miss{display:none;font-size:14px;color:var(--error);margin:0}
+.field.missing input:not([type=radio]):not([type=checkbox]),.field.missing select,.field.missing textarea{border-color:var(--error)}
+.field.missing legend,.field.missing>label{color:var(--error)}
+.missing-sum{color:var(--error);font-size:15px;font-weight:600;margin:4px 0 -4px}
 .row{display:grid;gap:18px}
 @media(min-width:560px){.row{grid-template-columns:1fr 1fr}}
 .f .btn{width:100%;margin-top:6px}

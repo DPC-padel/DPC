@@ -21,9 +21,39 @@ async function saveEntry(form, fields) {
   const data = await res.json();
   if (!data || data.ok !== true) throw new Error(data && data.error || "not saved");
 }
+// Register blocked: mark every unanswered question in red, say how many are left,
+// and scroll to the first one. (Browser bubbles don't show reliably on iPhones.)
+const MISSING_MSG = { radio: 'Pick one to continue.', checkbox: 'Tick this to continue.' };
+function showMissing(f) {
+  const groups = [];
+  f.querySelectorAll('input:invalid, select:invalid, textarea:invalid').forEach(el => {
+    const box = el.closest('.field');
+    if (!box || groups.includes(box)) return;
+    groups.push(box);
+    box.classList.add('missing');
+    let msg = box.querySelector(':scope > .err, :scope > .miss');
+    if (!msg) { msg = document.createElement('p'); msg.className = 'miss'; msg.textContent = el.closest('#days') ? "Tick the days you can't play." : (MISSING_MSG[el.type] || 'Answer this to continue.'); box.append(msg); }
+  });
+  let sum = f.querySelector('.missing-sum');
+  if (!sum) { sum = document.createElement('p'); sum.className = 'missing-sum'; sum.setAttribute('role', 'alert'); f.querySelector('button:not([type=button])').before(sum); }
+  sum.textContent = groups.length === 1 ? '1 question still needs an answer.' : `${groups.length} questions still need an answer.`;
+  if (groups[0]) { groups[0].scrollIntoView({ block: 'center', behavior: 'smooth' }); groups[0].querySelector('input, select, textarea')?.focus({ preventScroll: true }); }
+}
+// Answering clears that question's red mark, and the count once nothing is left.
+document.addEventListener('change', e => clearMissing(e.target));
+document.addEventListener('input', e => clearMissing(e.target));
+function clearMissing(el) {
+  const box = el.closest?.('.field.missing'), f = el.closest?.('form');
+  if (box && !box.querySelector(':invalid')) box.classList.remove('missing');
+  const sum = f?.querySelector('.missing-sum');
+  if (!sum) return;
+  const left = f.querySelectorAll('.field.missing').length;
+  if (!left) sum.remove(); else sum.textContent = left === 1 ? '1 question still needs an answer.' : `${left} questions still need an answer.`;
+}
+
 document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('submit', async e => {
   e.preventDefault();
-  if (!f.checkValidity()) { f.reportValidity(); return; }
+  if (!f.checkValidity()) { showMissing(f); return; }
   const btn = f.querySelector('button'), label = btn.textContent;
   let err = f.querySelector('.ferr');
   if (!err) { err = document.createElement('p'); err.className = 'ferr err'; err.setAttribute('role', 'alert'); btn.before(err); }
