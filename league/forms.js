@@ -53,8 +53,10 @@ function clearMissing(el) {
 
 document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('submit', async e => {
   e.preventDefault();
+  if (f.dataset.busy) return;   // already sending: extra taps on Register must not save it twice
   if (!f.checkValidity()) { showMissing(f); return; }
-  const btn = f.querySelector('button'), label = btn.textContent;
+  f.dataset.busy = '1';
+  const btn = f.querySelector('button:not([type=button])'), label = btn.textContent;
   let err = f.querySelector('.ferr');
   if (!err) { err = document.createElement('p'); err.className = 'ferr err'; err.setAttribute('role', 'alert'); btn.before(err); }
   err.style.display = 'none';
@@ -72,5 +74,7 @@ document.querySelectorAll('form[data-form]').forEach(f => f.addEventListener('su
     err.textContent = x.invalid ? "Please check your phone number and email, then try again." : "We couldn't send that. Check your connection and try again.";
     err.style.display = 'block';
     btn.disabled = false; btn.textContent = label;
+  } finally {
+    delete f.dataset.busy;
   }
 }));
