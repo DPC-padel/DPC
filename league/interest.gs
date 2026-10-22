@@ -146,6 +146,10 @@ function tab(t) {
     sh.getRange(1, 1, 1, t.headers.length).setValues([t.headers]).setFontWeight('bold');
     sh.setFrozenRows(1);
     sh.getRange('A:A').setNumberFormat('dd mmm yyyy, hh:mm');
+  } else {
+    // A column added later (like "Lives in") gets its header filled in automatically.
+    const row = sh.getRange(1, 1, 1, t.headers.length), have = row.getValues()[0];
+    if (have.some(h => h === '')) row.setValues([t.headers.map((h, i) => have[i] === '' ? h : have[i])]).setFontWeight('bold');
   }
   return sh;
 }
