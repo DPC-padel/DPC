@@ -26,7 +26,8 @@ const TABS = {
   player: {
     name: 'Player registrations',
     headers: ['Timestamp', 'Name', 'Phone', 'Email', 'Gender', 'Date of birth', 'Instagram', 'Playing for', 'Level', 'Side',
-              'Tournaments (last year)', 'Categories', 'Availability', 'T-shirt', 'Consent', 'Status', 'Notes'],
+              'Tournaments (last year)', 'Categories', 'Availability', 'T-shirt', 'Consent', 'Status', 'Notes', 'Lives in'],
+    after: ['area'],   // added later: after Status / Notes, so earlier rows don't shift
     fields: ['name', 'phone', 'email', 'gender', 'dob', 'instagram', 'experience', 'level', 'side',
              'tournament', 'categories', 'availability', 'tshirt', 'consent'],
     required: ['name', 'phone', 'email', 'gender', 'dob', 'experience', 'level', 'side', 'tournament', 'availability', 'tshirt', 'consent'],
@@ -57,7 +58,7 @@ function doPost(e) {
 }
 
 function rowFor(t, data, when) {
-  return [when].concat(t.fields.map(k => k === 'phone' ? phone(data.phone) : clean(data[k], k === 'message' ? 2000 : k === 'tournament' ? 500 : 300)), ['New', '']);
+  return [when].concat(t.fields.map(k => k === 'phone' ? phone(data.phone) : clean(data[k], k === 'message' ? 2000 : k === 'tournament' ? 500 : 300)), ['New', ''], (t.after || []).map(k => clean(data[k])));
 }
 
 function appendRows(t, rows) {
