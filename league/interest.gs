@@ -134,7 +134,8 @@ function updateRatings() {
   const t = TABS.player, sh = tab(t), n = sh.getLastRow() - 1;
   if (n < 1) return 0;
   const by = {};
-  sb('get', '/rest/v1/dashboard_cache?select=phone,rating:player->>rating,ranking:player->>ranking,played:matches->0->>matchId')
+  // Apps Script rejects a raw ">" in a URL, so the column list is encoded.
+  sb('get', '/rest/v1/dashboard_cache?select=' + encodeURIComponent('phone,rating:player->>rating,ranking:player->>ranking,played:matches->0->>matchId'))
     .forEach(p => { if (p.played && p.rating !== null && p.rating !== '') by[String(p.phone).replace(/\D/g, '').slice(-10)] = p; });
   const iP = t.headers.indexOf('Phone'), iR = t.headers.indexOf('DPC rating');
   const out = sh.getRange(2, iP + 1, n, 1).getValues().map(([v]) => {
