@@ -26,7 +26,8 @@ const TABS = {
   player: {
     name: 'Player registrations',
     headers: ['Timestamp', 'Name', 'Phone', 'Email', 'Gender', 'Date of birth', 'Instagram', 'Playing for', 'Level', 'Side',
-              'Tournaments (last year)', 'Categories', 'Availability', 'T-shirt', 'Consent', 'Status', 'Notes', 'Lives in'],
+              'Tournaments (last year)', 'Categories', 'Availability', 'T-shirt', 'Consent', 'Status', 'Notes', 'Lives in',
+              'DPC rating', 'DPC ranking'],   // the last two are filled by updateRatings()
     after: ['area'],   // added later: after Status / Notes, so earlier rows don't shift
     fields: ['name', 'phone', 'email', 'gender', 'dob', 'instagram', 'experience', 'level', 'side',
              'tournament', 'categories', 'availability', 'tshirt', 'consent'],
@@ -125,8 +126,29 @@ function removeDuplicates() {
   });
 }
 
-// Every 5 min: copy anything a missed ping left in the inbox. Run installTrigger() once.
-function every5Min() { processInbox(); }
+// Fills "DPC rating" and "DPC ranking" for every registrant who has played with DPC,
+// matched by phone against the DPC records (Supabase dashboard_cache). Players who haven't
+// played with DPC are left blank, so their self-rated Level is never mistaken for a rating.
+// Runs every 5 minutes; run it from the editor any time to refresh now.
+function updateRatings() {
+  const t = TABS.player, sh = tab(t), n = sh.getLastRow() - 1;
+  if (n < 1) return 0;
+  const by = {};
+  sb('get', '/rest/v1/dashboard_cache?select=phone,rating:player->>rating,ranking:player->>ranking,played:matches->0->>matchId')
+    .forEach(p => { if (p.played && p.rating !== null && p.rating !== '') by[String(p.phone).replace(/\D/g, '').slice(-10)] = p; });
+  const iP = t.headers.indexOf('Phone'), iR = t.headers.indexOf('DPC rating');
+  const out = sh.getRange(2, iP + 1, n, 1).getValues().map(([v]) => {
+    const p = by[String(v).replace(/\D/g, '').slice(-10)];
+    return p ? [Number(p.rating), p.ranking ? Number(p.ranking) : ''] : ['', ''];
+  });
+  sh.getRange(2, iR + 1, n, 2).setValues(out);
+  const found = out.filter(r => r[0] !== '').length;
+  Logger.log('DPC ratings: ' + found + ' of ' + n + ' registrants have one');
+  return found;
+}
+
+// Every 5 min: copy anything a missed ping left in the inbox, then refresh ratings. Run installTrigger() once.
+function every5Min() { processInbox(); updateRatings(); }
 function installTrigger() {
   ScriptApp.getProjectTriggers().forEach(t => { if (t.getHandlerFunction() === 'every5Min') ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('every5Min').timeBased().everyMinutes(5).create();
