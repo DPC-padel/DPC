@@ -27,7 +27,7 @@ const TABS = {
     name: 'Player registrations',
     headers: ['Timestamp', 'Name', 'Phone', 'Email', 'Gender', 'Date of birth', 'Instagram', 'Playing for', 'Level', 'Side',
               'Tournaments (last year)', 'Categories', 'Availability', 'T-shirt', 'Consent', 'Status', 'Notes', 'Lives in',
-              'DPC rating', 'DPC ranking'],   // the last two are filled by updateRatings()
+              'DPC rating', 'DPC ranking', 'Match history'],   // the last three are filled by updateRatings()
     after: ['area'],   // added later: after Status / Notes, so earlier rows don't shift
     fields: ['name', 'phone', 'email', 'gender', 'dob', 'instagram', 'experience', 'level', 'side',
              'tournament', 'categories', 'availability', 'tshirt', 'consent'],
@@ -126,7 +126,7 @@ function removeDuplicates() {
   });
 }
 
-// Fills "DPC rating" and "DPC ranking" for every registrant who has played with DPC,
+// Fills "DPC rating", "DPC ranking" and "Match history" for every registrant who has played with DPC,
 // matched by phone against the DPC records (Supabase dashboard_cache). Players who haven't
 // played with DPC are left blank, so their self-rated Level is never mistaken for a rating.
 // Runs every 5 minutes; run it from the editor any time to refresh now.
@@ -135,17 +135,31 @@ function updateRatings() {
   if (n < 1) return 0;
   const by = {};
   // Apps Script rejects a raw ">" in a URL, so the column list is encoded.
-  sb('get', '/rest/v1/dashboard_cache?select=' + encodeURIComponent('phone,rating:player->>rating,ranking:player->>ranking,played:matches->0->>matchId'))
-    .forEach(p => { if (p.played && p.rating !== null && p.rating !== '') by[String(p.phone).replace(/\D/g, '').slice(-10)] = p; });
+  sb('get', '/rest/v1/dashboard_cache?select=' + encodeURIComponent('phone,rating:player->>rating,ranking:player->>ranking,matches'))
+    .forEach(p => { if ((p.matches || []).length && p.rating !== null && p.rating !== '') by[String(p.phone).replace(/\D/g, '').slice(-10)] = p; });
   const iP = t.headers.indexOf('Phone'), iR = t.headers.indexOf('DPC rating');
   const out = sh.getRange(2, iP + 1, n, 1).getValues().map(([v]) => {
     const p = by[String(v).replace(/\D/g, '').slice(-10)];
-    return p ? [Number(p.rating), p.ranking ? Number(p.ranking) : ''] : ['', ''];
+    return p ? [Number(p.rating), p.ranking ? Number(p.ranking) : '', history_(p.matches)] : ['', '', ''];
   });
-  sh.getRange(2, iR + 1, n, 2).setValues(out);
+  sh.getRange(2, iR + 1, n, 3).setValues(out);
+  sh.getRange(2, iR + 3, n, 1).setWrap(true).setVerticalAlignment('top');
   const found = out.filter(r => r[0] !== '').length;
   Logger.log('DPC ratings: ' + found + ' of ' + n + ' registrants have one');
   return found;
+}
+
+// One line per match, newest first:
+//   DPC Sunday #6 – 6-4 W
+//   Americano Inter/Lower Inter – #3 of 8
+function history_(matches) {
+  const t = d => { const x = new Date(d).getTime(); return isNaN(x) ? 0 : x; };
+  return matches.slice().sort((a, b) => t(b.date) - t(a.date)).map(m => {
+    const name = m.matchType || m.matchId;
+    return m.total !== undefined
+      ? name + ' – #' + (m.rank || '?') + ' of ' + ((m.opponents || []).length + 1)
+      : name + ' – ' + m.score + (m.result ? ' ' + m.result : '');
+  }).join('\n');
 }
 
 // Every 5 min: copy anything a missed ping left in the inbox, then refresh ratings. Run installTrigger() once.
