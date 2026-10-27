@@ -149,16 +149,19 @@ function updateRatings() {
   return found;
 }
 
-// One line per match, newest first:
-//   DPC Sunday #6 – 6-4 W
-//   Americano Inter/Lower Inter – #3 of 8
+// One line per match, newest first. The level comes from the board in the match code
+// (FS… First Serve, BP… Break Point); a result carried over from First Serve keeps FS.
+//   DPC Sunday #6 (Inter) – Semi – 6-4 W
+//   Americano #12 (Lower Inter) – #3 of 8
+const LEVEL = { FS: 'Lower Inter', BP: 'Inter' };
 function history_(matches) {
   const t = d => { const x = new Date(d).getTime(); return isNaN(x) ? 0 : x; };
   return matches.slice().sort((a, b) => t(b.date) - t(a.date)).map(m => {
-    const name = m.matchType || m.matchId;
-    return m.total !== undefined
-      ? name + ' – #' + (m.rank || '?') + ' of ' + ((m.opponents || []).length + 1)
-      : name + ' – ' + m.score + (m.result ? ' ' + m.result : '');
+    const id = String(m.matchId || '').toUpperCase(), no = Number(id.replace(/\D/g, '')) || '';
+    const lvl = LEVEL[id.slice(0, 2)] ? ' (' + LEVEL[id.slice(0, 2)] + ')' : '';
+    if (/AM/.test(id)) return 'Americano #' + no + lvl + ' – #' + (m.rank || '?') + (id.includes('(') ? '' : ' of ' + ((m.opponents || []).length + 1));
+    const name = /TM/.test(id) ? 'DPC Sunday #' + no : 'Personal match';
+    return name + lvl + (m.stage ? ' – ' + m.stage : '') + ' – ' + m.score + (m.result ? ' ' + m.result : '');
   }).join('\n');
 }
 

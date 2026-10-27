@@ -202,7 +202,7 @@ function build_() {
   const matches = new Map(), allMatches = [], played = { BP: {}, FS: {} }, bonus = { BP: {}, FS: {} };
   ['BP', 'FS'].forEach(function (k) {
     const t = tab_(k + '_match');
-    const I = { id: t.col('Match ID'), date: t.col('Date'), type: t.col('Type'), name: t.col('Player Name'), phone: t.col('Contact Number'),
+    const I = { id: t.col('Match ID'), date: t.col('Date'), type: t.col('Type'), stage: t.col('Stage'), name: t.col('Player Name'), phone: t.col('Contact Number'),
                 partner: t.col('Partner'), o1: t.col('Opp 1'), o2: t.col('Opp 2'), scores: t.col('Scores'),
                 pf: t.col('Points For'), pa: t.col('Points Against'), rank: t.col('Rank'), result: t.col('Result') };
     const rows = t.rows.filter(function (r) { return str_(r[I.id]) && str_(r[I.name]); });
@@ -244,6 +244,7 @@ function build_() {
         m.partner = str_(r[I.partner]); m.opp1 = str_(r[I.o1]); m.opp2 = str_(r[I.o2]);
         m.score = num_(r[I.pf]) + '-' + num_(r[I.pa]);
         m.result = str_(r[I.result]);
+        m.stage = str_(r[I.stage]);   // tournaments: Group / Semi / Final
       }
       if (!matches.has(ph)) matches.set(ph, []);
       matches.get(ph).push(m);
