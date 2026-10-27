@@ -32,7 +32,7 @@ function showMissing(f) {
     groups.push(box);
     box.classList.add('missing');
     let msg = box.querySelector(':scope > .err, :scope > .miss');
-    if (!msg) { msg = document.createElement('p'); msg.className = 'miss'; msg.textContent = el.closest('#days') ? "Tick the days you can't play." : (MISSING_MSG[el.type] || 'Answer this to continue.'); box.append(msg); }
+    if (!msg) { msg = document.createElement('p'); msg.className = 'miss'; msg.textContent = el.closest('#days') ? "Tick the days you can't play." : el.closest('#areas') ? 'Pick at least one area.' : (MISSING_MSG[el.type] || 'Answer this to continue.'); box.append(msg); }
   });
   let sum = f.querySelector('.missing-sum');
   if (!sum) { sum = document.createElement('p'); sum.className = 'missing-sum'; sum.setAttribute('role', 'alert'); f.querySelector('button:not([type=button])').before(sum); }

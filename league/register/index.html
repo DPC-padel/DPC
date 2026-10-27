@@ -57,7 +57,7 @@
       <div class="field"><label for="p-gender">Gender</label><select id="p-gender" name="gender" required><option value="">Choose one</option><option>Male</option><option>Female</option><option>Other</option></select><span class="err">Choose one.</span></div>
       <div class="field"><label for="p-dob">Date of birth</label><input id="p-dob" name="dob" type="date" min="1930-01-01" max="2016-12-31" required><span class="err">Enter your date of birth.</span></div>
     </div>
-    <div class="field"><label for="p-area">Where do you live?</label><input id="p-area" name="area" required autocomplete="address-level2" placeholder="Area and city, e.g. Vasant Vihar, Delhi"><span class="err">Tell us where you live.</span></div>
+    <fieldset class="field choices" id="areas"><legend>Where do you live? <span class="opt">Pick all that apply</span></legend><label><input type="checkbox" name="area" value="North Delhi"><span>North Delhi</span></label><label><input type="checkbox" name="area" value="South Delhi"><span>South Delhi</span></label><label><input type="checkbox" name="area" value="Central Delhi"><span>Central Delhi</span></label><label><input type="checkbox" name="area" value="East Delhi"><span>East Delhi</span></label><label><input type="checkbox" name="area" value="West Delhi"><span>West Delhi</span></label><label><input type="checkbox" name="area" value="Gurgaon"><span>Gurgaon</span></label><label><input type="checkbox" name="area" value="Noida"><span>Noida</span></label></fieldset>
     <div class="field"><label for="p-ig">Instagram <span class="opt">(optional)</span></label><input id="p-ig" name="instagram" placeholder="@handle"></div>
 
     <p class="fsec">Your padel</p>
@@ -89,12 +89,17 @@
     check();
   }));
   boxes.forEach((b) => b.addEventListener("change", check));
+  // Where do you live: at least one area.
+  const areas = [...document.querySelectorAll("#areas input")];
+  const checkAreas = () => areas[0].setCustomValidity(areas.some((x) => x.checked) ? "" : "Pick at least one area.");
+  areas.forEach((x) => x.addEventListener("change", checkAreas));
+  checkAreas();
   // "Not yet" fills the tournament answer in one tap.
   const t = document.getElementById("p-tourn");
   document.querySelector(".notyet").addEventListener("click", () => { t.value = "Not yet"; t.dispatchEvent(new Event("input", { bubbles: true })); t.dispatchEvent(new Event("change", { bubbles: true })); });
 })();
 </script>
-<script src="../forms.js?v=5"></script>
+<script src="../forms.js?v=6"></script>
 <script src="../track.js?v=2"></script>
 <script src="../faq.js?v=4"></script>
 <script src="/site-footer.js?v=3" defer></script>
