@@ -28,10 +28,25 @@ body{min-height:100svh;display:grid;place-items:center;padding:clamp(16px,4vw,48
 .invite .rule{width:48px;height:1px;background:var(--line);margin:22px auto}
 .invite .where{font:500 clamp(20px,3vw,23px)/1.35 var(--serif);color:var(--green)}
 .invite .where small{display:block;font:500 13px/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
-.invite .rsvp{margin-top:clamp(32px,6vw,44px);display:inline-flex;align-items:center;gap:10px;background:var(--green);color:var(--bg);text-decoration:none;font:600 15px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;padding:18px 34px;border-radius:var(--r);transition:background .2s var(--ease)}
+.rsvp-form{margin-top:clamp(32px,6vw,44px);width:100%;max-width:360px;text-align:left;display:grid;gap:22px}
+.rsvp-form label.q,.rsvp-form legend{display:block;font:600 13px/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px}
+.rsvp-form[hidden]{display:none}
+.rsvp-form fieldset{border:0}
+.rsvp-form input[type=text]{width:100%;font:500 19px/1.3 var(--serif);color:var(--text);background:transparent;border:0;border-bottom:1px solid var(--green);border-radius:0;padding:8px 2px}
+.rsvp-form input[type=text]:focus{outline:none;border-bottom-width:2px}
+.rsvp-form .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rsvp-form .opts label{position:relative;cursor:pointer}
+.rsvp-form .opts input{position:absolute;opacity:0;inset:0}
+.rsvp-form .opts span{display:block;text-align:center;font:500 18px/1 var(--serif);color:var(--green);border:1px solid var(--green);border-radius:var(--r);padding:14px 8px;transition:background .2s var(--ease),color .2s var(--ease)}
+.rsvp-form .opts input:checked+span{background:var(--green);color:var(--bg)}
+.rsvp-form .opts input:focus-visible+span{outline:2px solid var(--green);outline-offset:3px}
+.rsvp-form .err{font-size:14px;color:var(--error);min-height:1em}
+.invite .rsvp{justify-self:center;border:0;cursor:pointer}
+.invite .rsvp[disabled]{opacity:.6;cursor:wait}
+.thanks{margin-top:clamp(32px,6vw,44px);font:500 clamp(20px,3vw,23px)/1.45 var(--serif);color:var(--green);max-width:22em}
+.invite .rsvp{margin-top:0;display:inline-flex;align-items:center;gap:10px;background:var(--green);color:var(--bg);text-decoration:none;font:600 15px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;padding:18px 34px;border-radius:var(--r);transition:background .2s var(--ease)}
 .invite .rsvp:hover{background:var(--green-hi)}
 .invite .rsvp:focus-visible{outline:2px solid var(--green);outline-offset:3px}
-.invite .by{margin-top:14px;font-size:14px;color:var(--text-3)}
 .invite .sig{margin-top:clamp(32px,6vw,44px);font:400 30px/1 'Pinyon Script',cursive;color:var(--green)}
 </style>
 </head>
@@ -45,10 +60,44 @@ body{min-height:100svh;display:grid;place-items:center;padding:clamp(16px,4vw,48
     <p class="when">6 PM<br>Sunday, 1st November</p>
     <div class="rule" aria-hidden="true"></div>
     <p class="where"><small>Dirty Good</small>One Golden Mile, New Delhi</p>
-    <a class="rsvp" href="https://forms.gle/b2vK3oov9inBgvXk7" target="_blank" rel="noopener">RSVP <span aria-hidden="true">→</span></a>
-    <p class="by">Takes ten seconds. Let us know if you can make it.</p>
+    <!-- Answers go straight into the Google Form "Delhi Padel League // Auction" (its question IDs below). -->
+    <form class="rsvp-form" id="rsvp" novalidate>
+      <div><label class="q" for="name">Your name</label><input type="text" id="name" name="entry.175295430" autocomplete="name" required maxlength="80"></div>
+      <fieldset><legend>Will you be attending?</legend>
+        <div class="opts">
+          <label><input type="radio" name="entry.1243043648" value="Yes" required><span>Yes</span></label>
+          <label><input type="radio" name="entry.1243043648" value="No"><span>No</span></label>
+        </div>
+      </fieldset>
+      <p class="err" id="err" role="alert"></p>
+      <button class="rsvp" type="submit">RSVP <span aria-hidden="true">→</span></button>
+    </form>
+    <p class="thanks" id="thanks" hidden></p>
     <p class="sig">Delhi Padel League</p>
   </div>
 </main>
+<script>
+const FORM = "https://docs.google.com/forms/d/e/1FAIpQLSdxN0Onfn0aNMVsCo077_h1zHoeQWzkOc7stZvHhQmgLClS9w/formResponse";
+const f = document.getElementById("rsvp"), err = document.getElementById("err");
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (f.dataset.busy) return;
+  const name = f.elements["entry.175295430"].value.trim(), going = f.querySelector("input[type=radio]:checked");
+  err.textContent = !name ? "Please add your name." : !going ? "Please pick Yes or No." : "";
+  if (err.textContent) return;
+  f.dataset.busy = 1;
+  const btn = f.querySelector("button"); btn.disabled = true;
+  try {
+    // Google Forms doesn't allow reading the reply from another site, so a sent request counts as saved.
+    await fetch(FORM, { method: "POST", mode: "no-cors", body: new URLSearchParams(new FormData(f)) });
+    const t = document.getElementById("thanks");
+    t.textContent = going.value === "Yes" ? `Thanks, ${name}! You're on the list. See you at Auction Night.` : `Thanks for letting us know, ${name}. We'll miss you, and see you at the league.`;
+    f.hidden = true; t.hidden = false;
+  } catch (x) {
+    err.textContent = "Couldn't send that. Please check your connection and try again.";
+    btn.disabled = false; delete f.dataset.busy;
+  }
+});
+</script>
 </body>
 </html>
