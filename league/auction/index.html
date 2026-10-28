@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../errors.js?v=1"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Auction Night · Delhi Padel League</title>
+<meta name="description" content="You're invited to Delhi Padel League Auction Night: 6 PM, Sunday 1st November, Dirty Good, One Golden Mile, New Delhi.">
+<meta name="theme-color" content="#f1ece0">
+<meta property="og:title" content="Auction Night · Delhi Padel League">
+<meta property="og:description" content="6 PM, Sunday 1st November · Dirty Good, One Golden Mile, New Delhi">
+<meta property="og:image" content="https://padelcollectiveindia.com/img/crest.jpg">
+<link rel="icon" href="../../img/crest.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=EB+Garamond:wght@500;600;700&family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../league.css?v=5">
+<style>
+/* The invitation card from the Auction Night poster: cream paper, a double green rule, the crest, script title. */
+body{min-height:100svh;display:grid;place-items:center;padding:clamp(16px,4vw,48px) 16px}
+.invite{position:relative;width:100%;max-width:560px;background:var(--surface);border:2px solid var(--green);padding:10px;box-shadow:0 30px 60px -40px rgba(31,61,44,.45)}
+.invite-in{border:1px solid var(--green);padding:clamp(36px,7vw,64px) clamp(20px,6vw,56px) clamp(32px,6vw,52px);text-align:center;display:flex;flex-direction:column;align-items:center}
+.invite .crest{width:clamp(120px,30vw,168px);height:auto;border-radius:50%}
+.invite .hey{margin-top:clamp(28px,5vw,40px);font:600 13px/1.3 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
+.invite h1{font:400 clamp(56px,13vw,88px)/1.05 'Pinyon Script',cursive;color:var(--green);letter-spacing:0;margin-top:6px}
+.invite .note{font:500 clamp(18px,2.4vw,20px)/1.5 var(--serif);color:var(--text-2);max-width:26em;margin-top:18px}
+.invite .when{margin-top:clamp(28px,5vw,36px);font:500 clamp(22px,3.4vw,26px)/1.3 var(--serif);color:var(--green)}
+.invite .rule{width:48px;height:1px;background:var(--line);margin:22px auto}
+.invite .where{font:500 clamp(20px,3vw,23px)/1.35 var(--serif);color:var(--green)}
+.invite .where small{display:block;font:500 13px/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
+.invite .rsvp{margin-top:clamp(32px,6vw,44px);display:inline-flex;align-items:center;gap:10px;background:var(--green);color:var(--bg);text-decoration:none;font:600 15px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;padding:18px 34px;border-radius:var(--r);transition:background .2s var(--ease)}
+.invite .rsvp:hover{background:var(--green-hi)}
+.invite .rsvp:focus-visible{outline:2px solid var(--green);outline-offset:3px}
+.invite .by{margin-top:14px;font-size:14px;color:var(--text-3)}
+.invite .sig{margin-top:clamp(32px,6vw,44px);font:400 30px/1 'Pinyon Script',cursive;color:var(--green)}
+</style>
+</head>
+<body>
+<main class="invite">
+  <div class="invite-in">
+    <img class="crest" src="../../img/crest.jpg" alt="Delhi Padel League 2026 crest" width="168" height="168">
+    <p class="hey">Hey, you're invited</p>
+    <h1>Auction Night</h1>
+    <p class="note">Join us as the eight franchises build their squads and Season One really begins. Come for the bidding, stay for the drinks and good company.</p>
+    <p class="when">6 PM<br>Sunday, 1st November</p>
+    <div class="rule" aria-hidden="true"></div>
+    <p class="where"><small>Dirty Good</small>One Golden Mile, New Delhi</p>
+    <a class="rsvp" href="https://forms.gle/b2vK3oov9inBgvXk7" target="_blank" rel="noopener">RSVP <span aria-hidden="true">→</span></a>
+    <p class="by">Takes ten seconds. Let us know if you can make it.</p>
+    <p class="sig">Delhi Padel League</p>
+  </div>
+</main>
+</body>
+</html>
