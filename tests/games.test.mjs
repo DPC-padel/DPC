@@ -169,7 +169,7 @@ const pair = { mode: "partner", name: "Karan Sehgal", phone: "9000000001", name2
 test("both save normally", async () => {
   const p = signUp({ ...pair, server: { "9000000001": [OK], "9000000002": [OK] } });
   await p.submit();
-  ok(/Both in!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
+  ok(/Both slots are reserved!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
   eq([p.allRSVPs.length, p.els.mSubmit.textContent], [2, "Done ✓"]);
 });
 
@@ -177,7 +177,7 @@ test("player already saved by an earlier try: the partner is still added", async
   const p = signUp({ ...pair, server: { "9000000001": [DUP], "9000000002": [OK] } });
   await p.submit();
   eq(p.posts, ["9000000001", "9000000002"]);
-  ok(/Both in!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
+  ok(/Both slots are reserved!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
 });
 
 test("partner keeps failing: the player is told their spot is saved and can tap again", async () => {
@@ -192,7 +192,7 @@ test("partner keeps failing: the player is told their spot is saved and can tap 
 test("tapping again after that adds the partner without a duplicate player", async () => {
   const p = signUp({ ...pair, rsvps: [{ eventId: "evt1", phone: "9000000001" }], server: { "9000000001": [DUP], "9000000002": [OK] } });
   await p.submit();
-  ok(/Both in!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
+  ok(/Both slots are reserved!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
   eq(p.allRSVPs.filter((r) => r.phone === "9000000001").length, 1);
 });
 
@@ -213,7 +213,7 @@ test("signing up alone when already registered still says so", async () => {
 test("partner already registered separately counts as success", async () => {
   const p = signUp({ ...pair, server: { "9000000001": [OK], "9000000002": [DUP] } });
   await p.submit();
-  ok(/Both in!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
+  ok(/Both slots are reserved!/.test(p.els.mMsg.innerHTML), p.els.mMsg.innerHTML);
 });
 
 test("partner number must differ from yours", async () => {
