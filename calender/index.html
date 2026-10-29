@@ -1040,9 +1040,7 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
     if(status==="confirmed"){
       const payLink=bookingMode==="partner"?ev?.link2:ev?.link1;
       if(bookingMode==="partner"){
-        let baseMsg=ev&&ev.cost
-          ?`<div class="mbox ok">Both slots are reserved! Once all the slots are filled, we'll confirm with you on WhatsApp (<strong>${phone}</strong> and <strong>${phone2}</strong>) and send the payment details (<strong>${ev.cost} × 2</strong>).</div>`
-          :`<div class="mbox ok">Both slots are reserved! Once all the slots are filled, we'll confirm with you on WhatsApp (<strong>${phone}</strong> and <strong>${phone2}</strong>) and send the payment details.</div>`;
+        let baseMsg=`<div class="mbox ok">Both slots are reserved! Once all the slots are filled, we'll confirm with you on WhatsApp (<strong>${phone}</strong> and <strong>${phone2}</strong>) and send the payment details.</div>`;
         if(payLink){
           baseMsg+=`<div class="pay-cta">
             <div class="pay-cta-label">Next Step</div>
@@ -1053,9 +1051,7 @@ document.getElementById("mSubmit").addEventListener("click",async()=>{
         }
         msgEl.innerHTML=baseMsg;
       } else {
-        let baseMsg=ev&&ev.cost
-          ?`<div class="mbox ok">Your slot is reserved! Once all the slots are filled, we'll confirm with you on WhatsApp (<strong>${phone}</strong>) and send the payment details (${ev.cost}).</div>`
-          :`<div class="mbox ok">Your slot is reserved! Once all the slots are filled, we'll confirm with you on WhatsApp (<strong>${phone}</strong>) and send the payment details.</div>`;
+        let baseMsg=`<div class="mbox ok">Your slot is reserved! Once all the slots are filled, we'll confirm with you on WhatsApp (<strong>${phone}</strong>) and send the payment details.</div>`;
         if(payLink){
           baseMsg+=`<div class="pay-cta">
             <div class="pay-cta-label">Next Step</div>
