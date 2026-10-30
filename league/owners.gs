@@ -8,9 +8,9 @@
 //  /exec URL into OWNERS_API in league/owners/index.html.
 // ============================================================
 
-const HEADERS = ['Timestamp', 'Name', 'Franchise', 'What they do', 'Playing padel', 'Signature shot / excuse',
-                 'Auction strategy', 'Rival to beat', 'Padel crime', 'Walk-out song'];
-const FIELDS = ['name', 'franchise', 'work', 'playing', 'shot', 'strategy', 'rival', 'crime', 'song'];
+const HEADERS = ['Timestamp', 'Name', 'Franchise', 'What they do', 'Playing padel', 'Signature shot',
+                 'Auction strategy', 'Our team will win because', 'Padel crime', 'Post-match order'];
+const FIELDS = ['name', 'franchise', 'work', 'playing', 'shot', 'strategy', 'win', 'crime', 'order'];
 const REQUIRED = ['name', 'franchise', 'work', 'playing', 'strategy'];
 
 function doPost(e) {
