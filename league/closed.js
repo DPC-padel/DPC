@@ -2,7 +2,7 @@
 // open the form; after it they show a short notice, and the register page swaps its form for
 // a closed message (html.reg-closed). Used on the League page, the home page, Games and the form.
 (function () {
-  const CLOSES_AT = new Date("2026-10-30T19:40:00+05:30");
+  const CLOSES_AT = new Date("2026-10-30T21:00:00+05:30");
   const isClosed = () => Date.now() >= CLOSES_AT;
   const mark = () => document.documentElement.classList.toggle("reg-closed", isClosed());
   mark();
