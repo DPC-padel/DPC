@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../errors.js?v=1"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meet the Owners · Delhi Padel League</title>
+<meta name="description" content="Eight quick questions for the Delhi Padel League franchise owners.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f1ece0">
+<meta property="og:title" content="Meet the Owners · Delhi Padel League">
+<meta property="og:description" content="Eight quick questions before Auction Night.">
+<meta property="og:image" content="https://padelcollectiveindia.com/img/crest.jpg">
+<link rel="icon" href="../../img/crest.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=EB+Garamond:wght@500;600;700&family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../league.css?v=5">
+<style>
+.own{max-width:640px;margin-inline:auto;padding:clamp(12px,3vw,40px) 12px 64px}
+.own-card{background:var(--surface);border:2px solid var(--green);padding:10px}
+.own-in{border:1px solid var(--green);padding:clamp(24px,5vw,48px) clamp(18px,5vw,44px)}
+.own-head{text-align:center;display:flex;flex-direction:column;align-items:center}
+.own-head .crest{width:clamp(64px,16vw,88px);height:auto;border-radius:50%}
+.own-head h1{font:400 clamp(44px,11vw,72px)/1.1 'Pinyon Script',cursive;color:var(--green);letter-spacing:0;margin-top:10px}
+.own-head p{font:500 clamp(16px,2.2vw,19px)/1.45 var(--serif);color:var(--text-2);max-width:28em;margin-top:6px}
+.own .f{padding:28px 0 0}
+.own .q{font:600 12px/1.3 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-right:6px}
+.own .field label,.own .choices legend{font-size:16px}
+.own .opt{font-weight:400;color:var(--text-3);font-size:14px}
+.own .ferr{color:var(--error);font-size:14px}
+.own .done h3{font:400 clamp(36px,8vw,52px)/1.1 'Pinyon Script',cursive;color:var(--green)}
+.own .done{padding:28px 0 0;text-align:center}
+</style>
+</head>
+<body>
+<main class="own">
+  <div class="own-card"><div class="own-in">
+    <div class="own-head">
+      <img class="crest" src="../../img/crest.jpg" alt="Delhi Padel League 2026 crest" width="88" height="88">
+      <h1>Meet the Owners</h1>
+      <p>Eight franchises, eight owners. Before Auction Night, we'd love to know a little more about you. Eight quick questions, two minutes, and a few answers may make it onto the night.</p>
+    </div>
+
+    <form class="f" id="own" novalidate>
+      <div class="row">
+        <div class="field"><label for="o-name"><span class="q">01</span>Your name</label><input id="o-name" name="name" required autocomplete="name" maxlength="100"><span class="err">Enter your name.</span></div>
+        <div class="field"><label for="o-team">Your franchise</label><input id="o-team" name="franchise" required maxlength="100"><span class="err">Enter your franchise.</span></div>
+      </div>
+      <div class="field"><label for="o-work"><span class="q">02</span>What do you do?</label><input id="o-work" name="work" required maxlength="300" placeholder="Profession, and where you work"><span class="err">Tell us what you do.</span></div>
+      <fieldset class="field choices"><legend><span class="q">03</span>How long have you been playing padel?</legend>
+        <label><input type="radio" name="playing" value="Less than 6 months" required><span>Less than 6 months</span></label>
+        <label><input type="radio" name="playing" value="6 months – 1 year"><span>6 months – 1 year</span></label>
+        <label><input type="radio" name="playing" value="1–2 years"><span>1–2 years</span></label>
+        <label><input type="radio" name="playing" value="2+ years"><span>2+ years</span></label>
+        <label><input type="radio" name="playing" value="Here to own, not to play"><span>I'm here to own, not to play</span></label>
+      </fieldset>
+      <div class="field"><label for="o-shot"><span class="q">04</span>Your signature shot, or your signature excuse? <span class="opt">(optional)</span></label><input id="o-shot" name="shot" maxlength="300"></div>
+      <fieldset class="field choices"><legend><span class="q">05</span>What's your auction strategy?</legend>
+        <label><input type="radio" name="strategy" value="Splurge on one superstar" required><span>Splurge on one superstar</span></label>
+        <label><input type="radio" name="strategy" value="Spread it out, build depth"><span>Spread it out, build depth</span></label>
+        <label><input type="radio" name="strategy" value="Steal bargains late"><span>Steal bargains late</span></label>
+        <label><input type="radio" name="strategy" value="Bluff and drive up my rivals"><span>Bluff and drive up my rivals</span></label>
+        <label><input type="radio" name="strategy" value="Decide after a drink"><span>I'll decide after a drink</span></label>
+      </fieldset>
+      <div class="field"><label for="o-rival"><span class="q">06</span>Which rival owner would you most love to beat, and why? <span class="opt">(optional)</span></label><input id="o-rival" name="rival" maxlength="300" placeholder="Be honest. We'll only share it a little."></div>
+      <div class="field"><label for="o-crime"><span class="q">07</span>Your biggest padel crime? <span class="opt">(optional)</span></label><input id="o-crime" name="crime" maxlength="300" placeholder="Smashing into the glass, blaming your partner, &quot;that was out&quot;…"></div>
+      <div class="field"><label for="o-song"><span class="q">08</span>Your team's walk-out song? <span class="opt">(optional)</span></label><input id="o-song" name="song" maxlength="200"></div>
+      <button class="btn btn-primary">Send my answers</button>
+    </form>
+    <div class="done" role="status"><h3>Thank you</h3><p>See you at Auction Night. Bring your best bidding face.</p></div>
+  </div></div>
+</main>
+<script src="../forms.js?v=6"></script>
+<script>
+// Answers go to the "DPL Owners" Google Sheet through its Apps Script (league/owners.gs).
+const OWNERS_API = "PASTE_OWNERS_WEB_APP_URL";
+const own = document.getElementById("own");
+own.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (own.dataset.busy) return;
+  if (!own.checkValidity()) { showMissing(own); return; }   // from forms.js
+  own.dataset.busy = "1";
+  const btn = own.querySelector("button"), label = btn.textContent;
+  let err = own.querySelector(".ferr");
+  if (!err) { err = document.createElement("p"); err.className = "ferr"; err.setAttribute("role", "alert"); btn.after(err); }
+  err.textContent = ""; btn.disabled = true; btn.textContent = "Sending…";
+  try {
+    const res = await fetch(OWNERS_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(Object.fromEntries(new FormData(own))) });
+    const data = await res.json();
+    if (!data || data.ok !== true) throw new Error(data && data.error || "not saved");
+    own.classList.add("sent"); own.hidden = true;
+    own.nextElementSibling.scrollIntoView({ block: "center", behavior: "smooth" });
+  } catch (x) {
+    err.textContent = "Couldn't send that. Please check your connection and try again.";
+    btn.disabled = false; btn.textContent = label; delete own.dataset.busy;
+  }
+});
+</script>
+</body>
+</html>
