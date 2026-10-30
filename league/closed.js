@@ -1,9 +1,12 @@
 // Player registrations close at CLOSES_AT. Until then the "Register" buttons (data-reg-closed)
 // open the form; after it they show a short notice, and the register page swaps its form for
 // a closed message (html.reg-closed). Used on the League page, the home page, Games and the form.
+// The public buttons stay closed either way.
 (function () {
   const CLOSES_AT = new Date("2026-10-30T21:00:00+05:30");
-  const isClosed = () => Date.now() >= CLOSES_AT;
+  // The private link /league/register/?invite=dpl-late keeps the form open after the deadline.
+  const invited = new URLSearchParams(location.search).get("invite") === "dpl-late" && location.pathname.startsWith("/league/register");
+  const isClosed = () => Date.now() >= CLOSES_AT && !invited;
   const mark = () => document.documentElement.classList.toggle("reg-closed", isClosed());
   mark();
   if (!isClosed()) setTimeout(mark, CLOSES_AT - Date.now());   // a page left open closes on time
