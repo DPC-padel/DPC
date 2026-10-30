@@ -922,7 +922,7 @@ function cardHTML(ev,me){
   // Events that don't show "x / y joined" (booked mostly off the site).
   const hideCount=isLeague||/girls in bloom/i.test(ev.title);
   if(isLeague){
-    actionHTML=`<button class="action-btn btn-joined" disabled>Registrations closed</button>`;
+    actionHTML=`<button type="button" class="action-btn btn-join" data-reg-closed>Register →</button>`;
   } else if(iDid){
     actionHTML=`<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
       <button class="action-btn btn-joined" disabled>✓ Joined</button>
@@ -1133,5 +1133,6 @@ load();
 
 </div>
 <script src="/site-footer.js?v=3" defer></script>
+<script src="../league/closed.js?v=1"></script>
 </body>
 </html>

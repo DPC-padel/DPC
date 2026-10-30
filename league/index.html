@@ -28,6 +28,7 @@
     </nav>
     <div class="nav-cta">
       <a class="link" href="#partners">Partner with DPL</a>
+      <button type="button" class="btn btn-primary" data-reg-closed>Register to play</button>
     </div>
     <button class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
   </div>
@@ -35,6 +36,7 @@
 <div id="menu">
   <a href="#league">The League</a><a href="#season">Season One</a><a href="#teams">Teams</a><a href="#own">Own a franchise</a><a href="#partners">Partners</a><a href="#about">About</a><a href="../">Delhi Padel Collective</a>
   <div class="ctas">
+    <button type="button" class="btn btn-primary" data-reg-closed>Register to play</button>
     <button class="btn btn-quiet" data-open="sponsor">Partner with DPL</button>
   </div>
 </div>
@@ -49,7 +51,8 @@
         <h1>Delhi. Eight franchises. One champion.</h1>
         <p class="lead">Delhi's first franchise-based padel league arrives this November. Three weekends, 120 players, one title.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#partners" data-track="hero_partner">Become a partner</a>
+          <button type="button" class="btn btn-primary" data-reg-closed data-track="hero_register">Register to play</button>
+          <a class="text-link" href="#partners" data-track="hero_partner">Become a partner</a>
         </div>
       </div>
     </div>
@@ -63,7 +66,7 @@
       <h2>Three ways into Season One.</h2>
     </div>
     <div class="paths">
-      <article class="path"><h3>Play</h3><p>120 player spots across eight squads. Player registrations are now closed.</p></article>
+      <article class="path"><h3>Play</h3><p>120 player spots across eight squads. Player registrations are now closed.</p><button type="button" class="btn btn-quiet" data-reg-closed data-track="path_play">Register to play</button></article>
       <article class="path"><h3>Own a franchise</h3><p>Eight franchises. Build your squad at auction night and compete for the first title.</p><a class="btn btn-quiet" href="#own" data-track="path_own">See what owners get</a></article>
       <article class="path"><h3>Partner</h3><p>Nine partner seats across three tiers. Your brand inside the game for three weekends.</p><a class="btn btn-quiet" href="#partners" data-track="path_partner">See partnership tiers</a></article>
     </div>
@@ -289,6 +292,7 @@
       <p class="lead">Season One player registrations are now closed. Thank you to everyone who signed up.</p>
     </div>
     <p class="status">Registrations closed</p>
+    <div><button type="button" class="btn btn-primary" data-reg-closed>Register to play</button></div>
     <ol class="how">
       <li><b>Register</b><span>Tell us your level, categories and availability.</span></li>
       <li><b>Confirmation</b><span>We confirm your entry and category on WhatsApp.</span></li>
@@ -334,7 +338,8 @@
 </footer>
 
 <div class="sticky" id="sticky">
-  <button class="btn btn-primary" data-open="sponsor">Partner with DPL</button>
+  <button type="button" class="btn btn-primary" data-reg-closed>Register to play</button>
+  <button class="btn btn-quiet" data-open="sponsor">Partner with DPL</button>
 </div>
 
 
@@ -390,6 +395,7 @@ document.querySelectorAll('dialog').forEach(d => {
 <script src="forms.js?v=6"></script>
 <script src="track.js?v=2"></script>
 <script src="faq.js?v=5"></script>
+<script src="closed.js?v=1"></script>
 <script src="/site-footer.js?v=3" defer></script>
 </body>
 </html>
