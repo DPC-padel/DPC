@@ -7,12 +7,12 @@ const DPL_FAQ = [
   ["When are the matches?", "Group stage: Fri 20 – Sun 22 Nov. Semis and finals: Sat 28 – Sun 29 Nov."],
   ["What are the match timings?", "Your exact schedule depends on your team and its fixtures. Tentative timings:\n\nGroup stage (your team plays 3 ties)\nFri 20 Nov: 4–10 pm\nSat 21 Nov: 8 am–10 pm\nSun 22 Nov: 8 am–10 pm\n\nKnockouts, if your team makes it\nSat 28 Nov (semis): 4–10 pm\nSun 29 Nov (finals): 6–9 pm\n\nWith so many players and matches, we can't take requests to change match timings."],
   ["Where will it be played?", "At two venues in New Delhi. The exact location will be shared this week."],
-  ["How do I get into a team?", "Register here. Franchise owners build their squads at the auction, using what you tell us in this form."],
+  ["How do I get into a team?", "Player registrations are now closed. Franchise owners build their squads from the registered players at Auction Night on 1st November."],
   ["What if I can't play every day?", "That's fine. Mark the days you can't play in the form. Teams will see it, and it will affect whether they pick you."],
   ["Why do you ask about tournaments?", "Your results help us understand where to place you in the auction. Please share every tournament you've played in the last year."],
   ["How should I rate myself?", "Pick the level that honestly matches how you play today. It helps us place you, and teams see it at the auction."],
-  ["Is there an entry fee?", "Yes. We'll share the fee and how to pay when we contact you after you register."],
-  ["What happens after I register?", "We'll get in touch on WhatsApp with the next steps."],
+  ["Is there an entry fee?", "Yes, for players picked at the auction. We'll share the fee and how to pay on WhatsApp."],
+  ["I registered. What happens next?", "Franchises pick their squads at Auction Night on 1st November. We'll get in touch on WhatsApp after that."],
   ["Can I change my answers?", "Yes. Message us on WhatsApp and we'll update your registration."],
 ];
 const DPL_WHATSAPP = "919211264111";
