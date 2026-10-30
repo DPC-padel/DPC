@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 <script src="../../errors.js?v=1"></script>
+<script src="../closed.js?v=2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Registrations closed · Delhi Padel League</title>
-<meta name="description" content="Delhi Padel League Season One player registrations are closed.">
+<title>Register to play · Delhi Padel League</title>
+<meta name="description" content="Register to play Delhi Padel League Season One, New Delhi, November 2026.">
 <meta name="theme-color" content="#f1ece0">
 <link rel="icon" href="../../img/crest.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +28,10 @@
 .reg-card{background:var(--surface);padding:clamp(20px,4vw,40px)}
 .reg .f{padding:0}
 .reg .done{padding:8px 0}
-.reg .closed{display:grid;gap:16px}
+/* After the deadline in closed.js: the form is swapped for the closed notice. */
+.reg .closed{display:none;gap:16px}
+.reg-closed .reg .closed{display:grid}
+.reg-closed .reg .f,.reg-closed .reg .done{display:none!important}
 </style>
 </head>
 <body>
@@ -39,14 +43,74 @@
   </div>
 </header>
 <main class="reg">
-  <h1 class="sr-only" style="position:absolute;left:-9999px">Player registrations closed, Delhi Padel League Season One</h1>
-  <div class="reg-card closed">
-    <p class="eyebrow">Season One</p>
-    <h2>Player registrations are closed.</h2>
-    <p class="lead">Thank you to everyone who registered. Franchises pick their squads at Auction Night on 1st November, and we'll be in touch on WhatsApp after that.</p>
-    <p><a class="btn btn-primary" href="../">Back to the league</a></p>
+  <h1 class="sr-only" style="position:absolute;left:-9999px">Register to play, Delhi Padel League Season One</h1>
+  <div class="reg-card">
+    <div class="closed">
+      <p class="eyebrow">Season One</p>
+      <h2>Player registrations are closed.</h2>
+      <p class="lead">Thank you to everyone who registered. Franchises pick their squads at Auction Night on 1st November, and we'll be in touch on WhatsApp after that.</p>
+      <p><a class="btn btn-primary" href="../">Back to the league</a></p>
+    </div>
+    <form class="f" data-form="player" novalidate>
+    <p class="fsec">The dates</p>
+    <div class="dates"><p><b>Group stage</b> Fri 20 – Sun 22 Nov</p><p><b>Semis &amp; Finals</b> Sat 28 – Sun 29 Nov</p></div>
+    <fieldset class="field choices"><legend>Can you play all five match days?</legend><label><input type="radio" name="availability" value="All days" required><span>Yes, all five days</span></label><label><input type="radio" name="availability" value="Can't play"><span>No, I'll miss some</span></label></fieldset>
+    <fieldset class="field choices days" id="days"><legend>Which days can't you play?</legend><label><input type="checkbox" name="availability" value="Fri 20"><span>Fri 20 Nov</span></label><label><input type="checkbox" name="availability" value="Sat 21"><span>Sat 21 Nov</span></label><label><input type="checkbox" name="availability" value="Sun 22"><span>Sun 22 Nov</span></label><label><input type="checkbox" name="availability" value="Sat 28"><span>Sat 28 Nov</span></label><label><input type="checkbox" name="availability" value="Sun 29"><span>Sun 29 Nov</span></label>
+      <p class="note">Missing a day is fine, but teams will see it, and it will affect whether they pick you.</p>
+    </fieldset>
+    <p class="fsec">Your details</p>
+    <div class="field"><label for="p-name">Full name</label><input id="p-name" name="name" required autocomplete="name"><span class="err">Enter your full name.</span></div>
+    <div class="row">
+      <div class="field"><label for="p-phone">WhatsApp number</label><input id="p-phone" name="phone" type="tel" required autocomplete="tel" inputmode="tel" pattern="[0-9+\s\-]{8,}"><span class="err">Enter a phone number with at least 8 digits.</span></div>
+      <div class="field"><label for="p-email">Email</label><input id="p-email" name="email" type="email" required autocomplete="email"><span class="err">Enter an email like name@example.com.</span></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="p-gender">Gender</label><select id="p-gender" name="gender" required><option value="">Choose one</option><option>Male</option><option>Female</option><option>Other</option></select><span class="err">Choose one.</span></div>
+      <div class="field"><label for="p-dob">Date of birth</label><input id="p-dob" name="dob" type="date" min="1930-01-01" max="2016-12-31" required><span class="err">Enter your date of birth.</span></div>
+    </div>
+    <fieldset class="field choices" id="areas"><legend>Where do you live? <span class="opt">Pick all that apply</span></legend><label><input type="checkbox" name="area" value="North Delhi"><span>North Delhi</span></label><label><input type="checkbox" name="area" value="South Delhi"><span>South Delhi</span></label><label><input type="checkbox" name="area" value="Central Delhi"><span>Central Delhi</span></label><label><input type="checkbox" name="area" value="East Delhi"><span>East Delhi</span></label><label><input type="checkbox" name="area" value="West Delhi"><span>West Delhi</span></label><label><input type="checkbox" name="area" value="Gurgaon"><span>Gurgaon</span></label><label><input type="checkbox" name="area" value="Noida"><span>Noida</span></label></fieldset>
+    <div class="field"><label for="p-ig">Instagram <span class="opt">(optional)</span></label><input id="p-ig" name="instagram" placeholder="@handle"></div>
+
+    <p class="fsec">Your padel</p>
+    <fieldset class="field choices"><legend>How long have you been playing?</legend><label><input type="radio" name="experience" value="Less than 6 months" required><span>Less than 6 months</span></label><label><input type="radio" name="experience" value="6–12 months"><span>6–12 months</span></label><label><input type="radio" name="experience" value="1–2 years"><span>1–2 years</span></label><label><input type="radio" name="experience" value="2+ years"><span>2+ years</span></label></fieldset>
+    <fieldset class="field choices"><legend>How would you rate yourself?</legend><label><input type="radio" name="level" value="Beginner" required><span>Beginner</span></label><label><input type="radio" name="level" value="Lower Intermediate"><span>Lower Intermediate</span></label><label><input type="radio" name="level" value="Intermediate"><span>Intermediate</span></label><label><input type="radio" name="level" value="Advanced"><span>Advanced</span></label></fieldset>
+    <fieldset class="field choices"><legend>Preferred side</legend><label><input type="radio" name="side" value="Right" required><span>Right</span></label><label><input type="radio" name="side" value="Left"><span>Left</span></label><label><input type="radio" name="side" value="Either"><span>Either</span></label></fieldset>
+    <div class="field"><label for="p-tourn">Have you played a tournament in the last year? What was your result?</label><p class="hint" id="p-tourn-hint">Please share all the tournament results you've played, so we understand where to place you in the auction. Not played one? That's fine.</p><textarea id="p-tourn" name="tournament" rows="3" required aria-describedby="p-tourn-hint" placeholder="e.g. DPC Sunday, semi-final"></textarea><button type="button" class="btn btn-quiet notyet" style="min-height:38px;font-size:14px;justify-self:start;width:auto">Not yet</button><span class="err">Tell us, even if it's "not yet".</span></div>
+
+    <p class="fsec">Your kit</p>
+    <fieldset class="field choices"><legend>T-shirt size</legend><label><input type="radio" name="tshirt" value="S" required><span>S</span></label><label><input type="radio" name="tshirt" value="M"><span>M</span></label><label><input type="radio" name="tshirt" value="L"><span>L</span></label><label><input type="radio" name="tshirt" value="XL"><span>XL</span></label><label><input type="radio" name="tshirt" value="XXL"><span>XXL</span></label></fieldset>
+
+    <p class="fsec">Consent</p>
+    <div class="field consent"><label><input type="checkbox" name="consent" value="Available on the days picked" required><span>I confirm I'll be in Delhi and available to play on every day I haven't marked as unavailable.</span></label></div>
+    <div class="field consent"><label><input type="checkbox" name="consent" value="Rules, own risk, photos and videos" required><span>I agree to the league rules, understand I play at my own risk, and consent to photos and videos of me being used on DPC's social media.</span></label></div>
+    <button class="btn btn-primary">Register</button>
+  </form>
+    <div class="done" role="status"><h3>Thank you.</h3><p>We've got your registration and will contact you soon.</p></div>
   </div>
 </main>
+<script>
+// "No, I'll miss some" shows the days; then at least one day must be ticked.
+(() => {
+  const days = document.getElementById("days"), boxes = [...days.querySelectorAll("input")];
+  const check = () => boxes[0].setCustomValidity(days.classList.contains("on") && !boxes.some((b) => b.checked) ? "Tick the days you can't play." : "");
+  document.querySelectorAll('input[type=radio][name=availability]').forEach((r) => r.addEventListener("change", () => {
+    const miss = r.value === "Can't play" && r.checked;
+    days.classList.toggle("on", miss);
+    if (!miss) boxes.forEach((b) => (b.checked = false));
+    check();
+  }));
+  boxes.forEach((b) => b.addEventListener("change", check));
+  // Where do you live: at least one area.
+  const areas = [...document.querySelectorAll("#areas input")];
+  const checkAreas = () => areas[0].setCustomValidity(areas.some((x) => x.checked) ? "" : "Pick at least one area.");
+  areas.forEach((x) => x.addEventListener("change", checkAreas));
+  checkAreas();
+  // "Not yet" fills the tournament answer in one tap.
+  const t = document.getElementById("p-tourn");
+  document.querySelector(".notyet").addEventListener("click", () => { t.value = "Not yet"; t.dispatchEvent(new Event("input", { bubbles: true })); t.dispatchEvent(new Event("change", { bubbles: true })); });
+})();
+</script>
+<script src="../forms.js?v=6"></script>
 <script src="../track.js?v=2"></script>
 <script src="../faq.js?v=5"></script>
 <script src="/site-footer.js?v=3" defer></script>
