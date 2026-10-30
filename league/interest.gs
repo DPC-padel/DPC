@@ -64,10 +64,19 @@ function rowFor(t, data, when) {
 
 function appendRows(t, rows) {
   if (!rows.length) return;
-  const sh = tab(t), r = sh.getLastRow() + 1;
+  const sh = tab(t), r = lastRow_(sh) + 1;
   // Phone column as text first, so Sheets keeps the +91 and leading zeros.
   sh.getRange(r, t.headers.indexOf('Phone') + 1, rows.length, 1).setNumberFormat('@');
   sh.getRange(r, 1, rows.length, rows[0].length).setValues(rows);
+}
+
+// Last row with a Timestamp. Not getLastRow(): a formula column (like an ARRAYFORMULA
+// "40+" column) fills every row to the bottom of the sheet, so new rows would land past the end.
+function lastRow_(sh) {
+  const a = sh.getRange(1, 1, sh.getMaxRows(), 1).getValues();
+  let i = a.length;
+  while (i > 0 && a[i - 1][0] === '') i--;
+  return i;
 }
 
 function withLock(fn) {
@@ -106,7 +115,7 @@ function processInbox() {
 
 function key_(when, ph) { return Math.floor(new Date(when).getTime() / 1000) + '|' + phone(ph); }
 function seen_(t) {
-  const sh = tab(t), n = sh.getLastRow() - 1, out = {};
+  const sh = tab(t), n = lastRow_(sh) - 1, out = {};
   if (n < 1) return out;
   const iP = t.headers.indexOf('Phone');
   sh.getRange(2, 1, n, t.headers.length).getValues().forEach(r => { if (r[0] instanceof Date) out[key_(r[0], r[iP])] = true; });
@@ -117,7 +126,7 @@ function seen_(t) {
 // from Player registrations and Partners, keeping the first of each.
 function removeDuplicates() {
   Object.keys(TABS).forEach(k => {
-    const t = TABS[k], sh = tab(t), n = sh.getLastRow() - 1;
+    const t = TABS[k], sh = tab(t), n = lastRow_(sh) - 1;
     if (n < 1) return;
     const iN = t.headers.indexOf('Name'), iP = t.headers.indexOf('Phone'), vals = sh.getRange(2, 1, n, t.headers.length).getValues(), seen = {}, drop = [];
     vals.forEach((r, i) => { const kk = String(r[0] instanceof Date ? r[0].getTime() : r[0]) + '|' + r[iN] + '|' + phone(r[iP]); if (seen[kk]) drop.push(i + 2); else seen[kk] = true; });
@@ -131,7 +140,7 @@ function removeDuplicates() {
 // played with DPC are left blank, so their self-rated Level is never mistaken for a rating.
 // Runs every 5 minutes; run it from the editor any time to refresh now.
 function updateRatings() {
-  const t = TABS.player, sh = tab(t), n = sh.getLastRow() - 1;
+  const t = TABS.player, sh = tab(t), n = lastRow_(sh) - 1;
   if (n < 1) return 0;
   const by = {};
   // Apps Script rejects a raw ">" in a URL, so the column list is encoded.
