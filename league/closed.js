@@ -4,8 +4,8 @@
 // The public buttons stay closed either way.
 (function () {
   const CLOSES_AT = new Date("2026-10-30T21:00:00+05:30");
-  // The private link /league/register/?invite=dpl-late keeps the form open after the deadline.
-  const invited = new URLSearchParams(location.search).get("invite") === "dpl-late" && location.pathname.startsWith("/league/register");
+  // The private link /league/register/?open=1 keeps the form open after the deadline.
+  const invited = new URLSearchParams(location.search).get("open") === "1" && location.pathname.startsWith("/league/register");
   const isClosed = () => Date.now() >= CLOSES_AT && !invited;
   const mark = () => document.documentElement.classList.toggle("reg-closed", isClosed());
   mark();
