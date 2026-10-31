@@ -93,7 +93,7 @@ own.addEventListener("submit", async (e) => {
       body: JSON.stringify(Object.fromEntries(new FormData(own))) });
     const data = await res.json();
     if (!data || data.ok !== true) throw new Error(data && data.error || "not saved");
-    own.classList.add("sent"); own.hidden = true;
+    own.classList.add("sent"); own.hidden = true; document.querySelector(".own-head").remove();
     own.nextElementSibling.scrollIntoView({ block: "center", behavior: "smooth" });
   } catch (x) {
     err.textContent = "Couldn't send that. Please check your connection and try again.";
