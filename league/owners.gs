@@ -9,8 +9,8 @@
 // ============================================================
 
 const HEADERS = ['Timestamp', 'Name', 'Franchise', 'What they do', 'Playing padel', 'Signature shot',
-                 'Auction strategy', 'Our team will win because', 'Padel crime', 'What got them into padel'];
-const FIELDS = ['name', 'franchise', 'work', 'playing', 'shot', 'strategy', 'win', 'crime', 'why'];
+                 'Auction strategy', 'Our team will win because', 'How they came up with the franchise name', 'What got them into padel'];
+const FIELDS = ['name', 'franchise', 'work', 'playing', 'shot', 'strategy', 'win', 'origin', 'why'];
 const REQUIRED = ['name', 'franchise', 'work', 'playing', 'strategy'];
 
 function doPost(e) {

@@ -50,14 +50,14 @@
         <div class="field"><label for="o-team">Your franchise</label><input id="o-team" name="franchise" required maxlength="100"><span class="err">Enter your franchise.</span></div>
       </div>
       <div class="field"><label for="o-work"><span class="q">02</span>What do you do?</label><input id="o-work" name="work" required maxlength="300" placeholder="Profession, and where you work"><span class="err">Tell us what you do.</span></div>
-      <fieldset class="field choices"><legend><span class="q">03</span>How long have you been playing padel?</legend>
+      <fieldset class="field choices"><legend><span class="q">03</span>Do you play padel? How long?</legend>
         <label><input type="radio" name="playing" value="Less than 6 months" required><span>Less than 6 months</span></label>
         <label><input type="radio" name="playing" value="6 months – 1 year"><span>6 months – 1 year</span></label>
         <label><input type="radio" name="playing" value="1–2 years"><span>1–2 years</span></label>
         <label><input type="radio" name="playing" value="2+ years"><span>2+ years</span></label>
-        <label><input type="radio" name="playing" value="Here to own, not to play"><span>I'm here to own, not to play</span></label>
+        <label><input type="radio" name="playing" value="Don't play, here to own"><span>I don't play, I'm here to own</span></label>
       </fieldset>
-      <div class="field"><label for="o-shot"><span class="q">04</span>Your signature shot? <span class="opt">(optional)</span></label><input id="o-shot" name="shot" maxlength="300"></div>
+      <div class="field"><label for="o-shot"><span class="q">04</span>Your signature shot? <span class="opt">(skip if you don't play)</span></label><input id="o-shot" name="shot" maxlength="300"></div>
       <fieldset class="field choices"><legend><span class="q">05</span>What's your auction strategy?</legend>
         <label><input type="radio" name="strategy" value="Splurge on one superstar" required><span>Splurge on one superstar</span></label>
         <label><input type="radio" name="strategy" value="Spread it out, build depth"><span>Spread it out, build depth</span></label>
@@ -66,8 +66,8 @@
         <label><input type="radio" name="strategy" value="Decide after a drink"><span>I'll decide after a drink</span></label>
       </fieldset>
       <div class="field"><label for="o-win"><span class="q">06</span>Finish this: "Our team will win because…" <span class="opt">(optional)</span></label><input id="o-win" name="win" maxlength="300"></div>
-      <div class="field"><label for="o-crime"><span class="q">07</span>Your biggest padel crime? <span class="opt">(optional)</span></label><input id="o-crime" name="crime" maxlength="300" placeholder="Smashing into the glass, blaming your partner, &quot;that was out&quot;…"></div>
-      <div class="field"><label for="o-why"><span class="q">08</span>What got you into padel? <span class="opt">(optional)</span></label><input id="o-why" name="why" maxlength="300"></div>
+      <div class="field"><label for="o-origin"><span class="q">07</span>How did you come up with your franchise name? <span class="opt">(optional)</span></label><input id="o-origin" name="origin" maxlength="300"></div>
+      <div class="field"><label for="o-why"><span class="q">08</span>What got you into padel, or into owning a team? <span class="opt">(optional)</span></label><input id="o-why" name="why" maxlength="300"></div>
       <button class="btn btn-primary">Send my answers</button>
     </form>
     <div class="done" role="status"><h3>Thank you</h3><p>See you at Auction Night. Bring your best bidding face.</p></div>
