@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../errors.js?v=1"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Player Consent · Delhi Padel League</title>
+<meta name="description" content="Player consent for the Delhi Padel League, Season One.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f1ece0">
+<meta property="og:title" content="Player Consent · Delhi Padel League">
+<meta property="og:description" content="A one-minute consent form for drafted players.">
+<meta property="og:image" content="https://padelcollectiveindia.com/img/crest.jpg">
+<link rel="icon" href="../../img/crest.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=EB+Garamond:wght@500;600;700&family=Albert+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../league.css?v=5">
+<style>
+.own{max-width:640px;margin-inline:auto;padding:clamp(12px,3vw,40px) 12px 64px}
+.own-card{background:var(--surface);border:2px solid var(--green);padding:10px}
+.own-in{border:1px solid var(--green);padding:clamp(24px,5vw,48px) clamp(18px,5vw,44px)}
+.own-head{text-align:center;display:flex;flex-direction:column;align-items:center}
+.own-head .crest{width:clamp(64px,16vw,88px);height:auto;border-radius:50%}
+.own-head h1{font:400 clamp(44px,11vw,72px)/1.1 'Pinyon Script',cursive;color:var(--green);letter-spacing:0;margin-top:10px}
+.own-head .each{font:500 14px/1.4 var(--sans);color:var(--text-3);margin-top:10px}
+.own-head p{font:500 clamp(16px,2.2vw,19px)/1.45 var(--serif);color:var(--text-2);max-width:28em;margin-top:6px}
+.own .f{padding:28px 0 0}
+.own .q{font:600 12px/1.3 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-right:6px}
+.own .field label,.own .choices legend{font-size:16px}
+.own .opt{font-weight:400;color:var(--text-3);font-size:14px}
+.own .ferr{color:var(--error);font-size:14px}
+.own .done h3{font:400 clamp(36px,8vw,52px)/1.1 'Pinyon Script',cursive;color:var(--green)}
+.own .done{padding:28px 0 0;text-align:center}
+.own .consent b{color:var(--text);font-weight:600}
+.own .date{font-size:14px;color:var(--text-3)}
+</style>
+</head>
+<body>
+<main class="own">
+  <div class="own-card"><div class="own-in">
+    <div class="own-head">
+      <img class="crest" src="../../img/crest.jpg" alt="Delhi Padel League 2026 crest" width="88" height="88">
+      <h1>Player Consent</h1>
+      <p>Congratulations on being drafted. Before Season One starts, please read and tick each line below. It takes a minute.</p>
+    </div>
+
+    <form class="f" id="consent" novalidate>
+      <div class="row">
+        <div class="field"><label for="c-name">Full name</label><input id="c-name" name="name" required autocomplete="name" maxlength="100"><span class="err">Enter your name.</span></div>
+        <div class="field"><label for="c-phone">Phone</label><input id="c-phone" name="phone" type="tel" required autocomplete="tel" inputmode="tel" maxlength="20" pattern="[+0-9 \(\)\-]{10,20}"><span class="err">Enter your phone number.</span></div>
+      </div>
+      <div class="field"><label for="c-team">Your team</label>
+        <select id="c-team" name="team" required>
+          <option value="">Choose your team</option>
+          <option>Lob-Stars</option>
+          <option>Yes Minister Avsoy Delhi</option>
+          <option>REPPP Ravens</option>
+          <option>The Squashers</option>
+          <option>Forty Love</option>
+          <option>Pratharv &amp; The Padel House</option>
+          <option>Base 77</option>
+          <option>Rally Rebels</option>
+        </select><span class="err">Choose your team.</span></div>
+      <div class="field consent"><label><input type="checkbox" name="fantasy" value="Yes" required><span><b>Fantasy money.</b> I understand the auction amounts (purses, bids and prices such as "8.5L") are fantasy money for building teams. No one is paid that money and no one owes it.</span></label></div>
+      <div class="field consent"><label><input type="checkbox" name="private" value="Yes" required><span><b>Deals are private.</b> Any money, gifts or arrangements between me and a team or its owners are a private matter between us. Delhi Padel League and Delhi Padel Collective are not part of them and are not responsible for them.</span></label></div>
+      <div class="field consent"><label><input type="checkbox" name="fee" value="Yes" required><span><b>League fee.</b> The only payment I make to the league is the ₹3,999 league fee.</span></label></div>
+      <div class="field consent"><label><input type="checkbox" name="commit" value="Yes" required><span><b>Commitment.</b> I'll play for the team that picked me for the whole season and let the league know early if my availability changes.</span></label></div>
+      <div class="field"><label for="c-sign">Type your full name as your signature</label><input id="c-sign" name="signature" required maxlength="100" autocomplete="off"><span class="err">Type your name to sign.</span></div>
+      <p class="date">Date: <span id="c-date"></span></p>
+      <button class="btn btn-primary">I agree</button>
+    </form>
+    <div class="done" role="status"><h3>Thank you</h3><p>You're all set for Season One. See you on court.</p></div>
+  </div></div>
+</main>
+<script src="../forms.js?v=6"></script>
+<script>
+// Answers go to the "DPL Player Consent" Google Sheet through its Apps Script (league/consent.gs).
+const CONSENT_API = "PASTE_WEB_APP_URL_HERE";
+const form = document.getElementById("consent");
+document.getElementById("c-date").textContent = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (form.dataset.busy) return;
+  if (!form.checkValidity()) { showMissing(form); return; }   // from forms.js
+  form.dataset.busy = "1";
+  const btn = form.querySelector("button"), label = btn.textContent;
+  let err = form.querySelector(".ferr");
+  if (!err) { err = document.createElement("p"); err.className = "ferr"; err.setAttribute("role", "alert"); btn.after(err); }
+  err.textContent = ""; btn.disabled = true; btn.textContent = "Sending…";
+  try {
+    const res = await fetch(CONSENT_API, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+    const data = await res.json();
+    if (!data || data.ok !== true) throw new Error(data && data.error || "not saved");
+    form.classList.add("sent"); form.hidden = true; document.querySelector(".own-head").remove();
+    form.nextElementSibling.scrollIntoView({ block: "center", behavior: "smooth" });
+  } catch (x) {
+    err.textContent = "Couldn't send that. Please check your connection and try again.";
+    btn.disabled = false; btn.textContent = label; delete form.dataset.busy;
+  }
+});
+</script>
+</body>
+</html>
