@@ -1,16 +1,16 @@
 // ============================================================
 //  DPL — Player consent form → its own Google Sheet
 //
-//  The page league/consent/ POSTs each answer here: { name, phone, team, … } → { ok: true }.
+//  The page league/consent/ POSTs each answer here: { name, phone, fantasy, … } → { ok: true }.
 //
 //  SETUP: make a new Google Sheet, Extensions → Apps Script, paste this, Save.
 //  Deploy → New deployment → Web app (Execute as: Me, Who has access: Anyone) → copy the
 //  /exec URL into CONSENT_API in league/consent/index.html.
 // ============================================================
 
-const HEADERS = ['Timestamp', 'Name', 'Phone', 'Team', 'Fantasy money', 'Deals are private', 'League fee',
+const HEADERS = ['Timestamp', 'Name', 'Phone', 'Fantasy money', 'Prize money is private', 'League fee',
                  'Commitment', 'Signature'];
-const FIELDS = ['name', 'phone', 'team', 'fantasy', 'private', 'fee', 'commit', 'signature'];
+const FIELDS = ['name', 'phone', 'fantasy', 'private', 'fee', 'commit', 'signature'];
 
 function doPost(e) {
   try {
