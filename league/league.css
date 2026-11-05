@@ -297,3 +297,12 @@ body:has(.sticky.show) .faq-panel{bottom:calc(152px + env(safe-area-inset-bottom
 .faq-chip:hover{background:var(--gold);color:#f8f4ea}
 .faq-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--line);font-size:14px;color:var(--text-3)}
 .faq-wa{background:var(--gold);color:#f8f4ea;text-decoration:none;font-weight:600;font-size:14px;padding:10px 14px;border-radius:var(--r)}
+
+/* Teams */
+.teams{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+@media(min-width:800px){.teams{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.team-card{display:flex;align-items:center;gap:16px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.team-card img{width:64px;height:64px;flex:none;border-radius:var(--r);object-fit:cover}
+.team-card>span{display:grid;gap:2px;min-width:0}
+.team-card b{font:600 21px/1.2 var(--serif);color:var(--text)}
+.team-card small{font-size:13px;color:var(--text-3)}
