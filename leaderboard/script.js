@@ -645,7 +645,7 @@ function verifiedBadge(p) {
   return p && p.verified ? '<span class="vbadge" title="Verified ranking">✓</span>' : "";
 }
 function ensureVerifiedLegend(target, anyVerified) {
-  const sub = target.closest(".subsection"); if (!sub) return;
+  const sub = target.closest(".subsection"); if (!sub || sub.closest(".by-points")) return;   // by-points panels: points.js owns it
   let leg = sub.querySelector(".verified-legend");
   if (anyVerified && !leg) {
     leg = document.createElement("div");
@@ -690,7 +690,7 @@ function yourRankMarkup(me, opts) {
 // visible; the full list while searching).
 function enhancePanel(target, rankings, opts) {
   const subsection = target.closest(".subsection");
-  if (!subsection) return rankings;
+  if (!subsection || subsection.closest(".by-points")) return rankings;   // points.js owns this panel's podium
   const query  = tableSearchState.get(target.id) || "";
   const search = subsection.querySelector(".leaderboard-search");
 
