@@ -12,11 +12,12 @@
 .site-foot .sf-main{display:flex;flex-wrap:wrap;gap:8px 24px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;opacity:.6;margin-bottom:16px}
 .site-foot .sf-main a{font-weight:600;letter-spacing:2px;text-transform:uppercase}
 .site-foot .sf-legal{display:flex;flex-wrap:wrap;gap:6px 16px;padding-top:14px;border-top:1px solid rgba(127,127,127,.22);font-size:12px;opacity:.5}`;
-  // A div, not <footer>: some pages style every footer element, and that shouldn't leak in.
+  // Divs, not <footer>/<nav>: some pages style every footer or nav element (Application
+  // makes every nav a fixed top bar), and that shouldn't leak in.
   const f = document.createElement("div");
   f.className = "site-foot";
   f.setAttribute("role", "contentinfo");
-  f.innerHTML = `<nav class="sf-main" aria-label="Site"><a href="/league/">League</a><a href="/legal/pricing/">Pricing</a><a href="/legal/contact/">Contact</a><a href="https://instagram.com/delhipadelcollective" target="_blank" rel="noopener">Instagram</a></nav>
+  f.innerHTML = `<div class="sf-main" role="navigation" aria-label="Site"><a href="/league/">League</a><a href="/legal/pricing/">Pricing</a><a href="/legal/contact/">Contact</a><a href="https://instagram.com/delhipadelcollective" target="_blank" rel="noopener">Instagram</a></div>
 <div class="sf-legal"><span>© 2026 Rebound Rally Private Limited</span><a href="/legal/terms/">Terms</a><a href="/legal/privacy/">Privacy</a><a href="/legal/refunds/">Cancellation &amp; refunds</a><a href="/legal/service-delivery/">Service delivery</a></div>`;
   document.head.append(css);
   document.body.append(f);
