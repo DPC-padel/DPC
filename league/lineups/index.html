@@ -260,11 +260,10 @@ function validate(matches, squad, settings, ageDate, day) {
     const ks = where[id]; const n = byId[id] ? byId[id].name : id;
     if (ks.length > 2) ks.forEach(k => add(k, n + ' is in ' + ks.length + ' matches. The limit is 2.'));
     const lv = ks.filter(k => LEVEL_KEYS.indexOf(k) >= 0);
-    if (lv.length > 1) {
-      const banned = lv.indexOf('AB') >= 0 && (lv.indexOf('A') >= 0 || lv.indexOf('B') >= 0);
-      if (banned || !(settings && settings.twoLevelMatches))
-        lv.forEach(k => add(k, n + ' is in two level matches (' + lv.map(x => MBY[x].short).join(' and ') + '). Only one is allowed.'));
-    }
+    // Two level matches are allowed when the second is above the player's tier (rule 5.3). The tier rule already
+    // stops anyone playing below their tier, so the only pair this leaves out is A with A/B: the same level.
+    if (lv.length > 1 && lv.indexOf('A') >= 0 && lv.indexOf('AB') >= 0)
+      ['A', 'AB'].forEach(k => add(k, n + ' is in both A and A/B. They count as the same level.'));
   });
   return errs;
 }
@@ -344,8 +343,10 @@ const fmt = (iso, o) => { if(!iso) return ''; try{ return new Intl.DateTimeForma
 const dayShort = iso => fmt(iso,{weekday:'short'});
 const dayNum = iso => fmt(iso,{day:'numeric'});
 const clock = iso => fmt(iso,{hour:'numeric',minute:'2-digit'}).replace(':00','').replace(' ','').toLowerCase();
-const when = iso => dayShort(iso)+' '+clock(iso);
-const whenFull = iso => fmt(iso,{weekday:'short',day:'numeric',month:'short'})+', '+clock(iso);
+const isMidnight = iso => clock(iso) === '12am';
+const prevDay = iso => new Date(Date.parse(iso) - 60000).toISOString();
+const when = iso => isMidnight(iso) ? dayShort(prevDay(iso))+' midnight' : dayShort(iso)+' '+clock(iso);
+const whenFull = iso => isMidnight(iso) ? fmt(prevDay(iso),{weekday:'short',day:'numeric',month:'short'})+', midnight' : fmt(iso,{weekday:'short',day:'numeric',month:'short'})+', '+clock(iso);
 const lbl = k => MBY[k].k==='A' ? 'A' : MBY[k].short;
 const firstName = p => String(p.name||'').split(' ')[0];
 const emptyLineup = () => Object.fromEntries(MATCHES.map(m => [m.k, ['','']]));
@@ -387,10 +388,7 @@ function reasonFor(p, slot, l, c){
   if (u.length >= 2) return 'Already plays '+u.map(lbl).join(' and ');
   if (m.level != null){
     const lv = u.filter(k => LEVEL_KEYS.includes(k));
-    if (lv.length){
-      const banned = (slot.k==='AB' && (lv.includes('A')||lv.includes('B'))) || (lv.includes('AB') && (slot.k==='A'||slot.k==='B'));
-      if (banned || !c.settings.twoLevelMatches) return 'Already plays '+lbl(lv[0])+' (one level match each)';
-    }
+    if ((slot.k==='AB' && lv.includes('A')) || (slot.k==='A' && lv.includes('AB'))) return 'Already plays '+lbl(slot.k==='A'?'AB':'A')+' (A and A/B are the same level)';
   }
   if (slot.k==='V'){
     const a = ageOf(p, c.ageDate); if (a == null) return 'No age on file';
@@ -505,7 +503,7 @@ function demoBar(){
 function status(f, sub){
   if (f.published) return ['Revealed','ok'];
   if (sub) return sub.late ? ['Submitted late','warn'] : ['Submitted','ok'];
-  if (f.closed) return ['Forfeit','bad'];
+  if (f.closed) return ['Closed · no lineup','bad'];
   if (f.pastLock) return ['Late · closes '+clock(f.closeAt),'bad'];
   return ['Due '+when(f.lockAt),'warn'];
 }
@@ -534,7 +532,7 @@ function renderFixture(f){
   if (f.published) return `<section class="card">${head}<span class="chip ok">Revealed</span></div><a class="btn ghost" href="#revealed" style="justify-self:start;text-decoration:none">See both lineups</a></section>`;
   if (sub) return `<section class="card">${head}<span class="chip ${sub.late?'warn':'ok'}">${sub.late?'Submitted late':'Submitted'} · ${esc(when(sub.submittedAt))}</span></div>${summaryTable(sub.matches, stage)}
     <p class="small muted">Reveal ${esc(whenFull(f.revealAt))}</p></section>`;
-  if (f.closed) return `<section class="card">${head}<span class="chip bad">Forfeit</span></div><p class="muted">No lineup by ${esc(clock(f.closeAt))}.</p></section>`;
+  if (f.closed) return `<section class="card">${head}<span class="chip bad">Closed</span></div><p class="muted">No lineup by ${esc(whenFull(f.closeAt))}.</p></section>`;
   const c = ctxFor(f);
   if (!c.squad.length) return `<section class="card">${head}</div><div class="notice">Squad not loaded yet.</div></section>`;
   const l = S.drafts[f.id] = sanitize(S.drafts[f.id] || lsGet(draftKey(f)) || emptyLineup(), c);
@@ -631,14 +629,15 @@ function renderRevealed(){
 
 /* ---------- admin page ---------- */
 function swapForm(p){
-  const st = S.swap[p.fixtureId] || (S.swap[p.fixtureId] = {side:'home', k:'A', slot:'0', inId:''});
+  const st = S.swap[p.fixtureId] || (S.swap[p.fixtureId] = {side:'home', k:'A', slot:'0', inId:'', reason:'injury'});
   const team = p[st.side].team, pair = (p[st.side].matches||{})[st.k] || [], squad = (S.admin.squads||{})[team] || [];
   const nm = id => ((p.names||{})[team]||{})[id] || id || '—';
   const sel = (f, opts) => `<select data-act="sw" data-fid="${esc(p.fixtureId)}" data-f="${f}" style="width:100%;padding:8px;border:1px solid var(--rule);border-radius:6px;background:var(--field)">${opts}</select>`;
-  return `<details><summary class="small"><b>Injury swap</b></summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:10px">
+  return `<details data-swapfid="${esc(p.fixtureId)}" ${(S.swapOpen||{})[p.fixtureId]?'open':''}><summary class="small"><b>Substitution</b></summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:10px">
     ${sel('side', ['home','away'].map(s=>`<option value="${s}" ${st.side===s?'selected':''}>${esc(p[s].team)}</option>`).join(''))}
     ${sel('k', MATCHES.map(m=>`<option value="${m.k}" ${st.k===m.k?'selected':''}>${esc(lbl(m.k))}</option>`).join(''))}
     ${sel('slot', [0,1].map(i=>`<option value="${i}" ${String(st.slot)===String(i)?'selected':''}>Out: ${esc(nm(pair[i]))}</option>`).join(''))}
+    ${sel('reason', [['injury','Reason: injury'],['fixture decided','Reason: fixture decided (6.8)'],['back-to-back','Reason: back-to-back fixture (6.9)']].map(([v,l])=>`<option value="${v}" ${st.reason===v?'selected':''}>${l}</option>`).join(''))}
     ${sel('inId', '<option value="">In: choose</option>'+squad.map(pl=>`<option value="${esc(pl.id)}" ${st.inId===pl.id?'selected':''}>In: ${esc(pl.name)} (${esc(tagOf(pl))})</option>`).join(''))}
   </div><div class="row" style="margin-top:10px"><button class="btn" data-act="swap" data-fid="${esc(p.fixtureId)}" ${!st.inId||S.busy?'disabled':''}>Save swap</button></div></details>`;
 }
@@ -647,17 +646,17 @@ function renderAdmin(){
     <form class="login" data-form="admin"><label class="lbl" for="acode">Admin code</label>
       <input type="password" id="acode" autocomplete="off" required><button class="btn" type="submit">Continue</button></form></section>`;
   const A = S.admin;
-  const side = (f, at, late) => at ? `<span class="chip ${late?'warn':'ok'}">${late?'Late':'In'} · ${esc(when(at))}</span>` : f.closed ? '<span class="chip bad">Forfeit</span>' : f.pastLock ? '<span class="chip bad">Late window</span>' : '<span class="chip">Not in</span>';
+  const side = (f, at, late) => at ? `<span class="chip ${late?'warn':'ok'}">${late?'Late':'In'} · ${esc(when(at))}</span>` : f.closed ? '<span class="chip bad">No lineup</span>' : f.pastLock ? '<span class="chip bad">Late window</span>' : '<span class="chip">Not in</span>';
   const action = f => f.published ? `<button class="btn ${S.adminOpen===f.id?'':'ghost'}" data-act="aview" data-fid="${esc(f.id)}" aria-expanded="${S.adminOpen===f.id}">${S.adminOpen===f.id?'Hide lineups':'View lineups'}</button>`
     : (f.homeIn && f.awayIn) ? `<button class="btn" data-act="reveal" data-fid="${esc(f.id)}" ${S.busy?'disabled':''}>Reveal</button>`
-    : (f.closed ? '<span class="chip bad">Forfeit</span>' : '<span class="small faint">Waiting</span>');
+    : (f.closed ? '<span class="chip bad">Closed</span>' : '<span class="small faint">Waiting</span>');
   const days = {}; A.fixtures.forEach(f => { const d = fmt(f.start,{weekday:'long',day:'numeric',month:'short'}); (days[d] = days[d] || []).push(f); });
   return Object.entries(days).map(([d, fs]) => `<section class="card"><div class="row between"><h2>${esc(d)}</h2>${d===Object.keys(days)[0]?'<button class="btn ghost" data-act="reload">Refresh</button>':''}</div>
     <div class="scroll"><table><thead><tr><th>Start</th><th>Fixture</th><th>Home</th><th>Away</th><th>Reveal</th><th></th></tr></thead><tbody>
     ${fs.map(f=>`<tr><td><b>${esc(clock(f.start))}</b><br><span class="small muted">${esc(f.when)}</span></td>
       <td><b>${esc(f.home)}</b> <span class="v">v</span> <b>${esc(f.away)}</b></td>
       <td>${side(f,f.homeIn,f.homeLate)}</td><td>${side(f,f.awayIn,f.awayLate)}</td>
-      <td class="small">${esc(clock(f.revealAt))}</td><td>${action(f)}</td></tr>`).join('')}
+      <td class="small">${esc(when(f.revealAt))}</td><td>${action(f)}</td></tr>`).join('')}
     </tbody></table></div></section>${fs.filter(f=>f.published && S.adminOpen===f.id).map(f=>{ const p=(A.published||[]).find(x=>x.fixtureId===f.id); return p?pubCard(p,true):''; }).join('')}`).join('')
   + `<section class="card"><h2>Squads</h2><div class="scroll"><table><thead><tr><th>Franchise</th><th>Players</th></tr></thead><tbody>
     ${A.teams.map(t=>`<tr><td><b>${esc(t.team)}</b></td><td>${t.players || '<span class="chip bad">Not loaded</span>'}</td></tr>`).join('')}</tbody></table></div></section>`;
@@ -696,8 +695,8 @@ document.addEventListener('click', e => {
   else if (act==='aview'){ S.adminOpen = S.adminOpen===b.dataset.fid ? null : b.dataset.fid; render(); }
   else if (act==='swap') busy(async () => {
     const st = S.swap[b.dataset.fid];
-    const r = await api('adminSwap',{adminCode:S.adminCode, fixtureId:b.dataset.fid, side:st.side, k:st.k, slot:st.slot, inId:st.inId, reason:'injury'});
-    S.admin = r; S.swap[b.dataset.fid] = {side:st.side, k:st.k, slot:'0', inId:''}; say(r.message);
+    const r = await api('adminSwap',{adminCode:S.adminCode, fixtureId:b.dataset.fid, side:st.side, k:st.k, slot:st.slot, inId:st.inId, reason:st.reason||'injury'});
+    S.admin = r; S.swap[b.dataset.fid] = {side:st.side, k:st.k, slot:'0', inId:'', reason:st.reason}; say(r.message);
   });
 });
 document.addEventListener('change', e => {
@@ -707,6 +706,7 @@ document.addEventListener('change', e => {
     render();
   }
 });
+document.addEventListener('toggle', e => { const d = e.target; if (d && d.dataset && d.dataset.swapfid){ S.swapOpen = S.swapOpen || {}; S.swapOpen[d.dataset.swapfid] = d.open; } }, true);
 document.addEventListener('keydown', e => { if (e.key==='Escape' && S.picker){ S.picker=null; render(); } });
 window.addEventListener('hashchange', () => { S.msg=null; S.loadErr=null; S.picker=null; render(); load(); });
 render(); load();
